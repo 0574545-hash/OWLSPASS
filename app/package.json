@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit",
     "check-seed": "tsx scripts/check-seed.ts",
-    "verify": "npm run check-seed && npm run build"
+    "verify": "npm run check-seed && npm run build",
+    "standalone": "npm run build && node scripts/bundle-standalone.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.462.0",

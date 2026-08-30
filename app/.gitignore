@@ -3,3 +3,7 @@ dist
 *.local
 .DS_Store
 shots
+
+# Собранный standalone-файл
+*.html
+!index.html
