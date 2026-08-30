@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Modal } from '../components/Modal'
 import { Card, CardKicker, CardRow, CardTotal, MoneyField, SelectField, TextArea, TextField } from '../components/ui'
 import { clock, money } from '../lib/format'
-import { actions, openOrders, unpaidOrders, useStore } from '../state/store'
+import { actions, carriedCash, openOrders, unpaidOrders, useStore } from '../state/store'
 
 /** Screen 02 — «Открытие смены».
  *  Runs straight after the PIN: who is on, and how much cash the drawer
@@ -24,9 +24,8 @@ export function ShiftOpenModal() {
   const admins = users.filter((u) => u.role !== 'Кассир').map((u) => shortForm(u.fullName))
   const cashiers = users.map((u) => shortForm(u.fullName))
 
-  // The till is handed to the safe in full every evening, so nothing carries
-  // and the day opens on the float alone.
-  const carried = previous ? previous.closingCash : 0
+  const carried = useStore(carriedCash)
+  const carryOver = useStore((s) => s.paymentSettings.carryOverCash)
 
   return (
     <Modal
@@ -62,8 +61,8 @@ export function ShiftOpenModal() {
                 label={`Смена № ${previous.no} закрыта`}
                 value={previous.closedAt !== undefined ? clock(previous.closedAt) : '—'}
               />
-              <CardRow label="Сдано в сейф" value={money(previous.cash)} />
-              <CardRow label="Остаток в кассе" value={money(previous.closingCash)} />
+              <CardRow label="В кассе на конец смены" value={money(previous.closingCash)} />
+              {!carryOver && <CardRow label="Сдано в сейф" value={money(previous.closingCash)} />}
               <CardRow
                 label="Расхождение"
                 value={previous.discrepancy === 0 ? '0' : money(previous.discrepancy)}
@@ -71,6 +70,12 @@ export function ShiftOpenModal() {
               />
             </Card>
           )}
+
+          <div className="card-note">
+            {carryOver
+              ? 'Остаток кассы переходит на следующую смену — правило в «Настройки → Касса и оплата».'
+              : 'Касса сдаётся в сейф в конце смены, день начинается с одного размена — правило в «Настройки → Касса и оплата».'}
+          </div>
 
           <Card>
             <CardKicker>Незакрытые дела</CardKicker>

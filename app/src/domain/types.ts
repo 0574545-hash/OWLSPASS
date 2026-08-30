@@ -163,9 +163,9 @@ export interface Shift {
   /** Cash that went through the drawer during the shift. */
   cash: number
   cashless: number
-  /** What was left in the drawer at close. The centre's policy is to hand
-   *  the whole till over to the safe every evening, so this is 0 and each
-   *  day starts on the float alone. */
+  /** What was counted in the drawer when the shift closed. Whether it opens
+   *  the next shift or goes to the safe is a policy — see
+   *  `PaymentSettings.carryOverCash`. */
   closingCash: number
   discrepancy: number
   status: ShiftStatus
@@ -231,6 +231,11 @@ export interface Requisites {
 }
 
 export interface PaymentSettings {
+  /** Does the till stay in the drawer overnight, or go to the safe in full?
+   *  Off — every day opens on the float alone and a discrepancy cannot creep
+   *  from one shift into the next. On — the counted cash opens the next
+   *  shift and «остаток на начало дня» becomes a top-up of change. */
+  carryOverCash: boolean
   methods: { id: string; label: string; enabled: boolean }[]
   collectionGrounds: string[]
   depositGrounds: string[]

@@ -291,6 +291,13 @@ function buildCashJournal(s: AppState): CashOp[] {
   return ops.sort((a, b) => b.at - a.at)
 }
 
+/** What the previous shift leaves in the drawer for this one. Zero unless the
+ *  centre keeps the till overnight — «Настройки → Касса и оплата». */
+export function carriedCash(s: AppState): number {
+  if (!s.paymentSettings.carryOverCash) return 0
+  return s.shifts[0]?.closingCash ?? 0
+}
+
 export interface CashSummary {
   cashOnHand: number
   cashless: number
@@ -309,10 +316,7 @@ export function cashSummary(s: AppState): CashSummary {
 
 function buildCashSummary(s: AppState): CashSummary {
   const ops = cashJournal(s)
-  // The previous shift is handed over to the safe in full, so the day opens
-  // on the float alone. Kept explicit: change the policy and the drawer
-  // balance follows without touching anything else.
-  let cashOnHand = s.shifts[0]?.closingCash ?? 0
+  let cashOnHand = carriedCash(s)
   let cashless = 0
   let refunds = 0
   let collected = 0
@@ -591,8 +595,9 @@ export const actions = {
       ops: summary.ops,
       cash: summary.cashOnHand,
       cashless: summary.cashless,
-      // The counted cash goes to the safe, so the drawer closes on nothing.
-      closingCash: 0,
+      // What was actually counted. Whether it opens the next shift or goes to
+      // the safe is decided then, by the policy in force.
+      closingCash: input.counted,
       discrepancy,
       status: discrepancy === 0 ? 'closed' : 'discrepancy',
       comment: input.comment,

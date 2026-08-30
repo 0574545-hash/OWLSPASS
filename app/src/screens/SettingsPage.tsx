@@ -284,6 +284,11 @@ function RequisitesTab() {
   )
 }
 
+/** The reference lists that feed the cash windows — the string[] fields only. */
+type ListKey = {
+  [K in keyof PaymentSettings]: PaymentSettings[K] extends string[] ? K : never
+}[keyof PaymentSettings]
+
 function PaymentsTab() {
   const stored = useStore((s) => s.paymentSettings)
   const [draft, setDraft] = useState<PaymentSettings>(stored)
@@ -294,13 +299,13 @@ function PaymentsTab() {
       methods: d.methods.map((m) => (m.id === id ? { ...m, enabled: !m.enabled } : m)),
     }))
 
-  const addTo = (key: keyof Omit<PaymentSettings, 'methods'>, label: string) => {
+  const addTo = (key: ListKey, label: string) => {
     const value = window.prompt(label)
     if (!value) return
     setDraft((d) => ({ ...d, [key]: [...d[key], value] }))
   }
 
-  const lists: { key: keyof Omit<PaymentSettings, 'methods'>; title: string; add: string }[] = [
+  const lists: { key: ListKey; title: string; add: string }[] = [
     { key: 'collectionGrounds', title: 'Основания для инкассации', add: 'Добавить основание' },
     { key: 'depositGrounds', title: 'Основания для внесения', add: 'Добавить основание' },
     { key: 'discrepancyReasons', title: 'Причины расхождения', add: 'Добавить причину' },
@@ -328,6 +333,21 @@ function PaymentsTab() {
               {m.label}
             </Checkbox>
           ))}
+        </div>
+
+        <div className="card" style={{ padding: 20, gap: 12 }}>
+          <div className="card-kicker">Смена и касса</div>
+          <Checkbox
+            checked={draft.carryOverCash}
+            onChange={() => setDraft((d) => ({ ...d, carryOverCash: !d.carryOverCash }))}
+          >
+            Остаток кассы переходит на следующую смену
+          </Checkbox>
+          <div className="card-note">
+            {draft.carryOverCash
+              ? 'Пересчитанные наличные остаются в кассе и открывают следующую смену, а «остаток на начало дня» становится довнесением размена.'
+              : 'Касса сдаётся в сейф в конце смены. Каждый день начинается с одного размена, расхождение не переползает на следующую смену.'}
+          </div>
         </div>
 
         {lists.map((list) => (
