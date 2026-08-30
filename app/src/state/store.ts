@@ -24,7 +24,7 @@ import {
   PAYMENT_SETTINGS,
   REQUISITES,
   ROLES,
-  SHIFT_OPENING_FLOAT,
+  PAST_SHIFTS,
   buildSeed,
   tariffDuration,
 } from '../domain/seed'
@@ -100,7 +100,8 @@ function initialState(): AppState {
       openedAt: 9 * 60,
       admin: 'Смирнова Е. В.',
       cashier: 'Бекетов И. С.',
-      opening: SHIFT_OPENING_FLOAT,
+      // The drawer opens holding whatever the previous shift left in it.
+      opening: PAST_SHIFTS[0]?.closingCash ?? 0,
       openComment: 'Купюрами по 100 и 500 для сдачи, принял кассир.',
     },
     clients: seed.clients,
@@ -291,13 +292,6 @@ function buildCashJournal(s: AppState): CashOp[] {
   return ops.sort((a, b) => b.at - a.at)
 }
 
-/** What the previous shift leaves in the drawer for this one. Zero unless the
- *  centre keeps the till overnight — «Настройки → Касса и оплата». */
-export function carriedCash(s: AppState): number {
-  if (!s.paymentSettings.carryOverCash) return 0
-  return s.shifts[0]?.closingCash ?? 0
-}
-
 export interface CashSummary {
   cashOnHand: number
   cashless: number
@@ -316,7 +310,9 @@ export function cashSummary(s: AppState): CashSummary {
 
 function buildCashSummary(s: AppState): CashSummary {
   const ops = cashJournal(s)
-  let cashOnHand = carriedCash(s)
+  // The drawer opens on what yesterday left in it. That is a balance, not a
+  // movement, so it is not an operation in the journal.
+  let cashOnHand = s.shift.opening
   let cashless = 0
   let refunds = 0
   let collected = 0
@@ -427,9 +423,6 @@ export const actions = {
         cashier: input.cashier,
         openComment: input.comment,
       },
-      houseOps: state.houseOps.map((op) =>
-        op.id === 'op-open' ? { ...op, amount: input.opening, cashier: input.cashier } : op,
-      ),
     })
   },
 

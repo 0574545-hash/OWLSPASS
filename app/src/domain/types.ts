@@ -157,15 +157,16 @@ export interface Shift {
   closedAt?: Minutes
   admin: string
   cashier: string
-  /** «Остаток на начало дня» — the float put in at open. */
+  /** «Остаток на начало дня» — what the drawer holds when the shift opens,
+   *  which is what yesterday's shift left in it. Counted by the cashier, so
+   *  it can differ from the previous shift's closing figure. */
   opening: number
   ops: number
   /** Cash that went through the drawer during the shift. */
   cash: number
   cashless: number
-  /** What was counted in the drawer when the shift closed. Whether it opens
-   *  the next shift or goes to the safe is a policy — see
-   *  `PaymentSettings.carryOverCash`. */
+  /** What was counted in the drawer when the shift closed. It stays there and
+   *  opens the next shift as «остаток на начало дня». */
   closingCash: number
   discrepancy: number
   status: ShiftStatus
@@ -231,11 +232,6 @@ export interface Requisites {
 }
 
 export interface PaymentSettings {
-  /** Does the till stay in the drawer overnight, or go to the safe in full?
-   *  Off — every day opens on the float alone and a discrepancy cannot creep
-   *  from one shift into the next. On — the counted cash opens the next
-   *  shift and «остаток на начало дня» becomes a top-up of change. */
-  carryOverCash: boolean
   methods: { id: string; label: string; enabled: boolean }[]
   collectionGrounds: string[]
   depositGrounds: string[]

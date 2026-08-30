@@ -335,21 +335,6 @@ function PaymentsTab() {
           ))}
         </div>
 
-        <div className="card" style={{ padding: 20, gap: 12 }}>
-          <div className="card-kicker">Смена и касса</div>
-          <Checkbox
-            checked={draft.carryOverCash}
-            onChange={() => setDraft((d) => ({ ...d, carryOverCash: !d.carryOverCash }))}
-          >
-            Остаток кассы переходит на следующую смену
-          </Checkbox>
-          <div className="card-note">
-            {draft.carryOverCash
-              ? 'Пересчитанные наличные остаются в кассе и открывают следующую смену, а «остаток на начало дня» становится довнесением размена.'
-              : 'Касса сдаётся в сейф в конце смены. Каждый день начинается с одного размена, расхождение не переползает на следующую смену.'}
-          </div>
-        </div>
-
         {lists.map((list) => (
           <div key={list.key} className="card" style={{ padding: 20, gap: 10 }}>
             <div className="card-kicker">{list.title}</div>

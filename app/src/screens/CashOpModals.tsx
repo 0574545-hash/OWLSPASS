@@ -149,7 +149,7 @@ export function CollectionModal() {
           </Card>
 
           <div className="card-note">
-            Остаток на начало дня {money(shift.opening)} сохраняется.
+            Размен {money(shift.opening)} сохраняется в кассе.
           </div>
         </>
       }

@@ -2,14 +2,15 @@
  * Checks the seeded shift against the figures the design canvas states.
  * Run with: npx tsx scripts/check-seed.ts
  */
-import { buildSeed, tariffDuration } from '../src/domain/seed'
+import { buildSeed, tariffDuration, PAST_SHIFTS } from '../src/domain/seed'
 import { NOW, elapsed, endTime, orderTotals, statusTone } from '../src/domain/rules'
 import { clock, duration, money } from '../src/lib/format'
 
 const seed = buildSeed()
 const clientOf = (id: string) => seed.clients.find((c) => c.id === id)
 
-let cashOnHand = 0
+// The drawer opens holding what the previous shift left in it.
+let cashOnHand = PAST_SHIFTS[0].closingCash
 let cashless = 0
 let refunds = 0
 let collected = 0
@@ -66,7 +67,8 @@ const rows: [string, unknown, unknown][] = [
   ['Заказов за смену', seed.orders.length, 42],
   ['Открытых заказов', open.length, 7],
   ['Не оплачено', unpaid.length, 5],
-  ['Наличные в кассе', money(cashOnHand), '38 420'],
+  ['Остаток на начало дня', money(PAST_SHIFTS[0].closingCash), '8 060'],
+  ['Наличные в кассе', money(cashOnHand), '41 480'],
   ['Безнал за смену', money(cashless), '102 920'],
   ['Выручка (принято − возвращено)', money(taken - refunds), '166 340'],
   ['Возвраты', money(refunds), '1 543'],

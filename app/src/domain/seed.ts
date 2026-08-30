@@ -340,8 +340,6 @@ export const REQUISITES: Requisites = {
 }
 
 export const PAYMENT_SETTINGS: PaymentSettings = {
-  // The centre hands the till to the safe every evening.
-  carryOverCash: false,
   methods: [
     { id: 'pm-cash', label: 'Наличные', enabled: true },
     { id: 'pm-card', label: 'Банковская карта', enabled: true },
@@ -350,7 +348,7 @@ export const PAYMENT_SETTINGS: PaymentSettings = {
     { id: 'pm-invoice', label: 'Оплата по счёту для организаций', enabled: false },
   ],
   collectionGrounds: ['Плановая выемка в сейф', 'Сдача в банк', 'Передача управляющему', 'Закупка расходников'],
-  depositGrounds: ['Остаток на начало дня', 'Довнесение размена', 'Возврат неиспользованных средств', 'Погашение недостачи'],
+  depositGrounds: ['Довнесение размена', 'Возврат неиспользованных средств', 'Погашение недостачи'],
   discrepancyReasons: ['Ошибка при выдаче сдачи', 'Не проведённая оплата', 'Неучтённый возврат', 'Излишек при пересчёте'],
   refundReasons: ['Ребёнку не подошёл товар', 'Отказ от посещения', 'Отмена праздника', 'Болезнь ребёнка', 'Ошибка администратора в заказе'],
 }
@@ -369,11 +367,12 @@ export const NOTIFICATIONS: NotificationRule[] = [
    ============================================================ */
 
 export const CURRENT_SHIFT_NO = 218
-export const SHIFT_OPENING_FLOAT = 5000
 export const COLLECTION_AMOUNT = 30000
 /** Targets the canvas states on four separate screens. The generated part
  *  of the shift is solved to land on them exactly. */
-const TARGET_CASH_ON_HAND = 38420
+/** Cash taken from clients over the shift. The drawer's opening balance and
+ *  the collection are movements, not takings, so they stay out of the solve. */
+const TARGET_CASH_TAKEN = 64963
 const TARGET_CASHLESS = 102920
 const TARGET_REFUNDS = 1543
 const TARGET_DEBT = 13802
@@ -655,9 +654,7 @@ function buildFillerOrders(clients: Client[], explicit: Order[]): Order[] {
   const cashlessPaid = sumPayments(explicit, 'Карта') + sumPayments(explicit, 'СБП по QR')
   const refunded = explicit.reduce((s, o) => s + o.refunds.reduce((a, r) => a + r.amount, 0), 0)
 
-  // cashOnHand = float + cash taken − cash refunded − collected
-  const cashNeeded =
-    TARGET_CASH_ON_HAND - SHIFT_OPENING_FLOAT + TARGET_REFUNDS + COLLECTION_AMOUNT - cashPaid
+  const cashNeeded = TARGET_CASH_TAKEN - cashPaid
   const cashlessNeeded = TARGET_CASHLESS - cashlessPaid
   const extraRefund = TARGET_REFUNDS - refunded
 
@@ -850,10 +847,6 @@ export function buildSeed(): SeedData {
  *  collection. Everything else in the journal is derived from orders. */
 function houseOps(): CashOp[] {
   return [
-    {
-      id: 'op-open', at: t(9, 2), subject: 'Открытие смены', kind: 'Внесение',
-      method: 'Наличные', amount: SHIFT_OPENING_FLOAT, cashier: CASHIER,
-    },
     {
       id: 'op-collect', at: t(12, 51), subject: 'Инкассация', kind: 'Выемка',
       method: 'Наличные', amount: -COLLECTION_AMOUNT, cashier: ADMIN,

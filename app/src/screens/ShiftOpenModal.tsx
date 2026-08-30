@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Modal } from '../components/Modal'
 import { Card, CardKicker, CardRow, CardTotal, MoneyField, SelectField, TextArea, TextField } from '../components/ui'
 import { clock, money } from '../lib/format'
-import { actions, carriedCash, openOrders, unpaidOrders, useStore } from '../state/store'
+import { actions, openOrders, unpaidOrders, useStore } from '../state/store'
 
 /** Screen 02 — «Открытие смены».
  *  Runs straight after the PIN: who is on, and how much cash the drawer
@@ -24,14 +24,14 @@ export function ShiftOpenModal() {
   const admins = users.filter((u) => u.role !== 'Кассир').map((u) => shortForm(u.fullName))
   const cashiers = users.map((u) => shortForm(u.fullName))
 
-  const carried = useStore(carriedCash)
-  const carryOver = useStore((s) => s.paymentSettings.carryOverCash)
+  // What the previous shift left in the drawer; the cashier confirms it.
+  const carried = previous?.closingCash ?? 0
 
   return (
     <Modal
       title="Открыть смену"
       onClose={() => actions.logout()}
-      hint="Внесение фонда попадёт в журнал кассы как первая операция смены"
+      hint="Остаток на начало дня — это деньги, уже лежащие в кассе, отдельной операцией он не проводится"
       actions={
         <>
           <button className="btn btn-secondary" type="button" onClick={() => actions.logout()}>
@@ -49,9 +49,17 @@ export function ShiftOpenModal() {
       aside={
         <>
           <Card>
-            <CardRow label="Остаток с прошлой смены" value={money(carried)} />
-            <CardRow label="Остаток на начало дня" value={`+${money(opening)}`} />
-            <CardTotal label="В кассе на старте" value={money(carried + opening)} />
+            {/* «Остаток на начало дня» — то, что вчерашняя смена оставила
+                в ящике. Кассир пересчитывает и подтверждает эту сумму. */}
+            <CardRow label="Осталось с прошлой смены" value={money(carried)} />
+            {opening !== carried && (
+              <CardRow
+                label="Пересчитано кассиром"
+                value={money(opening)}
+                tone={opening < carried ? 'neg' : undefined}
+              />
+            )}
+            <CardTotal label="В кассе на старте" value={money(opening)} />
           </Card>
 
           {previous && (
@@ -62,7 +70,6 @@ export function ShiftOpenModal() {
                 value={previous.closedAt !== undefined ? clock(previous.closedAt) : '—'}
               />
               <CardRow label="В кассе на конец смены" value={money(previous.closingCash)} />
-              {!carryOver && <CardRow label="Сдано в сейф" value={money(previous.closingCash)} />}
               <CardRow
                 label="Расхождение"
                 value={previous.discrepancy === 0 ? '0' : money(previous.discrepancy)}
@@ -72,9 +79,9 @@ export function ShiftOpenModal() {
           )}
 
           <div className="card-note">
-            {carryOver
-              ? 'Остаток кассы переходит на следующую смену — правило в «Настройки → Касса и оплата».'
-              : 'Касса сдаётся в сейф в конце смены, день начинается с одного размена — правило в «Настройки → Касса и оплата».'}
+            Деньги остаются в кассе между сменами. Если пересчёт не сошёлся с
+            суммой на конец прошлой смены — впишите фактическую, разница попадёт
+            в историю.
           </div>
 
           <Card>
