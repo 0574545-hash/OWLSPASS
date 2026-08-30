@@ -41,6 +41,10 @@ step('Операций в журнале', await p.locator('.tbl tbody tr').coun
 
 console.log('\n=== 2. Новый заказ ===')
 await p.goto(FILE + '#/orders/new'); await p.waitForTimeout(600)
+// Клиент теперь выбирается поиском, сам не подставляется
+const field = p.locator('.field-plus .input')
+await field.click(); await field.fill('Смирнова'); await p.waitForTimeout(300)
+await p.locator('.picker-row').first().click(); await p.waitForTimeout(200)
 // Разовое посещение × 2
 const plus = p.locator('.cat-row', { hasText: 'Разовое посещение, 2 ч' }).getByRole('button', { name: 'Увеличить' })
 await plus.click(); await plus.click()
@@ -48,10 +52,12 @@ await p.waitForTimeout(200)
 step('К оплате в расчёте', await txt('.modal-aside .card-total > span:last-child'))
 await p.locator('.modal-foot').getByRole('button', { name: 'Создать заказ' }).click()
 await p.waitForTimeout(600)
+step('Окно закрылось', (await p.locator('.modal').count()) === 0 ? 'да' : 'нет')
+
+console.log('\n=== 3. Открыть заказ из списка и оплатить ===')
+await p.locator('.tbl tbody tr').first().click(); await p.waitForTimeout(500)
 step('Номер заказа', (await txt('.modal-title')) ?? '—')
 step('Остаток по заказу', await txt('.modal-aside .card-total > span:last-child'))
-
-console.log('\n=== 3. Оплата наличными ===')
 await p.locator('.modal-foot').getByRole('button', { name: 'Принять оплату' }).click()
 await p.waitForTimeout(500)
 step('К оплате', await txt('.modal-aside .card-total > span:last-child'))

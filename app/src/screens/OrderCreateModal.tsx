@@ -8,7 +8,7 @@ import {
   CardTotal,
   CatalogRow,
   Checkbox,
-  FieldWithPlus,
+  ClientPicker,
   MoneyField,
   TextArea,
   TextField,
@@ -29,7 +29,8 @@ export function OrderCreateModal() {
   const catalog = useStore((s) => s.catalog)
   const nextNo = useStore(nextOrderNo)
 
-  const [clientId, setClientId] = useState(clients[0]?.id ?? '')
+  // Поле клиента пустое: администратор ищет и выбирает сам.
+  const [clientId, setClientId] = useState('')
   const [checkedChildren, setCheckedChildren] = useState<string[]>([])
   const [tab, setTab] = useState<'services' | 'goods'>('services')
   const [qty, setQty] = useState<Record<string, number>>({})
@@ -54,7 +55,7 @@ export function OrderCreateModal() {
 
   const create = () => {
     if (!clientId || items.length === 0) return
-    const order = actions.createOrder({
+    actions.createOrder({
       clientId,
       childIds: checkedChildren,
       items,
@@ -63,14 +64,21 @@ export function OrderCreateModal() {
       tariffItemId: tariffItem?.id ?? 'tariff-2h',
       tariffLabel: labelFor(tariffItem),
     })
-    navigate(`/orders/${order.no}`)
+    // Окно закрывается: карточка заказа нужна, когда его открывают из списка.
+    navigate('/orders')
   }
 
   return (
     <Modal
       title="Новый заказ"
       onClose={close}
-      hint="Обязательные поля: клиент, тариф, способ оплаты"
+      hint={
+        !clientId
+          ? 'Выберите клиента — начните вводить ФИО, имя ребёнка или телефон'
+          : items.length === 0
+            ? 'Добавьте хотя бы одну позицию'
+            : 'Заказ появится в списке со статусом «Открыт»'
+      }
       actions={
         <>
           <button className="btn btn-secondary" type="button" onClick={close}>
@@ -81,6 +89,9 @@ export function OrderCreateModal() {
             type="button"
             onClick={create}
             disabled={!clientId || items.length === 0}
+            title={
+              !clientId ? 'Сначала выберите клиента' : items.length === 0 ? 'Добавьте позиции' : 'Создать заказ'
+            }
           >
             Создать заказ
           </button>
@@ -120,17 +131,14 @@ export function OrderCreateModal() {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <FieldWithPlus
-          label="Клиент"
-          value={client?.fullName ?? ''}
-          options={clients.map((c) => c.fullName)}
-          onChange={(name) => {
-            const found = clients.find((c) => c.fullName === name)
-            setClientId(found?.id ?? '')
+        <ClientPicker
+          clients={clients}
+          value={clientId}
+          onSelect={(id) => {
+            setClientId(id)
             setCheckedChildren([])
           }}
-          onPlus={() => navigate('/clients/new')}
-          plusLabel="Добавить клиента"
+          onAdd={() => navigate('/clients/new')}
         />
         {client && client.children.length > 0 && (
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

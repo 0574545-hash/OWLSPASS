@@ -1,4 +1,4 @@
-import type { ChangeEvent, ReactNode } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent, type ReactNode } from 'react'
 import { ArrowDown, Check, ChevronsUpDown, Search } from 'lucide-react'
 import { money } from '../lib/format'
 
@@ -171,6 +171,107 @@ export function FieldWithPlus({
         </button>
       </span>
     </Field>
+  )
+}
+
+/**
+ * Client field with live suggestions: type part of the name or the phone,
+ * pick a match, it goes into the order. The orange «+» beside it creates a
+ * client that is not in the list yet.
+ */
+export function ClientPicker({
+  clients,
+  value,
+  onSelect,
+  onAdd,
+}: {
+  clients: { id: string; fullName: string; phone: string; children: { name: string }[] }[]
+  /** Selected client id, or '' when nothing is chosen. */
+  value: string
+  onSelect: (id: string) => void
+  onAdd: () => void
+}) {
+  const selected = clients.find((c) => c.id === value)
+  const [query, setQuery] = useState('')
+  const [open, setOpen] = useState(false)
+  const box = useRef<HTMLDivElement>(null)
+
+  // Clicking anywhere else puts the field back to showing the chosen client.
+  useEffect(() => {
+    const onDown = (e: MouseEvent) => {
+      if (box.current && !box.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onDown)
+    return () => document.removeEventListener('mousedown', onDown)
+  }, [])
+
+  const digits = (s: string) => s.replace(/\D/g, '')
+  const q = query.trim().toLowerCase()
+  const matches = clients
+    .filter((c) => {
+      if (!q) return true
+      if (c.fullName.toLowerCase().includes(q)) return true
+      if (c.children.some((ch) => ch.name.toLowerCase().includes(q))) return true
+      const d = digits(q)
+      return d.length > 0 && digits(c.phone).includes(d)
+    })
+    .slice(0, 8)
+
+  const choose = (id: string) => {
+    onSelect(id)
+    setQuery('')
+    setOpen(false)
+  }
+
+  return (
+    <div className="field-col" ref={box} style={{ position: 'relative' }}>
+      Клиент
+      <span className="field-plus">
+        <input
+          className="input"
+          type="text"
+          placeholder="ФИО родителя, имя ребёнка или телефон"
+          value={open ? query : (selected?.fullName ?? '')}
+          onFocus={() => {
+            setQuery('')
+            setOpen(true)
+          }}
+          onChange={(e) => {
+            setQuery(e.target.value)
+            setOpen(true)
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') setOpen(false)
+            if (e.key === 'Enter' && matches[0]) {
+              e.preventDefault()
+              choose(matches[0].id)
+            }
+          }}
+        />
+        <button type="button" aria-label="Добавить клиента" title="Добавить клиента" onClick={onAdd}>
+          +
+        </button>
+      </span>
+
+      {open && (
+        <div className="picker">
+          {matches.map((c) => (
+            <button key={c.id} type="button" className="picker-row" onClick={() => choose(c.id)}>
+              <span className="picker-name">{c.fullName}</span>
+              <span className="picker-meta">
+                {c.phone}
+                {c.children.length > 0 && ` · ${c.children.map((ch) => ch.name).join(', ')}`}
+              </span>
+            </button>
+          ))}
+          {matches.length === 0 && (
+            <div className="picker-empty">
+              Никого не нашли — нажмите «+», чтобы завести карточку
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   )
 }
 

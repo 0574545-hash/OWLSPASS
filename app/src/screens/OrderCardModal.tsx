@@ -89,13 +89,26 @@ export function OrderCardModal() {
     <Modal
       title={`Заказ № ${order.no}`}
       onClose={close}
-      hint="Закрыть заказ можно только без остатка"
+      hint={
+        order.status === 'closed'
+          ? 'Заказ закрыт — оплачен полностью'
+          : totals.remainder > 0
+            ? `Остаток ${money(totals.remainder)} — примите оплату, тогда заказ можно будет закрыть`
+            : 'Остатка нет — заказ можно закрыть'
+      }
       actions={
         <>
           <button
             className="btn btn-secondary"
             type="button"
-            disabled={totals.remainder > 0}
+            disabled={totals.remainder > 0 || order.status === 'closed'}
+            title={
+              order.status === 'closed'
+                ? 'Заказ уже закрыт'
+                : totals.remainder > 0
+                  ? `Сначала примите оплату: остаток ${money(totals.remainder)}`
+                  : 'Закрыть заказ'
+            }
             onClick={() => {
               actions.closeOrder(order.id)
               close()
@@ -107,6 +120,7 @@ export function OrderCardModal() {
             className="btn btn-primary"
             type="button"
             disabled={totals.remainder <= 0}
+            title={totals.remainder <= 0 ? 'По заказу нет остатка к оплате' : 'Принять оплату'}
             onClick={() => navigate(`/orders/${order.no}/pay`)}
           >
             Принять оплату
@@ -210,16 +224,28 @@ export function OrderCardModal() {
 
       <TextArea label="Комментарий к заказу" value={comment} onChange={saveComment} />
 
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
         <button
           className="btn btn-secondary btn-sm"
           type="button"
-          disabled={totals.paid === 0}
+          disabled={totals.paid - totals.refunded <= 0}
+          title={
+            totals.paid === 0
+              ? 'Возвращать нечего: по заказу не было оплат'
+              : totals.paid - totals.refunded <= 0
+                ? 'Всё оплаченное уже возвращено'
+                : 'Оформить возврат'
+          }
           onClick={() => navigate(`/orders/${order.no}/refund`)}
         >
           <Undo2 />
           Оформить возврат
         </button>
+        {totals.paid - totals.refunded <= 0 && (
+          <span style={{ fontSize: 12, color: 'var(--fg-3)' }}>
+            {totals.paid === 0 ? 'по заказу не было оплат' : 'всё оплаченное уже возвращено'}
+          </span>
+        )}
       </div>
     </Modal>
   )
