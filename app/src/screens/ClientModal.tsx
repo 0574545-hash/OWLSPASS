@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { FileText } from 'lucide-react'
 import { Modal } from '../components/Modal'
@@ -6,8 +6,9 @@ import {
   Card,
   CardRow,
   CardTotal,
-  Field,
+  DateField,
   FieldWithPlus,
+  PhoneField,
   SelectField,
   TextArea,
   TextField,
@@ -31,6 +32,7 @@ export function ClientModal() {
   const balance = useStore((s) => (id ? clientBalance(s, id) : 0))
 
   const [draft, setDraft] = useState<Client>(() => existing ?? actions.newClientDraft())
+  const fileInput = useRef<HTMLInputElement>(null)
   const [children, setChildren] = useState<Child[]>(() =>
     (existing?.children ?? []).length > 0
       ? existing!.children
@@ -131,21 +133,21 @@ export function ClientModal() {
       <TextField label="ФИО родителя" value={draft.fullName} onChange={(v) => patch({ fullName: v })} />
 
       <div className="form-grid">
-        <TextField label="Телефон" value={draft.phone} onChange={(v) => patch({ phone: v })} />
-        <TextField label="Дата рождения" value={draft.birthDate} onChange={(v) => patch({ birthDate: v })} />
+        <PhoneField label="Телефон" value={draft.phone} onChange={(v) => patch({ phone: v })} />
+        <DateField label="Дата рождения" value={draft.birthDate} onChange={(v) => patch({ birthDate: v })} />
       </div>
 
       <div className="form-grid">
+        <SelectField
+          label="Основание скидки"
+          value={draft.discountGround}
+          options={grounds.map((g) => g.name)}
+          onChange={applyGround}
+        />
         <TextField
           label="Скидка"
           value={draft.discountPct > 0 ? `${draft.discountPct} %` : ''}
           onChange={(v) => patch({ discountPct: Number(v.replace(/\D/g, '')) || 0 })}
-        />
-        <SelectField
-          label="Основание"
-          value={draft.discountGround}
-          options={grounds.map((g) => g.name)}
-          onChange={applyGround}
         />
       </div>
 
@@ -157,15 +159,30 @@ export function ClientModal() {
           <FileText style={{ width: 16, height: 16, color: 'var(--owls-orange)' }} />
           <span className="file-name">{draft.file?.name ?? 'Документ не загружен'}</span>
           <span className="file-size">{draft.file?.size ?? ''}</span>
-          <button
-            className="btn btn-ghost btn-sm"
-            type="button"
-            onClick={() =>
-              patch({ file: { name: 'подтверждение_скидки.pdf', size: '286 КБ' } })
-            }
-          >
+          <input
+            ref={fileInput}
+            type="file"
+            hidden
+            accept=".pdf,.jpg,.jpeg,.png,.heic"
+            onChange={(e) => {
+              const f = e.target.files?.[0]
+              if (f) patch({ file: { name: f.name, size: fileSize(f.size) } })
+              e.target.value = ''
+            }}
+          />
+          <button className="btn btn-ghost btn-sm" type="button" onClick={() => fileInput.current?.click()}>
             {draft.file ? 'Заменить' : 'Загрузить'}
           </button>
+          {draft.file && (
+            <button
+              className="btn btn-ghost btn-sm"
+              type="button"
+              title="Убрать файл"
+              onClick={() => patch({ file: undefined })}
+            >
+              Убрать
+            </button>
+          )}
         </div>
       </div>
 
@@ -186,17 +203,21 @@ export function ClientModal() {
             ) : (
               <TextField label="Ребёнок · имя" value={child.name} onChange={(v) => setChild({ name: v })} />
             )}
-            <Field label="Дата рождения">
-              <input
-                className="input"
-                type="text"
-                value={child.birthDate}
-                onChange={(e) => setChild({ birthDate: e.target.value })}
-              />
-            </Field>
+            <DateField
+              label="Дата рождения"
+              value={child.birthDate}
+              onChange={(v) => setChild({ birthDate: v })}
+            />
           </div>
         )
       })}
     </Modal>
   )
+}
+
+/** «286 КБ» — размер выбранного файла человеческим языком. */
+function fileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} Б`
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} КБ`
+  return `${(bytes / 1024 / 1024).toFixed(1)} МБ`
 }

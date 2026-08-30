@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Modal } from '../components/Modal'
-import { Card, CardRow, CardTotal, Checkbox, Segmented, SelectField, TextField } from '../components/ui'
+import { Card, CardRow, CardTotal, Checkbox, PhoneField, Segmented, SelectField, TextField } from '../components/ui'
 import { actions, useStore } from '../state/store'
 import type { AccessRights, User } from '../domain/types'
 
@@ -86,7 +86,7 @@ export function UserModal() {
 
       <div className="form-grid">
         <SelectField label="Должность" value={draft.role} options={roles} onChange={(v) => patch({ role: v })} />
-        <TextField label="Телефон" value={draft.phone} onChange={(v) => patch({ phone: v })} />
+        <PhoneField label="Телефон" value={draft.phone} onChange={(v) => patch({ phone: v })} />
       </div>
 
       <div className="form-grid">

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Plus, ShieldCheck, UserPlus } from 'lucide-react'
 import { Page } from '../components/AppShell'
-import { Checkbox, ListFoot, PageHead, Pill, SearchBar, SubTabs, TextField } from '../components/ui'
+import { Checkbox, ListFoot, PageHead, PhoneField, Pill, SearchBar, SubTabs, TextField } from '../components/ui'
 import { clock, plural } from '../lib/format'
 import { actions, cashJournal, useStore, type DataMode } from '../state/store'
 import type { AccessRights, PaymentSettings, Requisites } from '../domain/types'
@@ -265,7 +265,7 @@ function RequisitesTab() {
         <div className="card" style={{ padding: 20, gap: 14 }}>
           <div className="card-kicker">Контакты для клиентов</div>
           <div className="form-grid">
-            <TextField label="Телефон" value={draft.phone} onChange={(v) => patch({ phone: v })} />
+            <PhoneField label="Телефон" value={draft.phone} onChange={(v) => patch({ phone: v })} />
             <TextField label="Почта" value={draft.email} onChange={(v) => patch({ email: v })} />
           </div>
           <TextField label="Сайт" value={draft.site} onChange={(v) => patch({ site: v })} />

@@ -1,6 +1,14 @@
 import { useEffect, useRef, useState, type ChangeEvent, type ReactNode } from 'react'
 import { ArrowDown, Check, ChevronsUpDown, Search } from 'lucide-react'
-import { MIN_SEARCH, digitsOnly, money } from '../lib/format'
+import {
+  MIN_SEARCH,
+  digitsOnly,
+  isDateComplete,
+  isPhoneComplete,
+  maskDate,
+  maskPhone,
+  money,
+} from '../lib/format'
 
 /* ===== Form fields ===== */
 
@@ -279,6 +287,94 @@ export function ClientPicker({
         </div>
       )}
     </div>
+  )
+}
+
+/**
+ * Переводит фокус на следующее поле формы — слева направо, затем на
+ * следующую строку. Порядок берётся из самой разметки, поэтому совпадает с
+ * тем, что видит глаз.
+ */
+function focusNext(from: HTMLElement): void {
+  const form = from.closest('.modal-main, form, .page')
+  if (!form) return
+  const fields = Array.from(
+    form.querySelectorAll<HTMLElement>('input:not([disabled]), select:not([disabled]), textarea:not([disabled])'),
+  ).filter((el) => el.offsetParent !== null)
+  const i = fields.indexOf(from)
+  const next = i >= 0 ? fields[i + 1] : undefined
+  if (!next) return
+  next.focus()
+  // После programmatic focus каретка встаёт в начало строки, и следующий
+  // символ вписывается перед уже набранными — цифры шли задом наперёд.
+  if (next instanceof HTMLInputElement && next.type === 'text') {
+    const end = next.value.length
+    next.setSelectionRange(end, end)
+  }
+}
+
+/** Дата в формате дд.мм.гггг: точки расставляются сами, набираются только
+ *  цифры. Как только дата заполнена, фокус уходит на следующее поле. */
+export function DateField({
+  label,
+  value,
+  onChange,
+  className = '',
+}: {
+  label: string
+  value: string
+  onChange?: (v: string) => void
+  className?: string
+}) {
+  return (
+    <Field label={label} className={className}>
+      <input
+        className="input"
+        type="text"
+        inputMode="numeric"
+        placeholder="дд.мм.гггг"
+        maxLength={10}
+        value={value}
+        disabled={!onChange}
+        onChange={(e) => {
+          const next = maskDate(e.target.value)
+          onChange?.(next)
+          if (isDateComplete(next)) focusNext(e.target)
+        }}
+      />
+    </Field>
+  )
+}
+
+/** Телефон — десять цифр без +7 и 8. Заполнился — фокус дальше. */
+export function PhoneField({
+  label,
+  value,
+  onChange,
+  className = '',
+}: {
+  label: string
+  value: string
+  onChange?: (v: string) => void
+  className?: string
+}) {
+  return (
+    <Field label={label} className={className}>
+      <input
+        className="input"
+        type="text"
+        inputMode="numeric"
+        placeholder="10 цифр без +7"
+        maxLength={11}
+        value={value}
+        disabled={!onChange}
+        onChange={(e) => {
+          const next = maskPhone(e.target.value)
+          onChange?.(next)
+          if (isPhoneComplete(next)) focusNext(e.target)
+        }}
+      />
+    </Field>
   )
 }
 

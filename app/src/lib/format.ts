@@ -90,3 +90,47 @@ export function searchQuery(raw: string): string {
 export function digitsOnly(s: string): string {
   return s.replace(/\D/g, '')
 }
+
+/* ============================================================
+   Форматированный ввод: дата и телефон
+   ============================================================ */
+
+/** Длина заполненного поля в цифрах — по ней поле считается готовым и
+ *  фокус уходит дальше. */
+export const DATE_DIGITS = 8
+export const PHONE_DIGITS = 10
+
+/** «02052020» → «02.05.2020». Точки расставляются сами, пользователь их
+ *  не набирает. */
+export function maskDate(raw: string): string {
+  const d = digitsOnly(raw).slice(0, DATE_DIGITS)
+  if (d.length <= 2) return d
+  if (d.length <= 4) return `${d.slice(0, 2)}.${d.slice(2)}`
+  return `${d.slice(0, 2)}.${d.slice(2, 4)}.${d.slice(4)}`
+}
+
+/** Телефон — десять цифр без +7 и 8.
+ *
+ *  Ведущая семёрка — это код страны, российский номер из десяти цифр с неё не
+ *  начинается, поэтому её отбрасываем сразу. Ведущая восьмёрка бывает частью
+ *  номера (812 — Петербург), поэтому её убираем, только если без неё как раз
+ *  выходит десять цифр — то есть вставили «8 921 …». */
+export function maskPhone(raw: string): string {
+  let d = digitsOnly(raw)
+  while (d.startsWith('7')) d = d.slice(1)
+  if (d.length === PHONE_DIGITS + 1 && d.startsWith('8')) d = d.slice(1)
+  return d.slice(0, PHONE_DIGITS)
+}
+
+/** Дата заполнена и правдоподобна. */
+export function isDateComplete(value: string): boolean {
+  const d = digitsOnly(value)
+  if (d.length !== DATE_DIGITS) return false
+  const day = Number(d.slice(0, 2))
+  const month = Number(d.slice(2, 4))
+  return day >= 1 && day <= 31 && month >= 1 && month <= 12
+}
+
+export function isPhoneComplete(value: string): boolean {
+  return digitsOnly(value).length === PHONE_DIGITS
+}

@@ -245,28 +245,28 @@ interface ClientSeed {
 }
 
 const CLIENT_SEEDS: ClientSeed[] = [
-  { id: 'cl-smirnova', fullName: 'Смирнова Анна Игоревна', phone: '+7 921 448-12-06', birthDate: '08.11.1989', discountPct: 10, discountGround: 'Многодетная семья', children: [['Мия', '14.06.2021'], ['Лев', '03.02.2018']], lastVisit: '18.08.2026', seededBalance: 1200, since: '19.03.2023', visits: 12, ordersTotal: 28400, comment: 'Постоянный клиент, всегда просит столик у окна.', discountUntil: '31.12.2026' },
-  { id: 'cl-kovaleva', fullName: 'Ковалёва Дарья Сергеевна', phone: '+7 916 034-77-19', birthDate: '14.03.1991', discountPct: 15, discountGround: 'Многодетная семья', children: [['Ева', '02.05.2020'], ['Марк', '02.05.2020'], ['Ника', '11.09.2023']], lastVisit: '19.08.2026', seededBalance: 3400, since: '14.02.2024', visits: 26, ordersTotal: 48350, comment: 'Скидка подтверждена до 31.12.2026, действует на все посещения.', file: { name: 'удостоверение_многодетной.pdf', size: '340 КБ' }, discountUntil: '31.12.2026' },
-  { id: 'cl-vereshchagin', fullName: 'Верещагин Павел Олегович', phone: '+7 903 271-55-40', birthDate: '27.07.1988', discountPct: 0, discountGround: '', children: [['Тимофей', '19.01.2022']], lastVisit: '17.08.2026', seededBalance: 0, since: '05.06.2025', visits: 7, ordersTotal: 9100 },
-  { id: 'cl-nasibullin', fullName: 'Насибуллин Рустам Ильдарович', phone: '+7 927 810-63-92', birthDate: '02.12.1985', discountPct: 5, discountGround: 'Ручная', children: [['Амина', '30.08.2019']], lastVisit: '11.08.2026', seededBalance: 0, since: '11.11.2024', visits: 9, ordersTotal: 31200, comment: 'Скидка 5 % назначена администратором за постоянные праздники.' },
-  { id: 'cl-gavrilova', fullName: 'Гаврилова Ольга Дмитриевна', phone: '+7 985 602-31-88', birthDate: '21.09.1990', discountPct: 10, discountGround: 'Многодетная семья', children: [['Софья', '12.04.2023'], ['Егор', '08.03.2017']], lastVisit: '16.08.2026', seededBalance: 0, since: '02.02.2025', visits: 14, ordersTotal: 19800 },
-  { id: 'cl-dolgikh', fullName: 'Долгих Кирилл Антонович', phone: '+7 999 145-20-73', birthDate: '16.05.1987', discountPct: 0, discountGround: '', children: [['Влада', '25.10.2020']], lastVisit: '09.08.2026', seededBalance: 6750, since: '18.07.2025', visits: 5, ordersTotal: 24600 },
-  { id: 'cl-erokhina', fullName: 'Ерохина Марина Петровна', phone: '+7 962 330-18-54', birthDate: '03.02.1992', discountPct: 5, discountGround: 'Ручная', children: [['Артём', '07.07.2020']], lastVisit: '19.08.2026', seededBalance: 0, since: '30.09.2024', visits: 11, ordersTotal: 13400 },
-  { id: 'cl-shatalov', fullName: 'Шаталов Игорь Валерьевич', phone: '+7 911 207-64-31', birthDate: '11.11.1983', discountPct: 0, discountGround: '', children: [['Кира', '22.05.2019'], ['Родион', '14.08.2016']], lastVisit: '19.08.2026', seededBalance: 960, since: '12.01.2024', visits: 18, ordersTotal: 33900 },
-  { id: 'cl-belova', fullName: 'Белова Екатерина Романовна', phone: '+7 977 512-09-77', birthDate: '29.06.1993', discountPct: 0, discountGround: '', children: [['Платон', '05.12.2020']], lastVisit: '19.08.2026', seededBalance: 0, since: '21.04.2026', visits: 3, ordersTotal: 2850 },
-  { id: 'cl-tikhonova', fullName: 'Тихонова Юлия Андреевна', phone: '+7 909 884-45-12', birthDate: '17.08.1994', discountPct: 10, discountGround: 'Многодетная семья', children: [['Милана', '01.03.2022']], lastVisit: '19.08.2026', seededBalance: 0, since: '08.05.2025', visits: 8, ordersTotal: 11200 },
-  { id: 'cl-askerov', fullName: 'Аскеров Тимур Рашидович', phone: '+7 962 471-90-08', birthDate: '05.04.1989', discountPct: 0, discountGround: '', children: [['Лейла', '18.02.2023']], lastVisit: '19.08.2026', seededBalance: 0, since: '14.06.2026', visits: 2, ordersTotal: 1400 },
-  { id: 'cl-muradova', fullName: 'Мурадова Алина Эльдаровна', phone: '+7 926 118-72-40', birthDate: '23.10.1986', discountPct: 0, discountGround: '', children: [['Самира', '09.09.2021'], ['Даниэль', '27.12.2017']], lastVisit: '19.08.2026', seededBalance: 0, since: '03.03.2025', visits: 10, ordersTotal: 17600 },
-  { id: 'cl-zykov', fullName: 'Зыков Денис Максимович', phone: '+7 931 640-25-19', birthDate: '30.01.1991', discountPct: 0, discountGround: '', children: [['Матвей', '16.11.2019']], lastVisit: '19.08.2026', seededBalance: 0, since: '27.10.2025', visits: 4, ordersTotal: 3600 },
-  { id: 'cl-kuznetsova', fullName: 'Кузнецова Ирина Сергеевна', phone: '+7 916 802-53-66', birthDate: '12.12.1987', discountPct: 15, discountGround: 'Многодетная семья', children: [['Полина', '04.08.2022'], ['Глеб', '19.03.2019'], ['Тая', '28.06.2017']], lastVisit: '19.08.2026', seededBalance: 0, since: '09.09.2023', visits: 21, ordersTotal: 39700, file: { name: 'удостоверение_многодетной.pdf', size: '312 КБ' }, discountUntil: '31.12.2026' },
-  { id: 'cl-solovyov', fullName: 'Соловьёв Артём Николаевич', phone: '+7 903 559-71-24', birthDate: '07.07.1984', discountPct: 0, discountGround: '', children: [['Мирон', '13.05.2020']], lastVisit: '19.08.2026', seededBalance: 14200, since: '22.11.2025', visits: 6, ordersTotal: 28400 },
-  { id: 'cl-pakhomova', fullName: 'Пахомова Вера Ильинична', phone: '+7 985 214-38-90', birthDate: '18.09.1995', discountPct: 0, discountGround: '', children: [['Юна', '02.02.2023']], lastVisit: '19.08.2026', seededBalance: 0, since: '11.02.2026', visits: 5, ordersTotal: 5200 },
-  { id: 'cl-yusupov', fullName: 'Юсупов Марат Ринатович', phone: '+7 917 355-46-02', birthDate: '25.03.1988', discountPct: 0, discountGround: '', children: [['Азалия', '11.06.2021']], lastVisit: '19.08.2026', seededBalance: 0, since: '19.08.2025', visits: 6, ordersTotal: 4900 },
-  { id: 'cl-lapina', fullName: 'Лапина Светлана Юрьевна', phone: '+7 968 703-11-85', birthDate: '09.05.1990', discountPct: 0, discountGround: '', children: [['Никита', '21.09.2017']], lastVisit: '19.08.2026', seededBalance: 0, since: '06.12.2024', visits: 13, ordersTotal: 14700 },
+  { id: 'cl-smirnova', fullName: 'Смирнова Анна Игоревна', phone: '9214481206', birthDate: '08.11.1989', discountPct: 10, discountGround: 'Многодетная семья', children: [['Мия', '14.06.2021'], ['Лев', '03.02.2018']], lastVisit: '18.08.2026', seededBalance: 1200, since: '19.03.2023', visits: 12, ordersTotal: 28400, comment: 'Постоянный клиент, всегда просит столик у окна.', discountUntil: '31.12.2026' },
+  { id: 'cl-kovaleva', fullName: 'Ковалёва Дарья Сергеевна', phone: '9160347719', birthDate: '14.03.1991', discountPct: 15, discountGround: 'Многодетная семья', children: [['Ева', '02.05.2020'], ['Марк', '02.05.2020'], ['Ника', '11.09.2023']], lastVisit: '19.08.2026', seededBalance: 3400, since: '14.02.2024', visits: 26, ordersTotal: 48350, comment: 'Скидка подтверждена до 31.12.2026, действует на все посещения.', file: { name: 'удостоверение_многодетной.pdf', size: '340 КБ' }, discountUntil: '31.12.2026' },
+  { id: 'cl-vereshchagin', fullName: 'Верещагин Павел Олегович', phone: '9032715540', birthDate: '27.07.1988', discountPct: 0, discountGround: '', children: [['Тимофей', '19.01.2022']], lastVisit: '17.08.2026', seededBalance: 0, since: '05.06.2025', visits: 7, ordersTotal: 9100 },
+  { id: 'cl-nasibullin', fullName: 'Насибуллин Рустам Ильдарович', phone: '9278106392', birthDate: '02.12.1985', discountPct: 5, discountGround: 'Ручная', children: [['Амина', '30.08.2019']], lastVisit: '11.08.2026', seededBalance: 0, since: '11.11.2024', visits: 9, ordersTotal: 31200, comment: 'Скидка 5 % назначена администратором за постоянные праздники.' },
+  { id: 'cl-gavrilova', fullName: 'Гаврилова Ольга Дмитриевна', phone: '9856023188', birthDate: '21.09.1990', discountPct: 10, discountGround: 'Многодетная семья', children: [['Софья', '12.04.2023'], ['Егор', '08.03.2017']], lastVisit: '16.08.2026', seededBalance: 0, since: '02.02.2025', visits: 14, ordersTotal: 19800 },
+  { id: 'cl-dolgikh', fullName: 'Долгих Кирилл Антонович', phone: '9991452073', birthDate: '16.05.1987', discountPct: 0, discountGround: '', children: [['Влада', '25.10.2020']], lastVisit: '09.08.2026', seededBalance: 6750, since: '18.07.2025', visits: 5, ordersTotal: 24600 },
+  { id: 'cl-erokhina', fullName: 'Ерохина Марина Петровна', phone: '9623301854', birthDate: '03.02.1992', discountPct: 5, discountGround: 'Ручная', children: [['Артём', '07.07.2020']], lastVisit: '19.08.2026', seededBalance: 0, since: '30.09.2024', visits: 11, ordersTotal: 13400 },
+  { id: 'cl-shatalov', fullName: 'Шаталов Игорь Валерьевич', phone: '9112076431', birthDate: '11.11.1983', discountPct: 0, discountGround: '', children: [['Кира', '22.05.2019'], ['Родион', '14.08.2016']], lastVisit: '19.08.2026', seededBalance: 960, since: '12.01.2024', visits: 18, ordersTotal: 33900 },
+  { id: 'cl-belova', fullName: 'Белова Екатерина Романовна', phone: '9775120977', birthDate: '29.06.1993', discountPct: 0, discountGround: '', children: [['Платон', '05.12.2020']], lastVisit: '19.08.2026', seededBalance: 0, since: '21.04.2026', visits: 3, ordersTotal: 2850 },
+  { id: 'cl-tikhonova', fullName: 'Тихонова Юлия Андреевна', phone: '9098844512', birthDate: '17.08.1994', discountPct: 10, discountGround: 'Многодетная семья', children: [['Милана', '01.03.2022']], lastVisit: '19.08.2026', seededBalance: 0, since: '08.05.2025', visits: 8, ordersTotal: 11200 },
+  { id: 'cl-askerov', fullName: 'Аскеров Тимур Рашидович', phone: '9624719008', birthDate: '05.04.1989', discountPct: 0, discountGround: '', children: [['Лейла', '18.02.2023']], lastVisit: '19.08.2026', seededBalance: 0, since: '14.06.2026', visits: 2, ordersTotal: 1400 },
+  { id: 'cl-muradova', fullName: 'Мурадова Алина Эльдаровна', phone: '9261187240', birthDate: '23.10.1986', discountPct: 0, discountGround: '', children: [['Самира', '09.09.2021'], ['Даниэль', '27.12.2017']], lastVisit: '19.08.2026', seededBalance: 0, since: '03.03.2025', visits: 10, ordersTotal: 17600 },
+  { id: 'cl-zykov', fullName: 'Зыков Денис Максимович', phone: '9316402519', birthDate: '30.01.1991', discountPct: 0, discountGround: '', children: [['Матвей', '16.11.2019']], lastVisit: '19.08.2026', seededBalance: 0, since: '27.10.2025', visits: 4, ordersTotal: 3600 },
+  { id: 'cl-kuznetsova', fullName: 'Кузнецова Ирина Сергеевна', phone: '9168025366', birthDate: '12.12.1987', discountPct: 15, discountGround: 'Многодетная семья', children: [['Полина', '04.08.2022'], ['Глеб', '19.03.2019'], ['Тая', '28.06.2017']], lastVisit: '19.08.2026', seededBalance: 0, since: '09.09.2023', visits: 21, ordersTotal: 39700, file: { name: 'удостоверение_многодетной.pdf', size: '312 КБ' }, discountUntil: '31.12.2026' },
+  { id: 'cl-solovyov', fullName: 'Соловьёв Артём Николаевич', phone: '9035597124', birthDate: '07.07.1984', discountPct: 0, discountGround: '', children: [['Мирон', '13.05.2020']], lastVisit: '19.08.2026', seededBalance: 14200, since: '22.11.2025', visits: 6, ordersTotal: 28400 },
+  { id: 'cl-pakhomova', fullName: 'Пахомова Вера Ильинична', phone: '9852143890', birthDate: '18.09.1995', discountPct: 0, discountGround: '', children: [['Юна', '02.02.2023']], lastVisit: '19.08.2026', seededBalance: 0, since: '11.02.2026', visits: 5, ordersTotal: 5200 },
+  { id: 'cl-yusupov', fullName: 'Юсупов Марат Ринатович', phone: '9173554602', birthDate: '25.03.1988', discountPct: 0, discountGround: '', children: [['Азалия', '11.06.2021']], lastVisit: '19.08.2026', seededBalance: 0, since: '19.08.2025', visits: 6, ordersTotal: 4900 },
+  { id: 'cl-lapina', fullName: 'Лапина Светлана Юрьевна', phone: '9687031185', birthDate: '09.05.1990', discountPct: 0, discountGround: '', children: [['Никита', '21.09.2017']], lastVisit: '19.08.2026', seededBalance: 0, since: '06.12.2024', visits: 13, ordersTotal: 14700 },
   // Two clients carrying debt from earlier shifts — this is what makes the
   // «Задолженность» figure larger than the open orders of this shift alone.
-  { id: 'cl-safronova', fullName: 'Сафронова Ольга Петровна', phone: '+7 921 067-84-33', birthDate: '14.01.1992', discountPct: 0, discountGround: '', children: [['Арина', '03.04.2021']], lastVisit: '24.08.2026', seededBalance: 0, since: '15.05.2025', visits: 9, ordersTotal: 12600, comment: 'Долг с 24.08.2026 — обещала погасить при следующем визите.' },
-  { id: 'cl-ignatyev', fullName: 'Игнатьев Роман Сергеевич', phone: '+7 905 332-19-47', birthDate: '02.08.1986', discountPct: 0, discountGround: '', children: [['Демид', '17.07.2019']], lastVisit: '26.08.2026', seededBalance: 0, since: '01.08.2024', visits: 15, ordersTotal: 21800, comment: 'Долг с 26.08.2026, договорились на оплату картой.' },
+  { id: 'cl-safronova', fullName: 'Сафронова Ольга Петровна', phone: '9210678433', birthDate: '14.01.1992', discountPct: 0, discountGround: '', children: [['Арина', '03.04.2021']], lastVisit: '24.08.2026', seededBalance: 0, since: '15.05.2025', visits: 9, ordersTotal: 12600, comment: 'Долг с 24.08.2026 — обещала погасить при следующем визите.' },
+  { id: 'cl-ignatyev', fullName: 'Игнатьев Роман Сергеевич', phone: '9053321947', birthDate: '02.08.1986', discountPct: 0, discountGround: '', children: [['Демид', '17.07.2019']], lastVisit: '26.08.2026', seededBalance: 0, since: '01.08.2024', visits: 15, ordersTotal: 21800, comment: 'Долг с 26.08.2026, договорились на оплату картой.' },
 ]
 
 function buildClients(): Client[] {
@@ -296,25 +296,25 @@ function buildClients(): Client[] {
 export const USERS: User[] = [
   {
     id: 'u-smirnova', fullName: 'Смирнова Елена Викторовна', role: 'Администратор',
-    phone: '+7 921 100-40-11', schedule: '09:00—21:00', accessSummary: 'Заказы, клиенты, касса',
+    phone: '9211004011', schedule: '09:00—21:00', accessSummary: 'Заказы, клиенты, касса',
     presence: 'in-shift', pin: '1111', status: 'working', shiftsThisMonth: 12, discrepancies: 0,
     access: { ordersPayment: true, cashPayment: true, clientsEdit: true, catalogEdit: false, settings: false },
   },
   {
     id: 'u-romanova', fullName: 'Романова Ксения Павловна', role: 'Администратор',
-    phone: '+7 903 552-08-19', schedule: 'Выходной', accessSummary: 'Заказы, клиенты, касса',
+    phone: '9035520819', schedule: 'Выходной', accessSummary: 'Заказы, клиенты, касса',
     presence: 'off', pin: '2222', status: 'working', shiftsThisMonth: 11, discrepancies: 1,
     access: { ordersPayment: true, cashPayment: true, clientsEdit: true, catalogEdit: false, settings: false },
   },
   {
     id: 'u-beketov', fullName: 'Бекетов Илья Сергеевич', role: 'Кассир',
-    phone: '+7 916 741-23-65', schedule: '09:00—17:00', accessSummary: 'Оплата заказов',
+    phone: '9167412365', schedule: '09:00—17:00', accessSummary: 'Оплата заказов',
     presence: 'in-shift', pin: '3333', status: 'working', shiftsThisMonth: 19, discrepancies: 1,
     access: { ordersPayment: true, cashPayment: true, clientsEdit: false, catalogEdit: false, settings: false },
   },
   {
     id: 'u-tarasov', fullName: 'Тарасов Дмитрий Олегович', role: 'Управляющий',
-    phone: '+7 911 843-52-77', schedule: 'По запросу', accessSummary: 'Все разделы',
+    phone: '9118435277', schedule: 'По запросу', accessSummary: 'Все разделы',
     presence: 'invited', pin: '4444', status: 'working', shiftsThisMonth: 2, discrepancies: 0,
     access: { ordersPayment: true, cashPayment: true, clientsEdit: true, catalogEdit: true, settings: true },
   },
@@ -334,7 +334,7 @@ export const REQUISITES: Requisites = {
   taxation: 'УСН, доходы 6 %',
   legalAddress: '196143, Санкт-Петербург, ул. Ленина, 14, пом. 21',
   actualAddress: 'Санкт-Петербург, ул. Ленина, 14, ТЦ «Волна», 2 этаж',
-  phone: '+7 812 448-00-14',
+  phone: '8124480014',
   email: 'hello@aquaparty.ru',
   site: 'aquaparty.ru',
 }
