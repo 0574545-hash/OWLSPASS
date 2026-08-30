@@ -4,7 +4,7 @@ import { Plus, ShieldCheck, UserPlus } from 'lucide-react'
 import { Page } from '../components/AppShell'
 import { Checkbox, ListFoot, PageHead, Pill, SearchBar, SubTabs, TextField } from '../components/ui'
 import { clock, plural } from '../lib/format'
-import { actions, useStore } from '../state/store'
+import { actions, cashJournal, useStore, type DataMode } from '../state/store'
 import type { AccessRights, PaymentSettings, Requisites } from '../domain/types'
 
 type TabId = 'users' | 'roles' | 'requisites' | 'payments' | 'notifications'
@@ -335,6 +335,8 @@ function PaymentsTab() {
           ))}
         </div>
 
+        <DataModeCard />
+
         {lists.map((list) => (
           <div key={list.key} className="card" style={{ padding: 20, gap: 10 }}>
             <div className="card-kicker">{list.title}</div>
@@ -380,6 +382,55 @@ function PaymentsTab() {
       </div>
 
       <ListFoot note="Списки оснований и причин подставляются в окна инкассации, внесения, закрытия смены и возврата" />
+    </div>
+  )
+}
+
+/** Switches the whole dataset. Useful while the product is being checked by
+ *  hand: walk a shift through on an empty till, then put the demo back. */
+function DataModeCard() {
+  const mode = useStore((s) => s.mode)
+  const orders = useStore((s) => s.orders.length)
+  const ops = useStore((s) => cashJournal(s).length)
+
+  const switchTo = (next: DataMode) => {
+    const ok = window.confirm(
+      next === 'clean'
+        ? 'Удалить все заказы и операции кассы и начать с пустой смены? Клиенты, справочники и сотрудники останутся.'
+        : 'Вернуть демо-смену из макета? Всё, что вы ввели, будет удалено.',
+    )
+    if (ok) actions.resetTo(next)
+  }
+
+  return (
+    <div className="card" style={{ padding: 20, gap: 12 }}>
+      <div className="card-kicker">Данные для проверки</div>
+      <div className="card-row">
+        <span>Сейчас</span>
+        <span>{mode === 'clean' ? 'Пустая смена' : 'Демо-смена из макета'}</span>
+      </div>
+      <div className="card-row">
+        <span>Заказов · операций кассы</span>
+        <span>
+          {orders} · {ops}
+        </span>
+      </div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <button
+          className={`btn ${mode === 'clean' ? 'btn-secondary' : 'btn-primary'}`}
+          type="button"
+          onClick={() => switchTo('clean')}
+        >
+          Обнулить кассу и заказы
+        </button>
+        <button className="btn btn-secondary" type="button" onClick={() => switchTo('demo')}>
+          Вернуть демо-смену
+        </button>
+      </div>
+      <div className="card-note">
+        Пустая смена: заказов и операций нет, касса на нуле, у клиентов нулевой баланс.
+        Справочники, сотрудники и список клиентов сохраняются — иначе заказ не собрать.
+      </div>
     </div>
   )
 }

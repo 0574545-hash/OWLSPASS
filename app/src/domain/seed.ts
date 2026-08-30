@@ -348,7 +348,9 @@ export const PAYMENT_SETTINGS: PaymentSettings = {
     { id: 'pm-invoice', label: 'Оплата по счёту для организаций', enabled: false },
   ],
   collectionGrounds: ['Плановая выемка в сейф', 'Сдача в банк', 'Передача управляющему', 'Закупка расходников'],
-  depositGrounds: ['Довнесение размена', 'Возврат неиспользованных средств', 'Погашение недостачи'],
+  // «Остаток на начало дня» — как внести деньги в кассу, которая начинает
+  // день пустой; в обычной смене остаток уже лежит в ящике.
+  depositGrounds: ['Остаток на начало дня', 'Довнесение размена', 'Возврат неиспользованных средств', 'Погашение недостачи'],
   discrepancyReasons: ['Ошибка при выдаче сдачи', 'Не проведённая оплата', 'Неучтённый возврат', 'Излишек при пересчёте'],
   refundReasons: ['Ребёнку не подошёл товар', 'Отказ от посещения', 'Отмена праздника', 'Болезнь ребёнка', 'Ошибка администратора в заказе'],
 }
@@ -802,6 +804,33 @@ export interface SeedData {
   cashOps: CashOp[]
   users: User[]
   shifts: Shift[]
+}
+
+/** The first order number of a shift that starts from nothing. */
+export const FIRST_ORDER_NO = 4801
+
+/**
+ * A till with nothing in it: no orders, no operations, no history, and every
+ * client's balance at zero. The catalogue, the staff and the client list stay,
+ * because you cannot ring anything up without them.
+ *
+ * This is the state to walk the day through by hand — put the float in as a
+ * «внесение», create the orders, close them, and check every operation.
+ */
+export function buildEmpty(): SeedData {
+  return {
+    clients: buildClients().map((c) => ({
+      ...c,
+      seededBalance: 0,
+      visits: 0,
+      ordersTotal: 0,
+      lastVisit: '—',
+    })),
+    orders: [],
+    cashOps: [],
+    users: USERS.map((u) => ({ ...u, access: { ...u.access } })),
+    shifts: [],
+  }
 }
 
 export function buildSeed(): SeedData {

@@ -24,7 +24,9 @@ import {
   PAYMENT_SETTINGS,
   REQUISITES,
   ROLES,
-  PAST_SHIFTS,
+
+  FIRST_ORDER_NO,
+  buildEmpty,
   buildSeed,
   tariffDuration,
 } from '../domain/seed'
@@ -52,7 +54,11 @@ export interface Session {
   locked: boolean
 }
 
+export type DataMode = 'demo' | 'clean'
+
 export interface AppState {
+  /** «demo» — смена из макета, «clean» — пустая касса для ручной проверки. */
+  mode: DataMode
   session: Session
   shiftStarted: boolean
   shift: CurrentShift
@@ -88,10 +94,11 @@ export interface ShiftReport {
   comment: string
 }
 
-const seed = buildSeed()
-
-function initialState(): AppState {
+function initialState(mode: DataMode = 'demo'): AppState {
+  const seed = mode === 'clean' ? buildEmpty() : buildSeed()
+  const previous = seed.shifts[0]
   return {
+    mode,
     session: { userId: null, locked: false },
     shiftStarted: false,
     shift: {
@@ -101,8 +108,8 @@ function initialState(): AppState {
       admin: 'Смирнова Е. В.',
       cashier: 'Бекетов И. С.',
       // The drawer opens holding whatever the previous shift left in it.
-      opening: PAST_SHIFTS[0]?.closingCash ?? 0,
-      openComment: 'Купюрами по 100 и 500 для сдачи, принял кассир.',
+      opening: previous?.closingCash ?? 0,
+      openComment: mode === 'clean' ? '' : 'Купюрами по 100 и 500 для сдачи, принял кассир.',
     },
     clients: seed.clients,
     orders: seed.orders,
@@ -384,6 +391,13 @@ export function unpaidOrders(s: AppState): Order[] {
   return derive(s, 'unpaidOrders', () => s.orders.filter((o) => totalsOf(s, o).remainder > 0))
 }
 
+/** The next order number. On a clean till there is nothing to count from,
+ *  so numbering starts at the first of the shift. */
+export function nextOrderNo(s: AppState): number {
+  if (s.orders.length === 0) return FIRST_ORDER_NO
+  return Math.max(...s.orders.map((o) => o.no)) + 1
+}
+
 export function currentUser(s: AppState): User | undefined {
   return s.users.find((u) => u.id === s.session.userId)
 }
@@ -440,7 +454,7 @@ export const actions = {
     tariffItemId: string
     tariffLabel: string
   }): Order {
-    const no = Math.max(...state.orders.map((o) => o.no)) + 1
+    const no = nextOrderNo(state)
     const order: Order = {
       id: nextId('o'),
       no,
@@ -714,8 +728,9 @@ export const actions = {
   },
 
   /** Back to the seeded shift — handy for demos and for the walkthrough. */
-  reset(): void {
-    state = initialState()
+  /** Wipes everything and rebuilds either the demo shift or an empty till. */
+  resetTo(mode: DataMode): void {
+    state = initialState(mode)
     save(state)
     listeners.forEach((l) => l())
   },

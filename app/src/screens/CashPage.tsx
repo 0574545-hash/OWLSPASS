@@ -54,7 +54,7 @@ function OpsTab() {
         <Stat
           label="Средний чек"
           value={money(summary.avgCheck)}
-          note={counted(summary.ops, 'операция', 'операции', 'операций')}
+          note={counted(summary.payments, 'оплата', 'оплаты', 'оплат')}
         />
       </div>
 
@@ -128,6 +128,13 @@ function OpsTab() {
                   </tr>
                 )
               })}
+              {shown.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="empty">
+                    Операций пока нет — внесите деньги в кассу или создайте заказ
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

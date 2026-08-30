@@ -16,7 +16,7 @@ import {
 } from '../components/ui'
 import { DASH, money } from '../lib/format'
 import { NOW, SHIFT_DATE } from '../domain/rules'
-import { actions, clientBalance, tariffDuration, useStore } from '../state/store'
+import { actions, clientBalance, nextOrderNo, tariffDuration, useStore } from '../state/store'
 import type { CatalogItem, OrderItem } from '../domain/types'
 import { ageOf } from './OrdersPage'
 
@@ -27,7 +27,7 @@ export function OrderCreateModal() {
 
   const clients = useStore((s) => s.clients)
   const catalog = useStore((s) => s.catalog)
-  const nextNo = useStore((s) => Math.max(...s.orders.map((o) => o.no)) + 1)
+  const nextNo = useStore(nextOrderNo)
 
   const [clientId, setClientId] = useState(clients[0]?.id ?? '')
   const [checkedChildren, setCheckedChildren] = useState<string[]>([])
