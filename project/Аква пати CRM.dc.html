@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="design_doc_mode" content="canvas"><link rel="stylesheet" href="_ds/industry-af5da61c-d96b-4c07-863f-038ad8d41695/styles.css"><style>body{margin:0;background:#e4e4e6;font-family:"Barlow",system-ui,sans-serif}a{color:#5980a6}a:hover{color:#416180}</style></helmet>
+
+<div style="padding:48px 56px 72px;display:flex;flex-direction:column;gap:56px">
+
+<div style="display:flex;flex-direction:column;gap:6px;max-width:1440px">
+<div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#5980a6">CRM · Детский развлекательный центр</div>
+<h1 style="margin:0;font-size:44px;letter-spacing:-.02em">Аква пати — рабочее место администратора</h1>
+<p style="margin:6px 0 0;max-width:720px;font-size:14px;color:rgba(29,31,32,.6)">Три экрана по брифу: список клиентов, карточка нового клиента с детьми и скидкой, оформление заказа. Десктоп 1440, формы — модальные окна. Данные вымышленные.</p>
+</div>
+
+<!-- ── 01 ───────────────────────────────────────────── -->
+<div style="display:flex;flex-direction:column;gap:12px" data-screen-label="01 Клиенты">
+<div style="display:flex;align-items:baseline;gap:10px"><span style="font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:.14em;padding:3px 8px;background:#1d1f20;color:#f2f2f3">01</span><span style="font-family:'Barlow Condensed',sans-serif;font-size:18px">Главное · список клиентов</span><span style="font-size:12px;color:rgba(29,31,32,.5)">поиск, фильтры, вход в заказ</span></div>
+
+<div class="blueprint" style="width:1440px;background:#f2f2f3">
+<i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+
+<div class="nav" style="border-bottom:1px solid var(--color-divider);padding:14px 24px;gap:24px">
+<span class="nav-brand" style="margin-right:32px;letter-spacing:.02em">АКВА&nbsp;ПАТИ<span style="color:#5980a6"> / crm</span></span>
+<div style="display:flex;gap:20px;margin-right:auto">
+<a href="#" aria-current="page">Главное</a><a href="#">Заказы</a><a href="#">Абонементы</a><a href="#">Кафе</a><a href="#">Настройки</a>
+</div>
+<div style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(29,31,32,.65)">
+<span>Смена открыта · 09:00</span>
+<span style="width:1px;height:16px;background:var(--color-divider)"></span>
+<span style="color:#1d1f20">Е. Смирнова</span><span class="tag tag-neutral">Администратор</span>
+</div>
+</div>
+
+<div style="padding:24px 24px 32px;display:flex;flex-direction:column;gap:20px">
+
+<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px">
+<div>
+<h2 style="margin:0;font-size:30px">Клиенты</h2>
+<div style="font-size:13px;color:rgba(29,31,32,.55)">1 248 карточек · 37 активных абонементов · 5 с задолженностью</div>
+</div>
+<div style="display:flex;align-items:center;gap:10px">
+<label class="field" style="width:300px"><input class="input" type="text" placeholder="Поиск по ФИО или телефону" value=""></label>
+<div class="seg">
+<label class="seg-opt"><input type="radio" name="f1" checked>Все</label>
+<label class="seg-opt"><input type="radio" name="f1">С абонементом</label>
+<label class="seg-opt"><input type="radio" name="f1">Долг</label>
+</div>
+<button class="btn btn-primary blueprint" type="button"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>Добавить клиента</button>
+</div>
+</div>
+
+<sc-if value="{{ showKpi }}" hint-placeholder-val="{{ true }}">
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px">
+<div class="card blueprint"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><div class="card-kicker">Посещений сегодня</div><div style="font-family:'Barlow Condensed',sans-serif;font-size:34px;line-height:1">84</div><div class="card-meta">из них 12 по абонементу</div></div>
+<div class="card blueprint"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><div class="card-kicker">Выручка за день</div><div style="font-family:'Barlow Condensed',sans-serif;font-size:34px;line-height:1">61 400 ₽</div><div class="card-meta">касса + безнал</div></div>
+<div class="card blueprint"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><div class="card-kicker">Средний чек кафе</div><div style="font-family:'Barlow Condensed',sans-serif;font-size:34px;line-height:1">640 ₽</div><div class="card-meta">за последние 7 дней</div></div>
+<div class="card blueprint"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><div class="card-kicker">Абонементы к продлению</div><div style="font-family:'Barlow Condensed',sans-serif;font-size:34px;line-height:1">9</div><div class="card-meta">истекают в течение недели</div></div>
+</div>
+</sc-if>
+
+<div class="blueprint" style="padding:8px 16px 4px;background:transparent">
+<i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+<table class="table">
+<thead><tr>
+<th style="width:250px">ФИО родителя</th><th style="width:150px">Телефон</th><th>Дети</th><th style="width:190px">Абонемент</th><th style="width:90px">Скидка</th><th style="width:130px">Последний визит</th><sc-if value="{{ showBalance }}" hint-placeholder-val="{{ true }}"><th style="width:120px">Баланс</th></sc-if><th style="width:130px"></th>
+</tr></thead>
+<tbody>
+<tr>
+<td style="font-weight:500">Смирнова Анна Игоревна</td><td>+7 921 448-12-06</td><td>Мия, 5 · Лев, 8</td><td><span class="tag tag-accent">8 посещений · 3 осталось</span></td><td>10 %</td><td>18.08.2026</td><sc-if value="{{ showBalance }}" hint-placeholder-val="{{ true }}"><td>1 200 ₽</td></sc-if><td><button class="btn btn-ghost" type="button">Создать заказ</button></td>
+</tr>
+<tr>
+<td style="font-weight:500">Верещагин Павел Олегович</td><td>+7 903 271-55-40</td><td>Тимофей, 4</td><td><span class="tag tag-neutral">Разовые посещения</span></td><td>—</td><td>17.08.2026</td><sc-if value="{{ showBalance }}" hint-placeholder-val="{{ true }}"><td>0 ₽</td></sc-if><td><button class="btn btn-ghost" type="button">Создать заказ</button></td>
+</tr>
+<tr>
+<td style="font-weight:500">Ковалёва Дарья Сергеевна</td><td>+7 916 034-77-19</td><td>Ева, 6 · Марк, 6 · Ника, 2</td><td><span class="tag tag-accent">Месячный · до 31.08</span></td><td>15 %</td><td>19.08.2026</td><sc-if value="{{ showBalance }}" hint-placeholder-val="{{ true }}"><td>3 400 ₽</td></sc-if><td><button class="btn btn-ghost" type="button">Создать заказ</button></td>
+</tr>
+<tr>
+<td style="font-weight:500">Насибуллин Рустам Ильдарович</td><td>+7 927 810-63-92</td><td>Амина, 7</td><td><span class="tag tag-neutral">Разовые посещения</span></td><td>5 %</td><td>11.08.2026</td><sc-if value="{{ showBalance }}" hint-placeholder-val="{{ true }}"><td style="color:#8a4a3a">−780 ₽</td></sc-if><td><button class="btn btn-ghost" type="button">Создать заказ</button></td>
+</tr>
+<tr>
+<td style="font-weight:500">Гаврилова Ольга Дмитриевна</td><td>+7 985 602-31-88</td><td>Софья, 3 · Егор, 9</td><td><span class="tag tag-accent">8 посещений · 1 осталось</span></td><td>10 %</td><td>16.08.2026</td><sc-if value="{{ showBalance }}" hint-placeholder-val="{{ true }}"><td>0 ₽</td></sc-if><td><button class="btn btn-ghost" type="button">Создать заказ</button></td>
+</tr>
+<tr>
+<td style="font-weight:500">Долгих Кирилл Антонович</td><td>+7 999 145-20-73</td><td>Влада, 5</td><td><span class="tag tag-neutral">Разовые посещения</span></td><td>—</td><td>09.08.2026</td><sc-if value="{{ showBalance }}" hint-placeholder-val="{{ true }}"><td>500 ₽</td></sc-if><td><button class="btn btn-ghost" type="button">Создать заказ</button></td>
+</tr>
+</tbody>
+</table>
+<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0 8px;font-size:13px;color:rgba(29,31,32,.55)">
+<span>Показаны 1—6 из 1 248</span>
+<div style="display:flex;gap:6px"><button class="btn btn-secondary" type="button">Назад</button><button class="btn btn-secondary" type="button">Далее</button></div>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- ── 02 ───────────────────────────────────────────── -->
+<div style="display:flex;flex-direction:column;gap:12px" data-screen-label="02 Добавить клиента">
+<div style="display:flex;align-items:baseline;gap:10px"><span style="font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:.14em;padding:3px 8px;background:#1d1f20;color:#f2f2f3">02</span><span style="font-family:'Barlow Condensed',sans-serif;font-size:18px">Добавить клиента</span><span style="font-size:12px;color:rgba(29,31,32,.5)">родитель, скидка с основанием, список детей до 10 чел.</span></div>
+
+<div class="blueprint" style="width:1440px;height:900px;background:#f2f2f3;position:relative;overflow:hidden">
+<i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+
+<div class="nav" style="border-bottom:1px solid var(--color-divider);padding:14px 24px;gap:24px">
+<span class="nav-brand" style="margin-right:32px;letter-spacing:.02em">АКВА&nbsp;ПАТИ<span style="color:#5980a6"> / crm</span></span>
+<div style="display:flex;gap:20px;margin-right:auto"><a href="#" aria-current="page">Главное</a><a href="#">Заказы</a><a href="#">Абонементы</a><a href="#">Кафе</a><a href="#">Настройки</a></div>
+<div style="font-size:13px;color:rgba(29,31,32,.65)">Е. Смирнова</div>
+</div>
+<div style="padding:24px;filter:blur(1px);opacity:.5;height:calc(100% - 61px)">
+<h2 style="margin:0 0 12px;font-size:30px">Клиенты</h2>
+<table class="table"><thead><tr><th>ФИО родителя</th><th>Телефон</th><th>Дети</th><th>Абонемент</th><th>Скидка</th></tr></thead>
+<tbody><tr><td>Смирнова Анна Игоревна</td><td>+7 921 448-12-06</td><td>Мия, 5 · Лев, 8</td><td>8 посещений</td><td>10 %</td></tr>
+<tr><td>Верещагин Павел Олегович</td><td>+7 903 271-55-40</td><td>Тимофей, 4</td><td>Разовые</td><td>—</td></tr>
+<tr><td>Ковалёва Дарья Сергеевна</td><td>+7 916 034-77-19</td><td>Ева, 6 · Марк, 6 · Ника, 2</td><td>Месячный</td><td>15 %</td></tr>
+<tr><td>Насибуллин Рустам Ильдарович</td><td>+7 927 810-63-92</td><td>Амина, 7</td><td>Разовые</td><td>5 %</td></tr></tbody></table>
+</div>
+
+<div style="position:absolute;inset:0;background:rgba(43,43,45,.5);display:flex;align-items:flex-start;justify-content:center;padding:56px 0 40px">
+<div class="dialog blueprint elev-lg" style="width:900px;background:#f2f2f3;gap:0;padding:0">
+<i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+
+<div style="display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--color-divider)">
+<div><div class="card-kicker">Новая карточка</div><div class="dialog-title">Добавить клиента</div></div>
+<button class="btn btn-secondary btn-icon" type="button" aria-label="Закрыть"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+<div style="padding:20px 24px;border-right:1px solid var(--color-divider);display:flex;flex-direction:column;gap:14px">
+<h6 style="margin:0;color:rgba(29,31,32,.6)">Родитель</h6>
+<label class="field"><label>ФИО родителя</label><input class="input" type="text" value="Ковалёва Дарья Сергеевна"></label>
+<div style="display:grid;grid-template-columns:1fr 140px;gap:12px">
+<label class="field"><label>Телефон</label><input class="input" type="text" value="+7 916 034-77-19"></label>
+<label class="field"><label>Дата рождения</label><input class="input" type="text" value="14.03.1991"></label>
+</div>
+
+<div class="hr" style="margin:4px 0"></div>
+
+<div style="display:flex;align-items:center;justify-content:space-between">
+<h6 style="margin:0;color:rgba(29,31,32,.6)">Скидка</h6>
+<label class="radio"><input type="checkbox" checked><span class="dot"></span>Постоянная</label>
+</div>
+<div style="display:grid;grid-template-columns:110px 1fr;gap:12px">
+<label class="field"><label>Процент</label><input class="input" type="text" value="15 %"></label>
+<label class="field"><label>Основание</label><input class="input" type="text" value="Многодетная семья"></label>
+</div>
+<label class="field"><label>Комментарий</label><textarea class="input" style="min-height:62px">Скидка подтверждена до 31.12.2026, действует на посещения и кафе.</textarea></label>
+<div class="field"><label>Файл</label>
+<div class="blueprint" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--color-surface)">
+<i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5980a6" stroke-width="1.5"><path d="M14 3v5h5M8 4h7l5 5v11H8z"></path></svg>
+<span style="font-size:13px">удостоверение_многодетной.pdf</span>
+<span style="margin-left:auto;font-size:11px;color:rgba(29,31,32,.5)">340 КБ</span>
+<button class="btn btn-ghost" type="button">Заменить</button>
+</div>
+</div>
+</div>
+
+<div style="padding:20px 24px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;justify-content:space-between">
+<h6 style="margin:0;color:rgba(29,31,32,.6)">Дети · 3 из 10</h6>
+<button class="btn btn-secondary" type="button">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"></path></svg>Добавить ребенка</button>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div class="blueprint" style="padding:12px;display:grid;grid-template-columns:1fr 130px 32px;gap:10px;align-items:end;background:var(--color-surface)">
+<i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+<label class="field"><label>Имя</label><input class="input" type="text" value="Ева"></label>
+<label class="field"><label>Дата рождения</label><input class="input" type="text" value="02.05.2020"></label>
+<button class="btn btn-secondary btn-icon" type="button" aria-label="Удалить"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 7h14M9 7V5h6v2M7 7l1 13h8l1-13"></path></svg></button>
+</div>
+<div class="blueprint" style="padding:12px;display:grid;grid-template-columns:1fr 130px 32px;gap:10px;align-items:end;background:var(--color-surface)">
+<i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+<label class="field"><label>Имя</label><input class="input" type="text" value="Марк"></label>
+<label class="field"><label>Дата рождения</label><input class="input" type="text" value="02.05.2020"></label>
+<button class="btn btn-secondary btn-icon" type="button" aria-label="Удалить"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 7h14M9 7V5h6v2M7 7l1 13h8l1-13"></path></svg></button>
+</div>
+<div class="blueprint" style="padding:12px;display:grid;grid-template-columns:1fr 130px 32px;gap:10px;align-items:end;background:var(--color-surface);border-color:#5980a6">
+<i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+<label class="field"><label>Имя</label><input class="input" type="text" value="Ника"></label>
+<label class="field"><label>Дата рождения</label><input class="input" type="text" value=""></label>
+<button class="btn btn-secondary btn-icon" type="button" aria-label="Удалить"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 7h14M9 7V5h6v2M7 7l1 13h8l1-13"></path></svg></button>
+</div>
+</div>
+<div style="font-size:12px;color:rgba(29,31,32,.55)">Дата рождения нужна для расчёта детского тарифа и подарка в день рождения.</div>
+<div style="margin-top:auto;font-size:12px;color:rgba(29,31,32,.55);display:flex;gap:6px;align-items:flex-start">
+<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5980a6" stroke-width="1.5" style="flex:none;margin-top:1px"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 8h.01"></path></svg>
+<span>После сохранения карточку можно сразу перевести в заказ — кнопка «Создать заказ» в строке клиента.</span>
+</div>
+</div>
+</div>
+
+<div class="dialog-actions" style="margin:0;padding:16px 24px;border-top:1px solid var(--color-divider);justify-content:space-between">
+<span style="font-size:12px;color:rgba(29,31,32,.5);align-self:center">Обязательные поля: ФИО и телефон</span>
+<div style="display:flex;gap:8px">
+<button class="btn btn-secondary" type="button">Отмена</button>
+<button class="btn btn-primary blueprint" type="button"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>Создать</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ── 03 ───────────────────────────────────────────── -->
+<div style="display:flex;flex-direction:column;gap:12px" data-screen-label="03 Создать заказ">
+<div style="display:flex;align-items:baseline;gap:10px"><span style="font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:.14em;padding:3px 8px;background:#1d1f20;color:#f2f2f3">03</span><span style="font-family:'Barlow Condensed',sans-serif;font-size:18px">Создать заказ</span><span style="font-size:12px;color:rgba(29,31,32,.5)">список услуг → позиции → расчёт</span></div>
+
+<div class="blueprint" style="width:1440px;height:900px;background:#f2f2f3;position:relative;overflow:hidden">
+<i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+
+<div class="nav" style="border-bottom:1px solid var(--color-divider);padding:14px 24px;gap:24px">
+<span class="nav-brand" style="margin-right:32px;letter-spacing:.02em">АКВА&nbsp;ПАТИ<span style="color:#5980a6"> / crm</span></span>
+<div style="display:flex;gap:20px;margin-right:auto"><a href="#" aria-current="page">Главное</a><a href="#">Заказы</a><a href="#">Абонементы</a><a href="#">Кафе</a><a href="#">Настройки</a></div>
+<div style="font-size:13px;color:rgba(29,31,32,.65)">Е. Смирнова</div>
+</div>
+<div style="padding:24px;filter:blur(1px);opacity:.5;height:calc(100% - 61px)">
+<h2 style="margin:0 0 12px;font-size:30px">Клиенты</h2>
+<table class="table"><thead><tr><th>ФИО родителя</th><th>Телефон</th><th>Дети</th><th>Абонемент</th><th>Скидка</th></tr></thead>
+<tbody><tr><td>Смирнова Анна Игоревна</td><td>+7 921 448-12-06</td><td>Мия, 5 · Лев, 8</td><td>8 посещений</td><td>10 %</td></tr>
+<tr><td>Верещагин Павел Олегович</td><td>+7 903 271-55-40</td><td>Тимофей, 4</td><td>Разовые</td><td>—</td></tr>
+<tr><td>Ковалёва Дарья Сергеевна</td><td>+7 916 034-77-19</td><td>Ева, 6 · Марк, 6 · Ника, 2</td><td>Месячный</td><td>15 %</td></tr>
+<tr><td>Насибуллин Рустам Ильдарович</td><td>+7 927 810-63-92</td><td>Амина, 7</td><td>Разовые</td><td>5 %</td></tr></tbody></table>
+</div>
+
+<div style="position:absolute;inset:0;background:rgba(43,43,45,.5);display:flex;align-items:flex-start;justify-content:center;padding:48px 0 40px">
+<div class="dialog blueprint elev-lg" style="width:1080px;background:#f2f2f3;gap:0;padding:0">
+<i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+
+<div style="display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--color-divider)">
+<div>
+<div class="card-kicker">Заказ № 4 812 · 19.08.2026</div>
+<div class="dialog-title">Смирнова Анна Игоревна · +7 921 448-12-06</div>
+</div>
+<div style="display:flex;align-items:center;gap:10px">
+<span class="tag tag-accent">Абонемент · 3 посещения</span>
+<span class="tag tag-outline">Скидка 10 %</span>
+<button class="btn btn-secondary btn-icon" type="button" aria-label="Закрыть"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:420px 1fr;gap:0">
+<div style="padding:20px 24px;border-right:1px solid var(--color-divider);display:flex;flex-direction:column;gap:14px">
+<h6 style="margin:0;color:rgba(29,31,32,.6)">Список услуг</h6>
+<div class="seg" style="width:100%">
+<label class="seg-opt" style="flex:1;justify-content:center"><input type="radio" name="cat" checked>Услуги</label>
+<label class="seg-opt" style="flex:1;justify-content:center"><input type="radio" name="cat">Кафе</label>
+<label class="seg-opt" style="flex:1;justify-content:center"><input type="radio" name="cat">Товары</label>
+</div>
+<input class="input" type="text" placeholder="Поиск по наименованию">
+
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(29,31,32,.08)">
+<div style="flex:1"><div style="font-size:14px;font-weight:500">Разовое посещение, 2 часа</div><div style="font-size:12px;color:rgba(29,31,32,.55)">чел. · 700 ₽</div></div>
+<button class="btn btn-secondary" type="button">Добавить</button>
+</div>
+<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(29,31,32,.08)">
+<div style="flex:1"><div style="font-size:14px;font-weight:500">Абонемент месячный, 8 посещений</div><div style="font-size:12px;color:rgba(29,31,32,.55)">шт. · 4 800 ₽</div></div>
+<button class="btn btn-secondary" type="button">Добавить</button>
+</div>
+<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(29,31,32,.08)">
+<div style="flex:1"><div style="font-size:14px;font-weight:500">Доплата за час сверх тарифа</div><div style="font-size:12px;color:rgba(29,31,32,.55)">час · 350 ₽</div></div>
+<button class="btn btn-secondary" type="button">Добавить</button>
+</div>
+<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(29,31,32,.08)">
+<div style="flex:1"><div style="font-size:14px;font-weight:500">Аниматор, программа «Аква пати»</div><div style="font-size:12px;color:rgba(29,31,32,.55)">час · 2 500 ₽</div></div>
+<button class="btn btn-secondary" type="button">Добавить</button>
+</div>
+<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(29,31,32,.08)">
+<div style="flex:1"><div style="font-size:14px;font-weight:500">Аквагрим</div><div style="font-size:12px;color:rgba(29,31,32,.55)">чел. · 450 ₽</div></div>
+<button class="btn btn-secondary" type="button">Добавить</button>
+</div>
+<div style="display:flex;align-items:center;gap:12px;padding:10px 0">
+<div style="flex:1"><div style="font-size:14px;font-weight:500">Носочки-нескользяшки</div><div style="font-size:12px;color:rgba(29,31,32,.55)">пара · 250 ₽</div></div>
+<button class="btn btn-secondary" type="button">Добавить</button>
+</div>
+</div>
+</div>
+
+<div style="padding:20px 24px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;justify-content:space-between">
+<h6 style="margin:0;color:rgba(29,31,32,.6)">Позиции заказа</h6>
+<div style="display:flex;gap:8px;align-items:center;font-size:12px;color:rgba(29,31,32,.55)">Дети: <span class="tag tag-neutral">Мия, 5</span><span class="tag tag-neutral">Лев, 8</span></div>
+</div>
+
+<table class="table">
+<thead><tr><th>Наименование</th><th style="width:80px">Ед.</th><th style="width:110px">Кол-во</th><th style="width:110px">Цена</th><th style="width:110px">Сумма</th><th style="width:36px"></th></tr></thead>
+<tbody>
+<tr><td>Разовое посещение, 2 часа</td><td>чел.</td><td>2</td><td>700 ₽</td><td>1 400 ₽</td><td><button class="btn btn-ghost" type="button" aria-label="Удалить"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></td></tr>
+<tr><td>Аквагрим</td><td>чел.</td><td>2</td><td>450 ₽</td><td>900 ₽</td><td><button class="btn btn-ghost" type="button" aria-label="Удалить"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></td></tr>
+<tr><td>Детский набор «Морской»</td><td>шт.</td><td>2</td><td>390 ₽</td><td>780 ₽</td><td><button class="btn btn-ghost" type="button" aria-label="Удалить"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></td></tr>
+<tr><td>Носочки-нескользяшки</td><td>пара</td><td>1</td><td>250 ₽</td><td>250 ₽</td><td><button class="btn btn-ghost" type="button" aria-label="Удалить"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></td></tr>
+</tbody>
+</table>
+
+<div style="display:grid;grid-template-columns:1fr 300px;gap:20px;margin-top:4px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<label class="field"><label>Комментарий к заказу</label><textarea class="input" style="min-height:74px">Празднование дня рождения Льва, столик у окна на 14:00.</textarea></label>
+<div style="display:flex;gap:8px">
+<label class="radio"><input type="radio" name="pay" checked><span class="dot"></span>Наличные</label>
+<label class="radio"><input type="radio" name="pay"><span class="dot"></span>Карта</label>
+<label class="radio"><input type="radio" name="pay"><span class="dot"></span>Списать с абонемента</label>
+</div>
+</div>
+
+<div class="card blueprint" style="gap:8px;padding:16px">
+<i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+<div class="card-kicker">Расчёт</div>
+<div style="display:flex;justify-content:space-between;font-size:13px"><span class="text-muted">Позиции · 4</span><span>3 330 ₽</span></div>
+<div style="display:flex;justify-content:space-between;font-size:13px"><span class="text-muted">Скидка 10 %</span><span>−333 ₽</span></div>
+<div style="display:flex;justify-content:space-between;font-size:13px"><span class="text-muted">Списано по абонементу</span><span>−700 ₽</span></div>
+<div style="height:1px;background:var(--color-divider);margin:4px 0"></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-family:'Barlow Condensed',sans-serif;font-size:15px">К оплате</span><span style="font-family:'Barlow Condensed',sans-serif;font-size:30px;line-height:1">2 297 ₽</span></div>
+<button class="btn btn-primary btn-block blueprint" type="button"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>Создать</button>
+<button class="btn btn-secondary btn-block" type="button">Сохранить черновик</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showKpi&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Экран 01&quot;},&quot;showBalance&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Экран 01&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      showKpi: this.props.showKpi ?? true,
+      showBalance: this.props.showBalance ?? true,
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link rel="stylesheet" href="_owls/ui_kits/dashboard/kit.css"><script src="https://unpkg.com/lucide@latest"></script><style>body{margin:0;background:#E4E1D8}a{color:var(--owls-orange);text-decoration:none}a:hover{color:var(--owls-orange-600)}
+.tbl td{white-space:normal}
+.p-row{cursor:pointer}
+.p-row:hover{background:var(--owls-paper)}</style></helmet>
+
+<template id="__bundler_thumbnail" data-bg-color="#0B1E35">
+<svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+<rect width="1200" height="800" fill="#0B1E35"></rect>
+<rect x="360" y="300" width="480" height="200" rx="28" fill="#F6F4EF"></rect>
+<circle cx="470" cy="400" r="46" fill="#F26336"></circle>
+<rect x="546" y="372" width="230" height="24" rx="12" fill="#0B1E35"></rect>
+<rect x="546" y="414" width="150" height="16" rx="8" fill="#9AA3AC"></rect>
+</svg>
+</template>
+
+<div style="padding:24px;display:block;overflow-x:auto">
+<div style="width:1440px;height:900px;flex:none;margin:0 auto;background:var(--bg-app);border:1px solid var(--border-1);border-radius:14px;overflow:hidden;position:relative">
+
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+<div style="position:absolute;inset:0;background:var(--owls-navy);display:flex;align-items:center;justify-content:center">
+<div style="width:520px;background:#fff;border-radius:14px;padding:32px;display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;align-items:center;gap:12px">
+<img src="assets/owls_logo.svg" alt="OWLS Pass" style="width:52px;height:52px;border-radius:12px;object-fit:contain">
+<div style="line-height:1.15"><div style="font:800 20px var(--font-display)">OWLS Pass</div><div style="font-size:11px;color:var(--fg-4);letter-spacing:.14em;text-transform:uppercase">Рабочее место</div></div>
+</div>
+<div>
+<div style="font:800 26px var(--font-display);letter-spacing:-.02em">Введите PIN</div>
+<p style="margin:6px 0 0;font-size:13px;color:var(--fg-3)">По PIN система определяет сотрудника: его права и подпись во всех операциях смены.</p>
+</div>
+<div style="display:flex;gap:10px">
+<div style="width:52px;height:60px;border:1px solid var(--border-1);border-radius:10px;display:flex;align-items:center;justify-content:center;font:800 24px var(--font-display)">{{ pin1 }}</div>
+<div style="width:52px;height:60px;border:1px solid var(--border-1);border-radius:10px;display:flex;align-items:center;justify-content:center;font:800 24px var(--font-display)">{{ pin2 }}</div>
+<div style="width:52px;height:60px;border:1px solid var(--border-1);border-radius:10px;display:flex;align-items:center;justify-content:center;font:800 24px var(--font-display)">{{ pin3 }}</div>
+<div style="width:52px;height:60px;border:1px solid var(--border-1);border-radius:10px;display:flex;align-items:center;justify-content:center;font:800 24px var(--font-display)">{{ pin4 }}</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+<sc-for list="{{ digits }}" as="d" hint-placeholder-count="9">
+<button class="btn btn-secondary" type="button" style="height:52px;font:700 18px var(--font-text)" onClick="{{ d.press }}">{{ d.label }}</button>
+</sc-for>
+</div>
+<div style="display:flex;gap:10px">
+<button class="btn btn-secondary" type="button" style="flex:1;height:48px" onClick="{{ pinClear }}">Стереть</button>
+<button class="btn btn-primary" type="button" style="flex:1;height:48px" onClick="{{ doLogin }}">Войти</button>
+</div>
+<div style="font-size:12px;color:var(--fg-3)">Любые четыре цифры — это прототип.</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isShift }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;background:rgba(11,30,53,.45);display:flex;align-items:center;justify-content:center;padding:40px;z-index:5">
+<div style="width:560px;background:#fff;border:1px solid var(--border-1);border-radius:14px;overflow:hidden">
+<div style="padding:20px 24px;border-bottom:1px solid var(--border-1)">
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">Смена № 219 · 31.08.2026</div>
+<div style="font:800 22px var(--font-display);margin-top:2px">Открыть смену</div>
+</div>
+<div style="padding:22px 24px;display:flex;flex-direction:column;gap:14px">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3);min-width:0">Администратор<select class="input has-caret" style="width:100%;min-width:0" value="{{ admin }}" onChange="{{ setAdmin }}">
+<sc-for list="{{ admins }}" as="a" hint-placeholder-count="2">
+<option value="{{ a }}">{{ a }}</option>
+</sc-for>
+</select></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3);min-width:0">Кассир<select class="input has-caret" style="width:100%;min-width:0" value="{{ cashier }}" onChange="{{ setCashier }}">
+<sc-for list="{{ cashiers }}" as="c" hint-placeholder-count="2">
+<option value="{{ c }}">{{ c }}</option>
+</sc-for>
+</select></label>
+</div>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3)">Остаток на начало дня<input class="input" type="text" value="5 000" style="font:800 20px var(--font-display);height:52px"></label>
+<div style="font-size:12px;color:var(--fg-3)">Остаток с прошлой смены 8 060 · в кассе на старте 13 060</div>
+</div>
+<div style="display:flex;justify-content:flex-end;gap:8px;padding:16px 24px;border-top:1px solid var(--border-1)">
+<button class="btn btn-secondary" type="button" onClick="{{ logout }}">Отмена</button>
+<button class="btn btn-primary" type="button" onClick="{{ openShift }}">Открыть смену</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isApp }}" hint-placeholder-val="{{ true }}">
+<div style="height:100%;display:grid;grid-template-columns:220px 1fr">
+<div class="sb">
+<div class="sb-head" style="padding-bottom:16px;gap:10px">
+<img src="assets/owls_logo.svg" alt="OWLS Pass" style="width:38px;height:38px;border-radius:10px;object-fit:contain">
+<div style="line-height:1.1"><div style="font:800 15px var(--font-display)">OWLS Pass</div><div style="font-size:10px;color:var(--fg-4);letter-spacing:.12em;text-transform:uppercase">CRM</div></div>
+</div>
+<button class="sb-item" type="button" onClick="{{ goHome }}"><i data-lucide="layout-dashboard"></i>Главное</button>
+<button class="sb-item" type="button" onClick="{{ goOrders }}"><i data-lucide="receipt-text"></i>Заказы<span class="sb-badge">{{ openCount }}</span></button>
+<button class="sb-item" type="button" onClick="{{ goClients }}"><i data-lucide="users"></i>Клиенты</button>
+<div class="sb-divider">О П Е Р А Ц И И</div>
+<button class="sb-item" type="button" onClick="{{ goCash }}"><i data-lucide="banknote"></i>Касса</button>
+<div class="sb-divider">С И С Т Е М А</div>
+<button class="sb-item" type="button" onClick="{{ goCatalog }}"><i data-lucide="book-marked"></i>Справочники</button>
+<button class="sb-item" type="button" onClick="{{ goSettings }}"><i data-lucide="settings"></i>Настройки</button>
+</div>
+
+<div style="display:flex;flex-direction:column;min-width:0;min-height:0;height:100%">
+<div class="topbar" style="gap:12px">
+<div class="spacer"></div>
+<button class="pill-btn" type="button"><i data-lucide="clock"></i>{{ shiftLabel }}</button>
+<button class="icon-btn" type="button" aria-label="Выход" onClick="{{ askLogout }}"><i data-lucide="log-out"></i></button>
+<div style="display:flex;align-items:center;gap:9px;padding-left:6px">
+<div style="width:34px;height:34px;border-radius:999px;background:var(--owls-stone);display:flex;align-items:center;justify-content:center;font:700 12px var(--font-text);color:var(--fg-2)">ЕС</div>
+<div style="line-height:1.2"><div style="font-weight:600;font-size:13px">Е. Смирнова</div><div style="font-size:11px;color:var(--fg-3)">Администратор</div></div>
+</div>
+</div>
+
+<div class="main-scroll" style="flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">
+<div class="page" style="padding:24px 32px 32px;display:flex;flex-direction:column;flex:1;min-height:0">
+
+<sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+<div style="margin-bottom:20px">
+<div class="h1" style="font-size:28px">Смена 31 августа</div>
+<p class="subtitle" style="margin:0">Открыта в 09:00 · администратор Смирнова Е. В., кассир Бекетов И. С.</p>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px">
+<button class="btn btn-primary" type="button" onClick="{{ newOrder }}"><i data-lucide="plus"></i>Создать заказ</button>
+<button class="btn btn-secondary" type="button" onClick="{{ newClient }}"><i data-lucide="user-plus"></i>Добавить клиента</button>
+<button class="btn btn-secondary" type="button" onClick="{{ openCashOut }}"><i data-lucide="banknote"></i>Инкассация</button>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+<sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+<div style="border:1px solid var(--border-1);border-radius:14px;background:#fff;padding:16px 18px;display:flex;flex-direction:column;gap:6px">
+<span style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg-3)">{{ k.label }}</span>
+<span style="font:800 24px var(--font-display);letter-spacing:-.01em">{{ k.value }}</span>
+<span style="font-size:12px;color:var(--fg-3)">{{ k.note }}</span>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ isOrders }}" hint-placeholder-val="{{ false }}">
+<div style="margin-bottom:20px">
+<div class="h1" style="font-size:28px">Заказы</div>
+<p class="subtitle" style="margin:0">{{ ordersSubtitle }}</p>
+</div>
+<div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
+<div style="position:relative;width:651px">
+<input class="input" type="text" placeholder="Поиск по номеру заказа или ФИО" style="padding-left:14px;padding-right:56px;width:100%;height:48px" value="{{ query }}" onChange="{{ setQuery }}">
+<button type="button" aria-label="Создать заказ" title="Создать заказ" style="position:absolute;right:7px;top:7px;width:34px;height:34px;border:none;border-radius:8px;background:#F26336;color:#fff;font:700 22px var(--font-text);line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer" onClick="{{ newOrder }}">+</button>
+</div>
+<button class="btn btn-primary" type="button" onClick="{{ newOrder }}"><i data-lucide="plus"></i>Создать заказ</button>
+</div>
+<div class="subtabs" style="margin-bottom:20px">
+<sc-for list="{{ orderTabs }}" as="t" hint-placeholder-count="4">
+<button class="{{ t.cls }}" type="button" onClick="{{ t.pick }}">{{ t.label }}<span class="tab-badge">{{ t.count }}</span></button>
+</sc-for>
+</div>
+<div class="surface" style="flex:1;display:flex;flex-direction:column;min-height:0">
+<div style="flex:1;overflow-y:auto;min-height:0">
+<table class="tbl">
+<thead><tr><th style="width:90px">Заказ</th><th style="width:90px">Создан</th><th style="width:100px">Окончание</th><th style="width:90px">Прошло</th><th style="width:90px">Доплата</th><th>Клиент</th><th style="width:170px">Тариф</th><th style="width:110px">Оплата</th><th style="width:100px">Сумма</th><th style="width:110px">Статус</th><th style="width:90px"></th></tr></thead>
+<tbody>
+<sc-for list="{{ orderRows }}" as="o" hint-placeholder-count="6">
+<tr class="p-row" onClick="{{ o.open }}">
+<td class="mono">{{ o.num }}</td><td class="mono">{{ o.start }}</td><td class="mono">{{ o.end }}</td><td class="mono">{{ o.elapsed }}</td><td class="mono" style="color:var(--owls-orange)">{{ o.extra }}</td>
+<td>{{ o.client }}</td><td>{{ o.tariff }}</td><td>{{ o.pay }}</td><td style="font-weight:700">{{ o.sum }}</td>
+<td><span class="{{ o.pillCls }}">{{ o.status }}</span></td>
+<td><div class="cell-actions"><button class="btn btn-secondary btn-sm" type="button" onClick="{{ o.open }}">Открыть</button></div></td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-top:1px solid var(--border-1)">
+<span style="font-size:12px;color:var(--fg-3)">{{ ordersFooter }}</span>
+<span style="font-size:12px;color:var(--fg-3)">Строка открывает карточку заказа</span>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isClients }}" hint-placeholder-val="{{ false }}">
+<div style="margin-bottom:20px">
+<div class="h1" style="font-size:28px">Клиенты</div>
+<p class="subtitle" style="margin:0">{{ clientsSubtitle }}</p>
+</div>
+<div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
+<div style="position:relative;width:651px">
+<input class="input" type="text" placeholder="Поиск по ФИО или телефону" style="padding-left:14px;padding-right:56px;width:100%;height:48px" value="{{ clientQuery }}" onChange="{{ setClientQuery }}">
+<button type="button" aria-label="Добавить клиента" title="Добавить клиента" style="position:absolute;right:7px;top:7px;width:34px;height:34px;border:none;border-radius:8px;background:#F26336;color:#fff;font:700 22px var(--font-text);line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer" onClick="{{ newClient }}">+</button>
+</div>
+<button class="btn btn-primary" type="button" onClick="{{ newClient }}"><i data-lucide="user-plus"></i>Добавить клиента</button>
+</div>
+<div class="surface" style="flex:1;display:flex;flex-direction:column;min-height:0">
+<div style="flex:1;overflow-y:auto;min-height:0">
+<table class="tbl">
+<thead><tr><th style="width:280px">ФИО родителя</th><th style="width:170px">Телефон</th><th style="width:220px">Дети</th><th style="width:110px">Скидка</th><th style="width:130px">Визит</th><th style="width:130px">Баланс</th><th style="width:100px"></th></tr></thead>
+<tbody>
+<sc-for list="{{ clientRows }}" as="c" hint-placeholder-count="6">
+<tr class="p-row" onClick="{{ c.open }}">
+<td style="font-weight:600">{{ c.name }}</td><td class="mono">{{ c.phone }}</td><td>{{ c.kids }}</td><td>{{ c.discount }}</td><td class="mono">{{ c.visit }}</td>
+<td style="font-weight:700">{{ c.balance }}</td>
+<td><div class="cell-actions"><button class="btn btn-secondary btn-sm" type="button" onClick="{{ c.open }}">Открыть</button></div></td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isCash }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:20px">
+<div>
+<div class="h1" style="font-size:28px">Касса</div>
+<p class="subtitle" style="margin:0">{{ cashSubtitle }}</p>
+</div>
+<div style="display:flex;gap:8px">
+<button class="btn btn-secondary" type="button" onClick="{{ openCashIn }}"><i data-lucide="arrow-down-to-line"></i>Внести</button>
+<button class="btn btn-secondary" type="button" onClick="{{ openCashOut }}"><i data-lucide="arrow-up-from-line"></i>Инкассация</button>
+<button class="btn btn-primary" type="button" onClick="{{ openClose }}"><i data-lucide="lock"></i>Закрыть смену</button>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
+<sc-for list="{{ cashKpis }}" as="k" hint-placeholder-count="3">
+<div style="border:1px solid var(--border-1);border-radius:14px;background:#fff;padding:16px 18px;display:flex;flex-direction:column;gap:6px">
+<span style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg-3)">{{ k.label }}</span>
+<span style="font:800 24px var(--font-display);letter-spacing:-.01em">{{ k.value }}</span>
+<span style="font-size:12px;color:var(--fg-3)">{{ k.note }}</span>
+</div>
+</sc-for>
+</div>
+<div class="surface" style="flex:1;display:flex;flex-direction:column;min-height:0">
+<div style="flex:1;overflow-y:auto;min-height:0">
+<table class="tbl">
+<thead><tr><th style="width:110px">Время</th><th style="width:110px">Заказ</th><th>Клиент</th><th style="width:200px">Операция</th><th style="width:150px">Способ</th><th style="width:140px">Сумма</th></tr></thead>
+<tbody>
+<sc-for list="{{ cashRows }}" as="r" hint-placeholder-count="5">
+<tr><td class="mono">{{ r.time }}</td><td class="mono">{{ r.order }}</td><td>{{ r.client }}</td><td>{{ r.op }}</td><td>{{ r.method }}</td><td style="font-weight:700">{{ r.sum }}</td></tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isCatalog }}" hint-placeholder-val="{{ false }}">
+<div style="margin-bottom:20px">
+<div class="h1" style="font-size:28px">Справочники</div>
+<p class="subtitle" style="margin:0">Тарифы, услуги, товары и скидки</p>
+</div>
+<div class="surface" style="flex:1;display:flex;flex-direction:column;min-height:0">
+<div style="flex:1;overflow-y:auto;min-height:0">
+<table class="tbl">
+<thead><tr><th style="width:360px">Наименование</th><th style="width:160px">Категория</th><th style="width:110px">Ед.</th><th style="width:130px">Цена</th><th style="width:160px">Длительность</th></tr></thead>
+<tbody>
+<sc-for list="{{ catalogRows }}" as="p" hint-placeholder-count="6">
+<tr><td style="font-weight:600">{{ p.name }}</td><td>{{ p.cat }}</td><td>{{ p.unit }}</td><td style="font-weight:700">{{ p.price }}</td><td>{{ p.dur }}</td></tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+<div style="margin-bottom:20px">
+<div class="h1" style="font-size:28px">Настройки</div>
+<p class="subtitle" style="margin:0">{{ settingsSubtitle }}</p>
+</div>
+<div class="subtabs" style="margin-bottom:20px">
+<sc-for list="{{ setTabs }}" as="t" hint-placeholder-count="5">
+<button class="{{ t.cls }}" type="button" onClick="{{ t.pick }}">{{ t.label }}</button>
+</sc-for>
+</div>
+
+<sc-if value="{{ setUsers }}" hint-placeholder-val="{{ true }}">
+<div class="surface" style="flex:1;display:flex;flex-direction:column;min-height:0">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 18px;border-bottom:1px solid var(--border-1)">
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">Пользователи</div>
+<button class="btn btn-primary btn-sm" type="button" onClick="{{ newUser }}"><i data-lucide="user-plus"></i>Добавить</button>
+</div>
+<div style="flex:1;overflow-y:auto;min-height:0">
+<table class="tbl">
+<thead><tr><th style="width:240px">ФИО</th><th style="width:160px">Должность</th><th style="width:160px">Телефон</th><th style="width:130px">Смена</th><th style="width:220px">Доступ</th><th style="width:120px">Статус</th><th style="width:100px"></th></tr></thead>
+<tbody>
+<sc-for list="{{ userRows }}" as="u" hint-placeholder-count="4">
+<tr><td style="font-weight:600">{{ u.name }}</td><td>{{ u.role }}</td><td class="mono">{{ u.phone }}</td><td>{{ u.shift }}</td><td>{{ u.access }}</td>
+<td><span class="{{ u.pillCls }}">{{ u.status }}</span></td>
+<td><div class="cell-actions"><button class="btn btn-secondary btn-sm" type="button" onClick="{{ u.open }}">Права</button></div></td></tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ setRoles }}" hint-placeholder-val="{{ false }}">
+<div class="surface" style="flex:1;display:flex;flex-direction:column;min-height:0">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 18px;border-bottom:1px solid var(--border-1)">
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">Должности и права</div>
+<button class="btn btn-primary btn-sm" type="button"><i data-lucide="plus"></i>Новая должность</button>
+</div>
+<div style="flex:1;overflow-y:auto;min-height:0">
+<table class="tbl">
+<thead><tr><th style="width:190px">Должность</th><th style="width:100px">Людей</th><th style="width:160px">Заказы</th><th style="width:160px">Клиенты</th><th style="width:150px">Касса</th><th style="width:130px">Скидки</th><th style="width:160px">Справочники</th><th style="width:100px"></th></tr></thead>
+<tbody>
+<tr><td style="font-weight:600">Управляющий</td><td>1</td><td>Полный доступ</td><td>Полный доступ</td><td>Полный доступ</td><td>Любые</td><td>Изменение</td><td><div class="cell-actions"><button class="btn btn-secondary btn-sm" type="button">Изменить</button></div></td></tr>
+<tr><td style="font-weight:600">Администратор</td><td>2</td><td>Создание, оплата</td><td>Создание, правка</td><td>Приём оплаты</td><td>До 15 %</td><td>Просмотр</td><td><div class="cell-actions"><button class="btn btn-secondary btn-sm" type="button">Изменить</button></div></td></tr>
+<tr><td style="font-weight:600">Кассир</td><td>1</td><td>Оплата</td><td>Просмотр</td><td>Приём оплаты</td><td>Нет</td><td>Просмотр</td><td><div class="cell-actions"><button class="btn btn-secondary btn-sm" type="button">Изменить</button></div></td></tr>
+</tbody>
+</table>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-top:1px solid var(--border-1)">
+<span style="font-size:12px;color:var(--fg-3)">Права применяются при следующем входе пользователя</span>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ setDetails }}" hint-placeholder-val="{{ false }}">
+<div class="surface" style="flex:1;display:flex;flex-direction:column;min-height:0">
+<div style="flex:1;overflow-y:auto;min-height:0;padding:22px;display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start">
+<div style="border:1px solid var(--border-1);border-radius:14px;background:#fff;padding:20px;display:flex;flex-direction:column;gap:14px">
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">Организация</div>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3)">Наименование<input class="input" type="text" value="ООО «Аква пати»" style="width:100%;min-width:0"></label>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3);min-width:0">ИНН<input class="input" type="text" value="7802345671" style="width:100%;min-width:0"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3);min-width:0">КПП<input class="input" type="text" value="780201001" style="width:100%;min-width:0"></label>
+</div>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3)">Юридический адрес<input class="input" type="text" value="196143, Санкт-Петербург, ул. Ленина, 14, пом. 21" style="width:100%;min-width:0"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3)">Фактический адрес<input class="input" type="text" value="Санкт-Петербург, ул. Ленина, 14, ТЦ «Волна», 2 этаж" style="width:100%;min-width:0"></label>
+</div>
+<div style="border:1px solid var(--border-1);border-radius:14px;background:#fff;padding:20px;display:flex;flex-direction:column;gap:14px">
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">Банк</div>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3)">Банк<input class="input" type="text" value="АО «Банк Северный»" style="width:100%;min-width:0"></label>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3);min-width:0">БИК<input class="input" type="text" value="044030720" style="width:100%;min-width:0"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3);min-width:0">Корр. счёт<input class="input" type="text" value="30101810900000000720" style="width:100%;min-width:0"></label>
+</div>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3)">Расчётный счёт<input class="input" type="text" value="40702810400000123456" style="width:100%;min-width:0"></label>
+<div style="height:1px;background:var(--border-1);margin:2px 0"></div>
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">Подписант</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3);min-width:0">ФИО<input class="input" type="text" value="Тарасов Дмитрий Олегович" style="width:100%;min-width:0"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3);min-width:0">Должность<input class="input" type="text" value="Генеральный директор" style="width:100%;min-width:0"></label>
+</div>
+</div>
+<div style="border:1px solid var(--border-1);border-radius:14px;background:#fff;padding:20px;display:flex;flex-direction:column;gap:14px">
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">Контакты для клиентов</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3);min-width:0">Телефон<input class="input" type="text" value="+7 812 448-00-14" style="width:100%;min-width:0"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3);min-width:0">Почта<input class="input" type="text" value="hello@aquaparty.ru" style="width:100%;min-width:0"></label>
+</div>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3)">Сайт<input class="input" type="text" value="aquaparty.ru" style="width:100%;min-width:0"></label>
+</div>
+<div style="border:1px solid var(--border-1);border-radius:14px;background:#fff;padding:20px;display:flex;flex-direction:column;gap:12px">
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">Документы</div>
+<div style="display:flex;align-items:center;gap:10px;border:1px solid var(--border-1);border-radius:10px;padding:10px 12px"><i data-lucide="file-text" style="width:16px;height:16px;color:var(--owls-orange)"></i><span style="font-size:13px">Договор оказания услуг, шаблон.docx</span><span style="margin-left:auto;font-size:11px;color:var(--fg-3)">64 КБ</span><button class="btn btn-ghost btn-sm" type="button">Заменить</button></div>
+<div style="display:flex;align-items:center;gap:10px;border:1px solid var(--border-1);border-radius:10px;padding:10px 12px"><i data-lucide="file-text" style="width:16px;height:16px;color:var(--owls-orange)"></i><span style="font-size:13px">Правила посещения центра.pdf</span><span style="margin-left:auto;font-size:11px;color:var(--fg-3)">210 КБ</span><button class="btn btn-ghost btn-sm" type="button">Заменить</button></div>
+<button class="btn btn-secondary btn-sm" type="button" style="align-self:flex-start"><i data-lucide="upload"></i>Загрузить документ</button>
+</div>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-top:1px solid var(--border-1)">
+<span style="font-size:12px;color:var(--fg-3)">Изменения попадают в чеки и договоры сразу после сохранения</span>
+<div style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" type="button">Отменить</button><button class="btn btn-primary btn-sm" type="button">Сохранить</button></div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ setCash }}" hint-placeholder-val="{{ false }}">
+<div class="surface" style="flex:1;display:flex;flex-direction:column;min-height:0">
+<div style="flex:1;overflow-y:auto;min-height:0;padding:22px;display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start">
+<div style="border:1px solid var(--border-1);border-radius:14px;background:#fff;padding:20px;display:flex;flex-direction:column;gap:12px">
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">Способы оплаты</div>
+<label class="check on"><span class="box"><i data-lucide="check" style="width:12px;height:12px"></i></span>Наличные</label>
+<label class="check on"><span class="box"><i data-lucide="check" style="width:12px;height:12px"></i></span>Банковская карта</label>
+<label class="check on"><span class="box"><i data-lucide="check" style="width:12px;height:12px"></i></span>СБП по QR-коду</label>
+<label class="check"><span class="box"></span>Оплата на выходе (постоплата)</label>
+<label class="check"><span class="box"></span>Оплата по счёту для организаций</label>
+</div>
+<div style="border:1px solid var(--border-1);border-radius:14px;background:#fff;padding:20px;display:flex;flex-direction:column;gap:10px">
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">Основания для инкассации</div>
+<sc-for list="{{ cashOutReasons }}" as="r" hint-placeholder-count="4">
+<div style="display:flex;align-items:center;gap:10px;border:1px solid var(--border-1);border-radius:10px;padding:9px 12px"><span style="font-size:13px;flex:1">{{ r }}</span><button class="btn btn-ghost btn-sm" type="button">Изменить</button></div>
+</sc-for>
+<button class="btn btn-secondary btn-sm" type="button" style="align-self:flex-start"><i data-lucide="plus"></i>Добавить основание</button>
+</div>
+<div style="border:1px solid var(--border-1);border-radius:14px;background:#fff;padding:20px;display:flex;flex-direction:column;gap:10px">
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">Основания для внесения</div>
+<sc-for list="{{ cashInReasons }}" as="r" hint-placeholder-count="4">
+<div style="display:flex;align-items:center;gap:10px;border:1px solid var(--border-1);border-radius:10px;padding:9px 12px"><span style="font-size:13px;flex:1">{{ r }}</span><button class="btn btn-ghost btn-sm" type="button">Изменить</button></div>
+</sc-for>
+<button class="btn btn-secondary btn-sm" type="button" style="align-self:flex-start"><i data-lucide="plus"></i>Добавить основание</button>
+</div>
+<div style="border:1px solid var(--border-1);border-radius:14px;background:#fff;padding:20px;display:flex;flex-direction:column;gap:12px">
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">Смена и лимиты</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3);min-width:0">Открытие<input class="input" type="text" value="09:00" style="width:100%;min-width:0"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3);min-width:0">Закрытие<input class="input" type="text" value="21:00" style="width:100%;min-width:0"></label>
+</div>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3)">Доплата за час сверх тарифа<input class="input" type="text" value="350" style="width:100%;min-width:0"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3)">Максимальная скидка администратора<input class="input" type="text" value="15 %" style="width:100%;min-width:0"></label>
+<label class="check on"><span class="box"><i data-lucide="check" style="width:12px;height:12px"></i></span>Требовать пересчёт кассы при закрытии</label>
+</div>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-top:1px solid var(--border-1)">
+<span style="font-size:12px;color:var(--fg-3)">Списки оснований подставляются в окна инкассации и внесения</span>
+<div style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" type="button">Отменить</button><button class="btn btn-primary btn-sm" type="button">Сохранить</button></div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ setNotify }}" hint-placeholder-val="{{ false }}">
+<div class="surface" style="flex:1;display:flex;flex-direction:column;min-height:0">
+<div style="flex:1;overflow-y:auto;min-height:0">
+<table class="tbl">
+<thead><tr><th style="width:320px">Сценарий</th><th style="width:170px">Получатель</th><th style="width:170px">Канал</th><th style="width:220px">Когда</th><th style="width:140px">Статус</th></tr></thead>
+<tbody>
+<tr><td style="font-weight:600">Заказ создан</td><td>Клиент</td><td>SMS</td><td>Сразу</td><td><span class="pill pill-success">Включено</span></td></tr>
+<tr><td style="font-weight:600">Оплата принята</td><td>Клиент</td><td>SMS · чек на почту</td><td>Сразу</td><td><span class="pill pill-success">Включено</span></td></tr>
+<tr><td style="font-weight:600">День рождения ребёнка</td><td>Клиент</td><td>SMS</td><td>За 10 дней</td><td><span class="pill pill-success">Включено</span></td></tr>
+<tr><td style="font-weight:600">Задолженность по заказу</td><td>Администратор</td><td>CRM</td><td>При закрытии смены</td><td><span class="pill" style="background:var(--owls-stone);color:var(--fg-2)">Выключено</span></td></tr>
+<tr><td style="font-weight:600">Возврат оформлен</td><td>Управляющий</td><td>CRM · почта</td><td>Сразу</td><td><span class="pill" style="background:var(--owls-stone);color:var(--fg-2)">Выключено</span></td></tr>
+</tbody>
+</table>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-top:1px solid var(--border-1)">
+<span style="font-size:12px;color:var(--fg-3)">Имя в SMS: AQUAPARTY · не беспокоить с 21:00 до 10:00</span>
+<div style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" type="button">Отменить</button><button class="btn btn-primary btn-sm" type="button">Сохранить</button></div>
+</div>
+</div>
+</sc-if>
+</sc-if>
+
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ modalNew }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;background:rgba(11,30,53,.45);display:flex;align-items:center;justify-content:center;padding:40px;z-index:6">
+<div style="width:1040px;height:100%;background:#fff;border:1px solid var(--border-1);border-radius:14px;display:flex;flex-direction:column;overflow:hidden">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;border-bottom:1px solid var(--border-1)">
+<div>
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">Заказ № {{ draft.num }} · {{ draft.date }}</div>
+<div style="font:800 22px var(--font-display);letter-spacing:-.01em;margin-top:2px">Новый заказ</div>
+</div>
+<button class="icon-btn" type="button" aria-label="Закрыть" onClick="{{ closeModal }}"><i data-lucide="x"></i></button>
+</div>
+
+<div style="display:grid;grid-template-columns:400px 1fr;flex:1;min-height:0">
+<div style="padding:22px 24px;border-right:1px solid var(--border-1);display:flex;flex-direction:column;gap:18px;overflow-y:auto">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3);min-width:0">Номер заказа<input class="input" type="text" value="{{ draft.num }}" style="width:100%;min-width:0"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3);min-width:0">Дата<input class="input" type="text" value="{{ draft.date }}" style="width:100%;min-width:0"></label>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">Клиент</div>
+<div style="position:relative">
+<select class="input has-caret" style="width:100%;min-width:0;padding-right:44px" value="{{ draft.client }}" onChange="{{ setDraftClient }}">
+<sc-for list="{{ clientNames }}" as="n" hint-placeholder-count="4">
+<option value="{{ n }}">{{ n }}</option>
+</sc-for>
+</select>
+<button type="button" aria-label="Добавить клиента" title="Добавить клиента" style="position:absolute;right:5px;top:5px;width:30px;height:30px;border:none;border-radius:8px;background:#F26336;color:#fff;font:700 20px var(--font-text);line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2" onClick="{{ newClient }}">+</button>
+</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<sc-for list="{{ draftKids }}" as="k" hint-placeholder-count="2">
+<label class="{{ k.cls }}" onClick="{{ k.toggle }}"><span class="box"><i data-lucide="check" style="width:12px;height:12px"></i></span>{{ k.name }}</label>
+</sc-for>
+</div>
+</div>
+
+<div class="subtabs" style="margin:0">
+<sc-for list="{{ catTabs }}" as="t" hint-placeholder-count="2">
+<button class="{{ t.cls }}" type="button" onClick="{{ t.pick }}">{{ t.label }}</button>
+</sc-for>
+</div>
+<input class="input" type="text" placeholder="Поиск по наименованию" style="width:100%;min-width:0" value="{{ catQuery }}" onChange="{{ setCatQuery }}">
+<div style="display:flex;flex-direction:column">
+<sc-for list="{{ catalogPick }}" as="p" hint-placeholder-count="4">
+<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-1)">
+<div style="flex:1"><div style="font-size:13px;font-weight:600">{{ p.name }}</div><div style="font-size:12px;color:var(--fg-3)">{{ p.meta }}</div></div>
+<button class="btn btn-secondary btn-sm" type="button" onClick="{{ p.addDraft }}">Добавить</button>
+</div>
+</sc-for>
+</div>
+</div>
+
+<div style="padding:22px 24px;display:flex;flex-direction:column;gap:18px;min-height:0">
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">Позиции заказа</div>
+<div class="surface" style="flex:1;display:flex;flex-direction:column;min-height:0">
+<div style="flex:1;overflow-y:auto;min-height:0">
+<table class="tbl">
+<thead><tr><th>Наименование</th><th style="width:70px">Ед.</th><th style="width:80px">Кол-во</th><th style="width:100px">Цена</th><th style="width:105px">Сумма</th><th style="width:50px"></th></tr></thead>
+<tbody>
+<sc-for list="{{ draftItems }}" as="it" hint-placeholder-count="3">
+<tr><td>{{ it.name }}</td><td>{{ it.unit }}</td><td>{{ it.qty }}</td><td>{{ it.price }}</td><td style="font-weight:700">{{ it.sum }}</td>
+<td><button class="btn btn-ghost btn-sm" type="button" aria-label="Удалить" onClick="{{ it.remove }}"><i data-lucide="x" style="width:13px;height:13px"></i></button></td></tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 320px;gap:20px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3)">Комментарий к заказу<textarea class="input" style="min-height:78px;resize:none" value="{{ draft.note }}" onChange="{{ setDraftNote }}"></textarea></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3);min-width:0">Разовая скидка<input class="input" type="text" value="{{ draft.oneTime }}" style="width:100%;min-width:0" onChange="{{ setDraftOneTime }}"></label>
+</div>
+<div style="border:1px solid var(--border-1);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px">
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">Расчёт</div>
+<div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--fg-3)">Позиции · {{ draftCalc.count }}</span><span>{{ draftCalc.sub }}</span></div>
+<div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--fg-3)">Скидка {{ draftCalc.pct }}</span><span>{{ draftCalc.disc }}</span></div>
+<div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--fg-3)">Разовая скидка</span><span>{{ draftCalc.one }}</span></div>
+<div style="height:1px;background:var(--border-1);margin:4px 0"></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:13px;color:var(--fg-3)">К оплате</span><span style="font:800 26px var(--font-display)">{{ draftCalc.total }}</span></div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 24px;border-top:1px solid var(--border-1)">
+<span style="font-size:12px;color:var(--fg-3)">Обязательные поля: клиент, тариф, способ оплаты</span>
+<div style="display:flex;gap:8px">
+<button class="btn btn-secondary" type="button" onClick="{{ closeModal }}">Отмена</button>
+<button class="btn btn-primary" type="button" onClick="{{ createOrder }}">Создать заказ</button>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ modalOrder }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;background:rgba(11,30,53,.45);display:flex;align-items:center;justify-content:center;padding:40px;z-index:6">
+<div style="width:1040px;height:100%;background:#fff;border:1px solid var(--border-1);border-radius:14px;display:flex;flex-direction:column;overflow:hidden">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;border-bottom:1px solid var(--border-1)">
+<div>
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">{{ cur.header }}</div>
+<div style="font:800 22px var(--font-display);letter-spacing:-.01em;margin-top:2px">{{ cur.client }}</div>
+</div>
+<div style="display:flex;align-items:center;gap:10px">
+<span class="{{ cur.pillCls }}">{{ cur.status }}</span>
+<button class="icon-btn" type="button" aria-label="Закрыть" onClick="{{ closeModal }}"><i data-lucide="x"></i></button>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:400px 1fr;flex:1;min-height:0">
+<div style="padding:22px 24px;border-right:1px solid var(--border-1);display:flex;flex-direction:column;gap:18px;overflow-y:auto">
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">Клиент</div>
+<input class="input" type="text" value="{{ cur.client }}" style="width:100%;min-width:0">
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<sc-for list="{{ curKids }}" as="k" hint-placeholder-count="2">
+<label class="check on"><span class="box"><i data-lucide="check" style="width:12px;height:12px"></i></span>{{ k }}</label>
+</sc-for>
+</div>
+</div>
+<div class="subtabs" style="margin:0">
+<sc-for list="{{ catTabs }}" as="t" hint-placeholder-count="2">
+<button class="{{ t.cls }}" type="button" onClick="{{ t.pick }}">{{ t.label }}</button>
+</sc-for>
+</div>
+<input class="input" type="text" placeholder="Поиск по наименованию" style="width:100%;min-width:0" value="{{ catQuery }}" onChange="{{ setCatQuery }}">
+<div style="display:flex;flex-direction:column">
+<sc-for list="{{ catalogPick }}" as="p" hint-placeholder-count="4">
+<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-1)">
+<div style="flex:1"><div style="font-size:13px;font-weight:600">{{ p.name }}</div><div style="font-size:12px;color:var(--fg-3)">{{ p.meta }}</div></div>
+<button class="btn btn-secondary btn-sm" type="button" onClick="{{ p.add }}">Добавить</button>
+</div>
+</sc-for>
+</div>
+</div>
+
+<div style="padding:22px 24px;display:flex;flex-direction:column;gap:18px;min-height:0">
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">Позиции заказа</div>
+<div class="surface" style="flex:1;display:flex;flex-direction:column;min-height:0">
+<div style="flex:1;overflow-y:auto;min-height:0">
+<table class="tbl">
+<thead><tr><th>Наименование</th><th style="width:70px">Ед.</th><th style="width:80px">Кол-во</th><th style="width:100px">Цена</th><th style="width:105px">Сумма</th><th style="width:50px"></th></tr></thead>
+<tbody>
+<sc-for list="{{ cur.items }}" as="it" hint-placeholder-count="3">
+<tr><td>{{ it.name }}</td><td>{{ it.unit }}</td><td>{{ it.qty }}</td><td>{{ it.price }}</td><td style="font-weight:700">{{ it.sum }}</td>
+<td><button class="btn btn-ghost btn-sm" type="button" aria-label="Удалить" onClick="{{ it.remove }}"><i data-lucide="x" style="width:13px;height:13px"></i></button></td></tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 320px;gap:20px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3)">Комментарий к заказу<textarea class="input" style="min-height:78px;resize:none" value="{{ cur.note }}"></textarea></label>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<button class="btn btn-secondary btn-sm" type="button"><i data-lucide="undo-2"></i>Оформить возврат</button>
+<button class="btn btn-secondary btn-sm" type="button"><i data-lucide="printer"></i>Печать заказа</button>
+</div>
+</div>
+<div style="border:1px solid var(--border-1);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px">
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">Расчёт</div>
+<div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--fg-3)">Создан</span><span class="mono">{{ cur.start }}</span></div>
+<div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--fg-3)">Окончание по тарифу</span><span class="mono">{{ cur.end }}</span></div>
+<div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--fg-3)">Прошло</span><span class="mono">{{ cur.elapsed }}</span></div>
+<div style="height:1px;background:var(--border-1);margin:4px 0"></div>
+<div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--fg-3)">Позиции</span><span>{{ cur.sub }}</span></div>
+<div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--fg-3)">Скидка</span><span>{{ cur.disc }}</span></div>
+<div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--fg-3)">Разовая скидка</span><span>{{ cur.one }}</span></div>
+<div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--fg-3)">Доплата за время</span><span>{{ cur.extraSum }}</span></div>
+<div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--fg-3)">Оплачено</span><span>{{ cur.paid }}</span></div>
+<div style="height:1px;background:var(--border-1);margin:4px 0"></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:13px;color:var(--fg-3)">Остаток</span><span style="font:800 26px var(--font-display)">{{ cur.rest }}</span></div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 24px;border-top:1px solid var(--border-1)">
+<span style="font-size:12px;color:var(--fg-3)">{{ cur.footer }}</span>
+<div style="display:flex;gap:8px">
+<button class="btn btn-secondary" type="button" onClick="{{ closeOrder }}">Закрыть заказ</button>
+<button class="btn btn-primary" type="button" onClick="{{ openPay }}">Принять оплату</button>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ modalPay }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;background:rgba(11,30,53,.55);display:flex;align-items:center;justify-content:center;padding:40px;z-index:7">
+<div style="width:1040px;height:100%;background:#fff;border:1px solid var(--border-1);border-radius:14px;display:flex;flex-direction:column;overflow:hidden">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;border-bottom:1px solid var(--border-1)">
+<div>
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">{{ cur.header }}</div>
+<div style="font:800 22px var(--font-display);letter-spacing:-.01em;margin-top:2px">{{ cur.client }}</div>
+</div>
+<div style="display:flex;align-items:center;gap:10px">
+<span class="{{ cur.pillCls }}">{{ cur.status }}</span>
+<button class="icon-btn" type="button" aria-label="Закрыть" onClick="{{ backToOrder }}"><i data-lucide="x"></i></button>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 380px;flex:1;min-height:0">
+<div style="padding:22px 24px;border-right:1px solid var(--border-1);display:flex;flex-direction:column;gap:18px;overflow-y:auto">
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">Способ оплаты</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<sc-for list="{{ methods }}" as="m" hint-placeholder-count="3">
+<button class="pill-btn" type="button" style="{{ m.style }}" onClick="{{ m.pick }}">{{ m.label }}</button>
+</sc-for>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3);min-width:0">К оплате<input class="input" type="text" value="{{ cur.rest }}" style="font:800 20px var(--font-display);height:52px;min-width:0" disabled="{{ true }}"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3);min-width:0">Внесено<input class="input" type="text" value="{{ given }}" style="font:800 20px var(--font-display);height:52px;min-width:0" onChange="{{ setGiven }}"></label>
+</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<sc-for list="{{ quickSums }}" as="q" hint-placeholder-count="4">
+<button class="pill-btn" type="button" onClick="{{ q.pick }}">{{ q.label }}</button>
+</sc-for>
+</div>
+<div style="height:1px;background:var(--border-1)"></div>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3)">Комментарий<textarea class="input" style="min-height:70px;resize:none" value="{{ cur.note }}"></textarea></label>
+</div>
+<div style="padding:22px 24px;display:flex;flex-direction:column;gap:16px;overflow-y:auto">
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">Состав заказа</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<sc-for list="{{ cur.items }}" as="it" hint-placeholder-count="3">
+<div style="display:flex;justify-content:space-between;font-size:13px"><span>{{ it.name }}</span><span>{{ it.sum }}</span></div>
+</sc-for>
+</div>
+<div style="border:1px solid var(--border-1);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--fg-3)">Позиции</span><span>{{ cur.sub }}</span></div>
+<div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--fg-3)">Скидка</span><span>{{ cur.disc }}</span></div>
+<div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--fg-3)">Разовая скидка</span><span>{{ cur.one }}</span></div>
+<div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--fg-3)">Доплата за время</span><span>{{ cur.extraSum }}</span></div>
+<div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--fg-3)">Оплачено ранее</span><span>{{ cur.paid }}</span></div>
+<div style="height:1px;background:var(--border-1);margin:4px 0"></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:13px;color:var(--fg-3)">К оплате</span><span style="font:800 26px var(--font-display)">{{ cur.rest }}</span></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:13px;color:var(--fg-3)">Сдача</span><span style="font:800 22px var(--font-display);color:var(--owls-orange)">{{ change }}</span></div>
+</div>
+<div style="font-size:12px;color:var(--fg-3)">Фактическое окончание фиксируется в момент оплаты: если время вышло за тариф, в расчёт добавится доплата по 350 за час. После оплаты заказ перейдёт в «Закрыт».</div>
+</div>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 24px;border-top:1px solid var(--border-1)">
+<span style="font-size:12px;color:var(--fg-3)">Смена № 219 · кассир {{ cashier }}</span>
+<div style="display:flex;gap:8px">
+<button class="btn btn-secondary" type="button" onClick="{{ backToOrder }}">Отмена</button>
+<button class="btn btn-primary" type="button" onClick="{{ takePayment }}">Принять оплату</button>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ modalClient }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;background:rgba(11,30,53,.45);display:flex;align-items:center;justify-content:center;padding:40px;z-index:6">
+<div style="width:1040px;height:100%;background:#fff;border:1px solid var(--border-1);border-radius:14px;display:flex;flex-direction:column;overflow:hidden">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border-1)">
+<div>
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">{{ curClient.meta }}</div>
+<div style="font:800 22px var(--font-display);letter-spacing:-.01em;margin-top:2px">{{ curClient.title }}</div>
+</div>
+<button class="icon-btn" type="button" aria-label="Закрыть" onClick="{{ closeModal }}"><i data-lucide="x"></i></button>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;flex:1;min-height:0">
+
+<div style="padding:22px 24px;border-right:1px solid var(--border-1);display:flex;flex-direction:column;gap:16px;overflow-y:auto">
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">Родитель</div>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3)">ФИО родителя<input class="input" type="text" value="{{ form.name }}" onChange="{{ setFormName }}" style="width:100%;min-width:0"></label>
+<div style="display:grid;grid-template-columns:1fr 140px;gap:12px">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3);min-width:0">Телефон<input class="input" type="text" value="{{ form.phone }}" onChange="{{ setFormPhone }}" style="width:100%;min-width:0"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3);min-width:0">Дата рождения<input class="input" type="text" value="{{ form.birth }}" onChange="{{ setFormBirth }}" style="width:100%;min-width:0"></label>
+</div>
+
+<div style="height:1px;background:var(--border-1);margin:2px 0"></div>
+
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">Скидка</div>
+<div style="display:grid;grid-template-columns:170px 1fr;gap:12px">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3);min-width:0">Процент<input class="input" type="text" value="{{ form.discount }}" onChange="{{ setFormDiscount }}" style="width:100%;min-width:0;height:41px"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3);min-width:0">Основание<select class="input has-caret" style="width:100%;min-width:0;height:41px" value="{{ form.reason }}" onChange="{{ setFormReason }}">
+<sc-for list="{{ discountReasons }}" as="r" hint-placeholder-count="4">
+<option value="{{ r }}">{{ r }}</option>
+</sc-for>
+</select></label>
+</div>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3)">Комментарий<textarea class="input" style="min-height:70px;resize:none" value="{{ form.comment }}" onChange="{{ setFormComment }}"></textarea></label>
+<div style="display:flex;flex-direction:column;gap:6px">
+<span style="font-size:12px;color:var(--fg-3)">Файл</span>
+<div style="display:flex;align-items:center;gap:10px;border:1px solid var(--border-1);border-radius:10px;padding:10px 12px">
+<i data-lucide="file-text" style="width:16px;height:16px;color:var(--owls-orange)"></i>
+<span style="font-size:13px">{{ form.file }}</span>
+<span style="margin-left:auto;font-size:11px;color:var(--fg-3)">340 КБ</span>
+<button class="btn btn-ghost btn-sm" type="button">Заменить</button>
+</div>
+</div>
+</div>
+
+<div style="padding:22px 24px;display:flex;flex-direction:column;gap:14px;overflow-y:auto">
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">{{ kidsTitle }}</div>
+<sc-for list="{{ formKids }}" as="k" hint-placeholder-count="2">
+<div style="border:1px solid var(--border-1);border-radius:10px;padding:12px;display:grid;grid-template-columns:1fr 132px 34px;gap:10px;align-items:end">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3);min-width:0">Имя<input class="input" type="text" value="{{ k.name }}" onChange="{{ k.setName }}" style="width:100%;min-width:0"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3);min-width:0">Дата рождения<input class="input" type="text" value="{{ k.birth }}" onChange="{{ k.setBirth }}" style="width:100%;min-width:0"></label>
+<button class="icon-btn" type="button" aria-label="Удалить" onClick="{{ k.remove }}"><i data-lucide="trash-2"></i></button>
+</div>
+</sc-for>
+<button class="btn btn-secondary btn-sm" type="button" style="align-self:flex-start" onClick="{{ addKid }}"><i data-lucide="plus"></i>Добавить ребёнка</button>
+<p style="margin:0;font-size:12px;color:var(--fg-3)">Дата рождения нужна для расчёта детского тарифа и подарка в день рождения.</p>
+</div>
+</div>
+
+<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 24px;border-top:1px solid var(--border-1)">
+<span style="font-size:12px;color:var(--fg-3)">Обязательные поля: ФИО и телефон</span>
+<div style="display:flex;gap:8px">
+<button class="btn btn-secondary" type="button" onClick="{{ closeModal }}">Отмена</button>
+<button class="btn btn-primary" type="button" onClick="{{ saveClient }}">{{ clientSaveLabel }}</button>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ modalUser }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;background:rgba(11,30,53,.45);display:flex;align-items:center;justify-content:center;padding:40px;z-index:6">
+<div style="width:720px;background:#fff;border:1px solid var(--border-1);border-radius:14px;overflow:hidden">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;border-bottom:1px solid var(--border-1)">
+<div>
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">Пользователи</div>
+<div style="font:800 22px var(--font-display);margin-top:2px">{{ curUser.name }}</div>
+</div>
+<button class="icon-btn" type="button" aria-label="Закрыть" onClick="{{ closeModal }}"><i data-lucide="x"></i></button>
+</div>
+<div style="padding:22px 24px;display:flex;flex-direction:column;gap:14px">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3)">ФИО<input class="input" type="text" value="{{ curUser.name }}" style="width:100%;min-width:0"></label>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3);min-width:0">Должность<select class="input has-caret" style="width:100%;min-width:0" value="{{ curUser.role }}">
+<sc-for list="{{ roleNames }}" as="r" hint-placeholder-count="3">
+<option value="{{ r }}">{{ r }}</option>
+</sc-for>
+</select></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3);min-width:0">Телефон<input class="input" type="text" value="{{ curUser.phone }}" style="width:100%;min-width:0"></label>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3);min-width:0">Смена<input class="input" type="text" value="{{ curUser.shift }}" style="width:100%;min-width:0"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3);min-width:0">PIN для входа<input class="input" type="text" value="••••" style="width:100%;min-width:0"></label>
+</div>
+<div style="height:1px;background:var(--border-1)"></div>
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">Доступ</div>
+<sc-for list="{{ curUser.rights }}" as="r" hint-placeholder-count="5">
+<label class="{{ r.cls }}"><span class="box"><i data-lucide="check" style="width:12px;height:12px"></i></span>{{ r.label }}</label>
+</sc-for>
+<div style="display:flex;flex-direction:column;gap:6px">
+<span style="font-size:12px;color:var(--fg-3)">Статус</span>
+<div style="display:flex;gap:8px">
+<button class="pill-btn" type="button" style="border-color:var(--owls-orange);color:var(--owls-navy)">Работает</button>
+<button class="pill-btn" type="button">Отключён</button>
+</div>
+<div style="font-size:12px;color:var(--fg-3)">Отключённый сотрудник не войдёт по PIN, история его операций сохраняется.</div>
+</div>
+</div>
+<div style="display:flex;justify-content:flex-end;gap:8px;padding:16px 24px;border-top:1px solid var(--border-1)">
+<button class="btn btn-secondary" type="button" onClick="{{ closeModal }}">Отмена</button>
+<button class="btn btn-primary" type="button" onClick="{{ closeModal }}">Сохранить</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ modalCash }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;background:rgba(11,30,53,.45);display:flex;align-items:center;justify-content:center;padding:40px;z-index:6">
+<div style="width:520px;background:#fff;border:1px solid var(--border-1);border-radius:14px;overflow:hidden">
+<div style="padding:20px 24px;border-bottom:1px solid var(--border-1)">
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">{{ cashModal.meta }}</div>
+<div style="font:800 22px var(--font-display);margin-top:2px">{{ cashModal.title }}</div>
+</div>
+<div style="padding:22px 24px;display:flex;flex-direction:column;gap:14px">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3)">Сумма<input class="input" type="text" value="{{ cashAmount }}" style="font:800 20px var(--font-display);height:52px" onChange="{{ setCashAmount }}"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3)">Основание<select class="input has-caret" style="width:100%;min-width:0" value="{{ cashReason }}" onChange="{{ setCashReason }}">
+<sc-for list="{{ cashReasons }}" as="r" hint-placeholder-count="4">
+<option value="{{ r }}">{{ r }}</option>
+</sc-for>
+</select></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3)">Комментарий<textarea class="input" style="min-height:74px;resize:none" value="{{ cashNote }}" onChange="{{ setCashNote }}"></textarea></label>
+<div style="font-size:12px;color:var(--fg-3)">{{ cashModal.hint }}</div>
+</div>
+<div style="display:flex;justify-content:flex-end;gap:8px;padding:16px 24px;border-top:1px solid var(--border-1)">
+<button class="btn btn-secondary" type="button" onClick="{{ closeModal }}">Отмена</button>
+<button class="btn btn-primary" type="button" onClick="{{ applyCash }}">{{ cashModal.action }}</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ modalClose }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;background:rgba(11,30,53,.45);display:flex;align-items:center;justify-content:center;padding:40px;z-index:6">
+<div style="width:560px;background:#fff;border:1px solid var(--border-1);border-radius:14px;overflow:hidden">
+<div style="padding:20px 24px;border-bottom:1px solid var(--border-1)">
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">Смена № 219 · 31.08.2026</div>
+<div style="font:800 22px var(--font-display);margin-top:2px">Закрыть смену</div>
+</div>
+<div style="padding:22px 24px;display:flex;flex-direction:column;gap:14px">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3);min-width:0">По системе<input class="input" type="text" value="{{ cashOnHand }}" style="font:800 18px var(--font-display);height:48px;min-width:0" disabled="{{ true }}"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg-3);min-width:0">Фактически<input class="input" type="text" value="{{ factCash }}" style="font:800 18px var(--font-display);height:48px;min-width:0" onChange="{{ setFactCash }}"></label>
+</div>
+<div style="font-size:13px;color:var(--fg-2)">Расхождение: {{ diffLabel }}</div>
+<div style="border:1px solid var(--border-1);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--fg-3)">Операций</span><span>{{ opsCount }}</span></div>
+<div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--fg-3)">Неоплаченные заказы</span><span style="font-weight:700">{{ unpaidCount }}</span></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:13px;color:var(--fg-3)">Выручка</span><span style="font:800 22px var(--font-display)">{{ revenue }}</span></div>
+</div>
+</div>
+<div style="display:flex;justify-content:flex-end;gap:8px;padding:16px 24px;border-top:1px solid var(--border-1)">
+<button class="btn btn-secondary" type="button" onClick="{{ closeModal }}">Отмена</button>
+<button class="btn btn-primary" type="button" onClick="{{ doCloseShift }}">Закрыть смену</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ modalReport }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;background:rgba(11,30,53,.55);display:flex;align-items:center;justify-content:center;padding:40px;z-index:7">
+<div style="width:520px;background:#fff;border:1px solid var(--border-1);border-radius:14px;overflow:hidden">
+<div style="padding:20px 24px;border-bottom:1px solid var(--border-1)">
+<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)">Смена № 219 закрыта</div>
+<div style="font:800 22px var(--font-display);margin-top:2px">Отчёт по смене</div>
+</div>
+<div style="padding:22px 24px;display:flex;flex-direction:column;gap:12px">
+<div style="border:1px solid var(--border-1);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--fg-3)">Операций</span><span>{{ opsCount }}</span></div>
+<div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--fg-3)">Наличные в кассе</span><span>{{ cashOnHand }}</span></div>
+<div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--fg-3)">Расхождение</span><span>{{ diffLabel }}</span></div>
+<div style="height:1px;background:var(--border-1);margin:4px 0"></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:13px;color:var(--fg-3)">Выручка</span><span style="font:800 24px var(--font-display)">{{ revenue }}</span></div>
+</div>
+<div style="display:flex;align-items:center;gap:10px;border:1px solid var(--border-1);border-radius:10px;padding:12px">
+<i data-lucide="file-text" style="width:16px;height:16px;color:var(--owls-orange)"></i>
+<span style="flex:1;font-size:13px">Отчёт_смена_219.pdf</span>
+</div>
+</div>
+<div style="display:flex;justify-content:space-between;gap:8px;padding:16px 24px;border-top:1px solid var(--border-1)">
+<button class="btn btn-secondary" type="button">Скачать PDF</button>
+<div style="display:flex;gap:8px">
+<button class="btn btn-secondary" type="button" onClick="{{ logout }}">Готово</button>
+<button class="btn btn-primary" type="button">Печать</button>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+</div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1500,&quot;height&quot;:950}}">
+const CATALOG = [
+  { name: 'Разовое посещение, 2 ч', cat: 'Тариф', unit: 'чел.', price: 700, dur: '2 ч' },
+  { name: 'Разовое посещение, 1 ч', cat: 'Тариф', unit: 'чел.', price: 450, dur: '1 ч' },
+  { name: 'Доплата за час сверх тарифа', cat: 'Тариф', unit: 'час', price: 350, dur: '1 ч' },
+  { name: 'Праздничная программа «Морская»', cat: 'Услуга', unit: 'шт.', price: 12500, dur: '3 ч' },
+  { name: 'Аквагрим', cat: 'Услуга', unit: 'чел.', price: 450, dur: '—' },
+  { name: 'Носочки-нескользяшки', cat: 'Товар', unit: 'пара', price: 250, dur: '—' },
+  { name: 'Полотенце с логотипом', cat: 'Товар', unit: 'шт.', price: 1100, dur: '—' },
+];
+
+const USERS = [
+  { name: 'Смирнова Елена Викторовна', role: 'Администратор', phone: '+7 921 100-40-11', shift: '09:00—21:00', access: 'Заказы, клиенты, касса', on: true },
+  { name: 'Романова Ксения Павловна', role: 'Администратор', phone: '+7 903 552-08-19', shift: 'Выходной', access: 'Заказы, клиенты, касса', on: true },
+  { name: 'Бекетов Илья Сергеевич', role: 'Кассир', phone: '+7 916 741-23-65', shift: '09:00—17:00', access: 'Оплата заказов', on: true },
+  { name: 'Тарасов Дмитрий Олегович', role: 'Управляющий', phone: '+7 911 843-52-77', shift: 'По запросу', access: 'Все разделы', on: false },
+];
+
+const CLIENTS = [
+  { name: 'Смирнова Анна Игоревна', phone: '+7 921 448-12-06', kids: 'Мия, 5 · Лев, 8', discount: 10, reason: 'Многодетная семья', visit: '31.08.2026', balance: 0 },
+  { name: 'Ковалёва Дарья Сергеевна', phone: '+7 916 034-77-19', kids: 'Ева, 6 · Марк, 6 · Ника, 2', discount: 15, reason: 'Многодетная семья', visit: '31.08.2026', balance: 0 },
+  { name: 'Насибуллин Рустам Ильдарович', phone: '+7 927 810-63-92', kids: 'Амина, 7', discount: 5, reason: 'СВО', visit: '31.08.2026', balance: -7302 },
+  { name: 'Белова Екатерина Романовна', phone: '+7 977 512-09-77', kids: 'Платон, 5', discount: 0, reason: 'Ручная', visit: '31.08.2026', balance: -950 },
+  { name: 'Ерохина Марина Петровна', phone: '+7 962 330-18-54', kids: 'Артём, 6', discount: 0, reason: 'Ручная', visit: '31.08.2026', balance: 0 },
+  { name: 'Лапина Светлана Юрьевна', phone: '+7 968 703-11-85', kids: 'Никита, 8', discount: 0, reason: 'Ручная', visit: '30.08.2026', balance: 0 },
+];
+
+function plural(n, one, few, many) {
+  const a = Math.abs(n) % 100;
+  const b = a % 10;
+  if (a > 10 && a < 20) return n + ' ' + many;
+  if (b > 1 && b < 5) return n + ' ' + few;
+  if (b === 1) return n + ' ' + one;
+  return n + ' ' + many;
+}
+
+function money(n) {
+  const s = Math.abs(Math.round(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  return (n < 0 ? '−' : '') + s;
+}
+
+class Component extends DCLogic {
+  state = {
+    screen: 'login',
+    admin: 'Смирнова Е. В.',
+    cashier: 'Бекетов И. С.',
+    pin: '',
+    tab: 'home',
+    modal: null,
+    orderTab: 'all',
+    query: '',
+    clientQuery: '',
+    method: 'Наличные',
+    curOrder: null,
+    curClient: null,
+    cashKind: 'in',
+    cashAmount: '5 000',
+    cashReason: 'Остаток на начало дня',
+    setTab: 'users',
+    curUser: null,
+    catTab: 'Услуги',
+    catQuery: '',
+    given: '0',
+    draft: null,
+    cashNote: '',
+    factCash: '13 060',
+    cashOnHandNum: 13060,
+    ops: [
+      { time: '09:02', order: '—', client: 'Открытие смены', op: 'Внесение фонда', method: 'Наличные', sum: 5000 },
+    ],
+    orders: [
+      { num: 4801, start: '09:12', end: '11:12', elapsed: '1:48', extraH: 0, client: 'Смирнова Анна Игоревна', discount: 10, tariff: 'Разовый, 2 ч', items: [{ name: 'Разовое посещение, 2 ч', qty: 2, price: 700 }, { name: 'Аквагрим', qty: 2, price: 450 }], paid: 0, status: 'open', pay: 'Не выбрано', oneTime: 0, note: '' },
+      { num: 4802, start: '09:40', end: '11:40', elapsed: '2:14', extraH: 1, client: 'Белова Екатерина Романовна', discount: 0, tariff: 'Разовый, 2 ч', items: [{ name: 'Разовое посещение, 2 ч', qty: 1, price: 700 }, { name: 'Носочки-нескользяшки', qty: 1, price: 250 }], paid: 0, status: 'open', pay: 'Не выбрано', oneTime: 0, note: '' },
+      { num: 4803, start: '10:05', end: '13:05', elapsed: '2:02', extraH: 0, client: 'Насибуллин Рустам Ильдарович', discount: 5, tariff: 'Праздничная программа', items: [{ name: 'Праздничная программа «Морская»', qty: 1, price: 12500 }, { name: 'Аквагрим', qty: 1, price: 450 }], paid: 5000, status: 'open', pay: 'Карта · частично', oneTime: 0, note: '' },
+      { num: 4804, start: '10:30', end: '12:26', elapsed: '1:56', extraH: 0, client: 'Ковалёва Дарья Сергеевна', discount: 15, tariff: 'Разовый, 2 ч', items: [{ name: 'Разовое посещение, 2 ч', qty: 3, price: 700 }], paid: 1785, status: 'closed', pay: 'Карта', oneTime: 0, note: '' },
+      { num: 4805, start: '10:52', end: '12:48', elapsed: '1:56', extraH: 0, client: 'Ерохина Марина Петровна', discount: 0, tariff: 'Разовый, 2 ч', items: [{ name: 'Разовое посещение, 2 ч', qty: 1, price: 700 }], paid: 700, status: 'closed', pay: 'Наличные', oneTime: 0, note: '' },
+      { num: 4806, start: '11:15', end: '13:15', elapsed: '0:42', extraH: 0, client: 'Лапина Светлана Юрьевна', discount: 0, tariff: 'Разовый, 2 ч', items: [{ name: 'Разовое посещение, 2 ч', qty: 1, price: 700 }, { name: 'Полотенце с логотипом', qty: 1, price: 1100 }], paid: 0, status: 'open', pay: 'Не выбрано', oneTime: 0, note: '' },
+    ],
+    clients: CLIENTS.map(function (c) { return Object.assign({}, c); }),
+    form: { name: '', phone: '', birth: '', discount: '0 %', reason: 'Ручная', comment: '', file: 'документ не приложен', kids: [{ name: '', birth: '' }] },
+  };
+
+  componentDidMount() { this.icons(); }
+  componentDidUpdate() { this.icons(); }
+  icons() {
+    const go = function () { if (window.lucide) window.lucide.createIcons(); };
+    go(); setTimeout(go, 250); setTimeout(go, 900);
+  }
+
+  calc(o) {
+    const sub = o.items.reduce(function (s, it) { return s + it.qty * it.price; }, 0);
+    const disc = Math.round(sub * o.discount / 100);
+    const one = o.oneTime || 0;
+    const extra = o.extraH * 350;
+    const rest = Math.max(0, sub - disc - one + extra - o.paid);
+    return { sub: sub, disc: disc, one: one, extra: extra, rest: rest };
+  }
+
+  price(name) {
+    const p = CATALOG.filter(function (x) { return x.name === name; })[0];
+    return p ? p : { unit: 'шт.', price: 0 };
+  }
+
+  set(patch) { this.setState(patch); }
+
+  setForm(patch) {
+    this.setState(function (s) { return { form: Object.assign({}, s.form, patch) }; });
+  }
+
+  setKid(i, patch) {
+    this.setState(function (s) {
+      return { form: Object.assign({}, s.form, { kids: s.form.kids.map(function (k, j) { return j === i ? Object.assign({}, k, patch) : k; }) }) };
+    });
+  }
+
+  openClient(name) {
+    const c = this.state.clients.filter(function (x) { return x.name === name; })[0];
+    const kids = c && c.kids ? c.kids.split(' · ').map(function (part) {
+      const bits = part.split(', ');
+      return { name: bits[0], birth: bits[1] ? '—' : '' };
+    }) : [{ name: '', birth: '' }];
+    this.setState({
+      curClient: name,
+      modal: 'client',
+      form: {
+        name: c ? c.name : '', phone: c ? c.phone : '', birth: '14.03.1991',
+        discount: c ? c.discount + ' %' : '0 %', reason: c ? c.reason : 'Ручная',
+        comment: c && c.discount ? 'Скидка подтверждена до 31.12.2026.' : '',
+        file: c && c.discount ? 'подтверждение.pdf' : 'документ не приложен',
+        kids: kids.length ? kids : [{ name: '', birth: '' }],
+      },
+    });
+  }
+
+  renderVals() {
+    const self = this;
+    const st = this.state;
+    const orders = st.orders;
+    const openCount = orders.filter(function (o) { return o.status === 'open'; }).length;
+    const unpaid = orders.filter(function (o) { return o.status === 'open' && self.calc(o).rest > 0; }).length;
+    const revenueNum = st.ops.filter(function (r) { return r.op.indexOf('Оплата') === 0; }).reduce(function (s, r) { return s + r.sum; }, 0);
+
+    const filtered = orders.filter(function (o) {
+      if (st.orderTab === 'open' && o.status !== 'open') return false;
+      if (st.orderTab === 'unpaid' && !(o.status === 'open' && self.calc(o).rest > 0)) return false;
+      if (st.orderTab === 'closed' && o.status !== 'closed') return false;
+      if (st.query && (String(o.num) + ' ' + o.client).toLowerCase().indexOf(st.query.toLowerCase()) < 0) return false;
+      return true;
+    });
+
+    const orderRows = filtered.map(function (o) {
+      const c = self.calc(o);
+      const closed = o.status === 'closed';
+      const cls = closed ? 'pill pill-success' : (c.rest > 0 ? (o.extraH > 0 ? 'pill pill-danger' : 'pill pill-warn') : 'pill pill-success');
+      return {
+        num: '№ ' + o.num, start: o.start, end: o.end, elapsed: o.elapsed,
+        extra: o.extraH > 0 ? '+' + money(o.extraH * 350) : '—',
+        client: o.client, tariff: o.tariff, pay: o.pay,
+        sum: money(c.sub - c.disc + c.extra),
+        status: closed ? 'Закрыт' : 'Открыт', pillCls: cls,
+        open: function () { self.set({ curOrder: o.num, modal: 'order' }); },
+      };
+    });
+
+    const cur = (function () {
+      const o = orders.filter(function (x) { return x.num === st.curOrder; })[0];
+      if (!o) return { items: [], header: '', client: '', status: '', pillCls: 'pill', sub: '', disc: '', one: '', extraSum: '', paid: '', rest: '', footer: '', note: '', start: '', end: '', elapsed: '' };
+      const c = self.calc(o);
+      return {
+        header: 'Заказ № ' + o.num + ' · 31.08.2026 · создан в ' + o.start,
+        client: o.client,
+        status: o.status === 'closed' ? 'Закрыт' : 'Открыт',
+        pillCls: o.status === 'closed' ? 'pill pill-success' : (c.rest > 0 ? 'pill pill-warn' : 'pill pill-success'),
+        items: o.items.map(function (it, i) {
+          return {
+            name: it.name, unit: self.price(it.name).unit, qty: it.qty, price: money(it.price), sum: money(it.qty * it.price),
+            remove: function () {
+              self.setState(function (s) {
+                return { orders: s.orders.map(function (x) { return x.num === o.num ? Object.assign({}, x, { items: x.items.filter(function (_, j) { return j !== i; }) }) : x; }) };
+              });
+            },
+          };
+        }),
+        sub: money(c.sub),
+        start: o.start, end: o.end, elapsed: o.elapsed,
+        one: c.one ? '−' + money(c.one) : '—',
+        disc: c.disc ? '−' + money(c.disc) + ' (' + o.discount + ' %)' : '—',
+        extraSum: c.extra ? '+' + money(c.extra) + ' (' + o.extraH + ' ч)' : '—',
+        paid: o.paid ? '−' + money(o.paid) : '—',
+        rest: money(c.rest),
+        note: o.note || '',
+        footer: 'Тариф: ' + o.tariff + ' · закрыть заказ можно только без остатка',
+      };
+    })();
+
+    const curClient = (function () {
+      const c = st.clients.filter(function (x) { return x.name === st.curClient; })[0];
+      if (!c) return { title: 'Новый клиент', meta: 'Новая карточка', name: '', phone: '', discount: '0 %', reason: 'Ручная', kids: '' };
+      return { title: c.name, meta: 'Клиент · последний визит ' + c.visit, name: c.name, phone: c.phone, discount: c.discount + ' %', reason: c.reason, kids: c.kids };
+    })();
+
+    const cashModal = st.cashKind === 'in'
+      ? { title: 'Внесение', meta: 'Смена № 219 · в кассе ' + money(st.cashOnHandNum), reason: 'Остаток на начало дня', hint: 'Внесение не считается выручкой смены', action: 'Внести в кассу' }
+      : { title: 'Инкассация', meta: 'Смена № 219 · в кассе ' + money(st.cashOnHandNum), reason: 'Плановая выемка в сейф', hint: 'Сумма уйдёт из кассы и попадёт в журнал', action: 'Провести выемку' };
+
+    const diff = (parseInt(String(st.factCash).replace(/\D/g, ''), 10) || 0) - st.cashOnHandNum;
+
+    return {
+      isLogin: st.screen === 'login',
+      isShift: st.screen === 'shift',
+      isApp: st.screen === 'app',
+      isHome: st.screen === 'app' && st.tab === 'home',
+      isOrders: st.screen === 'app' && st.tab === 'orders',
+      isClients: st.screen === 'app' && st.tab === 'clients',
+      isCash: st.screen === 'app' && st.tab === 'cash',
+      isCatalog: st.screen === 'app' && st.tab === 'catalog',
+      isSettings: st.screen === 'app' && st.tab === 'settings',
+      modalOrder: st.modal === 'order',
+      modalNew: st.modal === 'new',
+      modalUser: st.modal === 'user',
+      settingsSubtitle: 'Центр «Аква пати» · ' + plural(USERS.length, 'пользователь', 'пользователя', 'пользователей') + ' · 3 должности',
+      setTabs: [
+        { key: 'users', label: 'Пользователи' },
+        { key: 'roles', label: 'Должности' },
+        { key: 'details', label: 'Реквизиты' },
+        { key: 'cash', label: 'Касса и оплата' },
+        { key: 'notify', label: 'Уведомления' },
+      ].map(function (t) {
+        return { label: t.label, cls: st.setTab === t.key ? 'subtab active' : 'subtab', pick: function () { self.set({ setTab: t.key }); } };
+      }),
+      setUsers: st.setTab === 'users',
+      setRoles: st.setTab === 'roles',
+      setDetails: st.setTab === 'details',
+      setCash: st.setTab === 'cash',
+      setNotify: st.setTab === 'notify',
+      roleNames: ['Управляющий', 'Администратор', 'Кассир'],
+      userRows: USERS.map(function (u) {
+        return {
+          name: u.name, role: u.role, phone: u.phone, shift: u.shift, access: u.access,
+          status: u.on ? 'Работает' : 'Отключён',
+          pillCls: u.on ? 'pill pill-success' : 'pill',
+          open: function () { self.set({ curUser: u.name, modal: 'user' }); },
+        };
+      }),
+      curUser: (function () {
+        const u = USERS.filter(function (x) { return x.name === st.curUser; })[0] || { name: 'Новый пользователь', role: 'Администратор', phone: '', shift: '09:00—21:00' };
+        const admin = u.role !== 'Кассир';
+        return {
+          name: u.name, role: u.role, phone: u.phone, shift: u.shift,
+          rights: [
+            { label: 'Заказы: создание и оплата', cls: admin ? 'check on' : 'check' },
+            { label: 'Заказы: оплата', cls: 'check on' },
+            { label: 'Касса: приём оплаты', cls: 'check on' },
+            { label: 'Клиенты: правка карточек и скидок', cls: admin ? 'check on' : 'check' },
+            { label: 'Справочники: изменение позиций', cls: u.role === 'Управляющий' ? 'check on' : 'check' },
+            { label: 'Настройки центра', cls: u.role === 'Управляющий' ? 'check on' : 'check' },
+          ],
+        };
+      })(),
+      newUser: function () { self.set({ curUser: null, modal: 'user' }); },
+      cashInReasons: ['Остаток на начало дня', 'Довнесение размена', 'Возврат неиспользованных средств', 'Погашение недостачи'],
+      cashOutReasons: ['Плановая выемка в сейф', 'Сдача в банк', 'Передача управляющему', 'Закупка расходников'],
+      modalPay: st.modal === 'pay',
+      modalClient: st.modal === 'client',
+      modalCash: st.modal === 'cash',
+      modalClose: st.modal === 'close',
+      modalReport: st.modal === 'report',
+
+      pin1: st.pin[0] ? '•' : '', pin2: st.pin[1] ? '•' : '', pin3: st.pin[2] ? '•' : '', pin4: st.pin[3] ? '•' : '',
+      digits: [1, 2, 3, 4, 5, 6, 7, 8, 9].map(function (d) {
+        return { label: String(d), press: function () { self.setState(function (s) { return { pin: (s.pin + d).slice(0, 4) }; }); } };
+      }),
+      pinClear: function () { self.set({ pin: '' }); },
+      doLogin: function () { self.set({ screen: 'shift', pin: '' }); },
+      openShift: function () { self.set({ screen: 'app', tab: 'home' }); },
+      logout: function () { self.set({ screen: 'login', modal: null, tab: 'home' }); },
+      askLogout: function () { self.set({ screen: 'login', modal: null }); },
+
+      goHome: function () { self.set({ tab: 'home', modal: null }); },
+      goOrders: function () { self.set({ tab: 'orders', modal: null }); },
+      goClients: function () { self.set({ tab: 'clients', modal: null }); },
+      goCash: function () { self.set({ tab: 'cash', modal: null }); },
+      goCatalog: function () { self.set({ tab: 'catalog', modal: null }); },
+      goSettings: function () { self.set({ tab: 'settings', modal: null }); },
+
+      admins: ['Смирнова Е. В.', 'Романова К. П.', 'Тарасов Д. О.'],
+      cashiers: ['Бекетов И. С.', 'Смирнова Е. В.', 'Романова К. П.'],
+      admin: st.admin,
+      cashier: st.cashier,
+      setAdmin: function (e) { self.set({ admin: e.target.value }); },
+      setCashier: function (e) { self.set({ cashier: e.target.value }); },
+      shiftLabel: 'Смена № 219 · 09:00',
+      openCount: openCount,
+      ordersSubtitle: '31.08.2026 · ' + plural(orders.length, 'заказ', 'заказа', 'заказов') + ' за смену · ' + plural(unpaid, 'не оплачен', 'не оплачены', 'не оплачено'),
+      ordersFooter: 'Показаны ' + filtered.length + ' из ' + plural(orders.length, 'заказа', 'заказов', 'заказов'),
+      orderTabs: [
+        { key: 'all', label: 'Все', count: orders.length },
+        { key: 'open', label: 'Открытые', count: openCount },
+        { key: 'unpaid', label: 'Не оплачены', count: unpaid },
+        { key: 'closed', label: 'Закрытые', count: orders.length - openCount },
+      ].map(function (t) {
+        return { label: t.label, count: t.count, cls: st.orderTab === t.key ? 'subtab active' : 'subtab', pick: function () { self.set({ orderTab: t.key }); } };
+      }),
+      orderRows: orderRows,
+      query: st.query,
+      setQuery: function (e) { self.set({ query: e.target.value }); },
+
+      clientsSubtitle: plural(st.clients.length, 'карточка', 'карточки', 'карточек') + ' · ' + plural(st.clients.filter(function (c) { return c.balance < 0; }).length, 'с задолженностью', 'с задолженностью', 'с задолженностью'),
+      clientQuery: st.clientQuery,
+      setClientQuery: function (e) { self.set({ clientQuery: e.target.value }); },
+      clientRows: st.clients.filter(function (c) {
+        if (!st.clientQuery) return true;
+        return (c.name + ' ' + c.phone).toLowerCase().indexOf(st.clientQuery.toLowerCase()) >= 0;
+      }).map(function (c) {
+        return {
+          name: c.name, phone: c.phone, kids: c.kids,
+          discount: c.discount ? c.discount + ' %' : '—',
+          visit: c.visit,
+          balance: c.balance ? money(c.balance) : '0',
+          open: function () { self.openClient(c.name); },
+        };
+      }),
+      curClient: curClient,
+      form: st.form,
+      kidsTitle: 'Дети · ' + st.form.kids.length + ' из 10',
+      clientSaveLabel: st.curClient ? 'Сохранить' : 'Создать',
+      discountReasons: ['Многодетная семья', 'СВО', 'Инвалид', 'Ручная'],
+      setFormName: function (e) { self.setForm({ name: e.target.value }); },
+      setFormPhone: function (e) { self.setForm({ phone: e.target.value }); },
+      setFormBirth: function (e) { self.setForm({ birth: e.target.value }); },
+      setFormDiscount: function (e) { self.setForm({ discount: e.target.value }); },
+      setFormReason: function (e) { self.setForm({ reason: e.target.value }); },
+      setFormComment: function (e) { self.setForm({ comment: e.target.value }); },
+      formKids: st.form.kids.map(function (k, i) {
+        return {
+          name: k.name, birth: k.birth,
+          setName: function (e) { self.setKid(i, { name: e.target.value }); },
+          setBirth: function (e) { self.setKid(i, { birth: e.target.value }); },
+          remove: function () { self.setState(function (s) { return { form: Object.assign({}, s.form, { kids: s.form.kids.filter(function (_, j) { return j !== i; }) }) }; }); },
+        };
+      }),
+      addKid: function () {
+        self.setState(function (s) {
+          if (s.form.kids.length >= 10) return {};
+          return { form: Object.assign({}, s.form, { kids: s.form.kids.concat([{ name: '', birth: '' }]) }) };
+        });
+      },
+      newClient: function () {
+        self.set({ curClient: null, modal: 'client', form: { name: '', phone: '', birth: '', discount: '0 %', reason: 'Ручная', comment: '', file: 'документ не приложен', kids: [{ name: '', birth: '' }] } });
+      },
+      saveClient: function () {
+        self.setState(function (s) {
+          const f = s.form;
+          const kids = f.kids.filter(function (k) { return k.name; }).map(function (k) { return k.name; }).join(' · ');
+          const pct = parseInt(String(f.discount).replace(/\D/g, ''), 10) || 0;
+          if (s.curClient) {
+            return {
+              modal: null,
+              clients: s.clients.map(function (c) {
+                return c.name === s.curClient ? Object.assign({}, c, { name: f.name || c.name, phone: f.phone, kids: kids, discount: pct, reason: f.reason }) : c;
+              }),
+            };
+          }
+          if (!f.name) return { modal: null };
+          return {
+            modal: null,
+            clients: s.clients.concat([{ name: f.name, phone: f.phone, kids: kids, discount: pct, reason: f.reason, visit: '31.08.2026', balance: 0 }]),
+          };
+        });
+      },
+      orderForClient: function () { self.set({ modal: null, tab: 'orders' }); },
+
+      kpis: [
+        { label: 'Выручка за смену', value: money(revenueNum), note: plural(st.ops.length, 'операция', 'операции', 'операций') },
+        { label: 'Открытых заказов', value: String(openCount), note: plural(unpaid, 'не оплачен', 'не оплачены', 'не оплачено') },
+        { label: 'Наличные в кассе', value: money(st.cashOnHandNum), note: 'на 09:00 внесено 5 000' },
+        { label: 'Задолженность', value: money(orders.reduce(function (s, o) { return s + (o.status === 'open' ? self.calc(o).rest : 0); }, 0)), note: plural(unpaid, 'заказ', 'заказа', 'заказов') },
+      ],
+
+      cashSubtitle: 'Смена № 219 · открыта 31.08.2026 в 09:00 · кассир Бекетов И. С.',
+      cashKpis: [
+        { label: 'Наличные в кассе', value: money(st.cashOnHandNum), note: 'включая остаток на начало дня' },
+        { label: 'Выручка за смену', value: money(revenueNum), note: plural(st.ops.length, 'операция', 'операции', 'операций') },
+        { label: 'Не оплачено', value: String(unpaid), note: 'с остатком' },
+      ],
+      cashRows: st.ops.slice().reverse().map(function (r) {
+        return { time: r.time, order: r.order, client: r.client, op: r.op, method: r.method, sum: money(r.sum) };
+      }),
+      openCashIn: function () { self.set({ cashKind: 'in', cashAmount: '5 000', cashReason: 'Остаток на начало дня', cashNote: '', modal: 'cash', tab: 'cash' }); },
+      openCashOut: function () { self.set({ cashKind: 'out', cashAmount: '10 000', cashReason: 'Плановая выемка в сейф', cashNote: '', modal: 'cash', tab: 'cash' }); },
+      cashModal: cashModal,
+      cashAmount: st.cashAmount,
+      setCashAmount: function (e) { self.set({ cashAmount: e.target.value }); },
+      cashReasons: st.cashKind === 'in'
+        ? ['Остаток на начало дня', 'Довнесение размена', 'Возврат неиспользованных средств', 'Погашение недостачи']
+        : ['Плановая выемка в сейф', 'Сдача в банк', 'Передача управляющему', 'Закупка расходников'],
+      cashReason: st.cashReason,
+      setCashReason: function (e) { self.set({ cashReason: e.target.value }); },
+      cashNote: st.cashNote,
+      setCashNote: function (e) { self.set({ cashNote: e.target.value }); },
+      applyCash: function () {
+        const n = parseInt(String(st.cashAmount).replace(/\D/g, ''), 10) || 0;
+        const sign = st.cashKind === 'in' ? 1 : -1;
+        self.setState(function (s) {
+          return {
+            modal: null,
+            cashOnHandNum: s.cashOnHandNum + sign * n,
+            factCash: money(s.cashOnHandNum + sign * n),
+            ops: s.ops.concat([{ time: '14:20', order: '—', client: s.cashReason, op: st.cashKind === 'in' ? 'Внесение' : 'Выемка', method: 'Наличные', sum: sign * n }]),
+          };
+        });
+      },
+
+      catalogRows: CATALOG.map(function (p) { return { name: p.name, cat: p.cat, unit: p.unit, price: money(p.price), dur: p.dur }; }),
+      catTabs: ['Услуги', 'Товары'].map(function (t) {
+        return { label: t, cls: st.catTab === t ? 'subtab active' : 'subtab', pick: function () { self.set({ catTab: t }); } };
+      }),
+      catQuery: st.catQuery,
+      setCatQuery: function (e) { self.set({ catQuery: e.target.value }); },
+      catalogPick: CATALOG.filter(function (p) {
+        const isGoods = p.cat === 'Товар';
+        if (st.catTab === 'Товары' && !isGoods) return false;
+        if (st.catTab === 'Услуги' && isGoods) return false;
+        if (st.catQuery && p.name.toLowerCase().indexOf(st.catQuery.toLowerCase()) < 0) return false;
+        return true;
+      }).map(function (p) {
+        return {
+          name: p.name, meta: p.unit + ' · ' + money(p.price),
+          addDraft: function () {
+            self.setState(function (s2) {
+              const d = s2.draft;
+              if (!d) return {};
+              const exists = d.items.filter(function (it) { return it.name === p.name; })[0];
+              const items = exists
+                ? d.items.map(function (it) { return it.name === p.name ? Object.assign({}, it, { qty: it.qty + 1 }) : it; })
+                : d.items.concat([{ name: p.name, qty: 1, price: p.price }]);
+              return { draft: Object.assign({}, d, { items: items }) };
+            });
+          },
+          add: function () {
+            self.setState(function (s) {
+              return {
+                orders: s.orders.map(function (o) {
+                  if (o.num !== s.curOrder) return o;
+                  const exists = o.items.filter(function (it) { return it.name === p.name; })[0];
+                  const items = exists
+                    ? o.items.map(function (it) { return it.name === p.name ? Object.assign({}, it, { qty: it.qty + 1 }) : it; })
+                    : o.items.concat([{ name: p.name, qty: 1, price: p.price }]);
+                  return Object.assign({}, o, { items: items });
+                }),
+              };
+            });
+          },
+        };
+      }),
+
+      draft: st.draft || { num: '', date: '', client: '', note: '', oneTime: '0' },
+      draftItems: (st.draft ? st.draft.items : []).map(function (it, i) {
+        return {
+          name: it.name, unit: self.price(it.name).unit, qty: it.qty, price: money(it.price), sum: money(it.qty * it.price),
+          remove: function () {
+            self.setState(function (s2) { return { draft: Object.assign({}, s2.draft, { items: s2.draft.items.filter(function (_, j) { return j !== i; }) }) }; });
+          },
+        };
+      }),
+      draftKids: (function () {
+        const d = st.draft;
+        if (!d) return [];
+        return d.kids.map(function (k, i) {
+          return {
+            name: k.name, cls: k.on ? 'check on' : 'check',
+            toggle: function () {
+              self.setState(function (s2) {
+                return { draft: Object.assign({}, s2.draft, { kids: s2.draft.kids.map(function (x, j) { return j === i ? Object.assign({}, x, { on: !x.on }) : x; }) }) };
+              });
+            },
+          };
+        });
+      })(),
+      draftCalc: (function () {
+        const d = st.draft;
+        if (!d) return { count: 0, sub: '0', pct: '', disc: '—', one: '—', total: '0' };
+        const cl = st.clients.filter(function (c) { return c.name === d.client; })[0];
+        const pct = cl ? cl.discount : 0;
+        const sub = d.items.reduce(function (a, it) { return a + it.qty * it.price; }, 0);
+        const disc = Math.round(sub * pct / 100);
+        const one = parseInt(String(d.oneTime).replace(/\D/g, ''), 10) || 0;
+        return {
+          count: d.items.length, sub: money(sub), pct: pct ? pct + ' %' : '',
+          disc: disc ? '−' + money(disc) : '—', one: one ? '−' + money(one) : '—',
+          total: money(Math.max(0, sub - disc - one)),
+        };
+      })(),
+      clientNames: st.clients.map(function (c) { return c.name; }),
+      setDraftClient: function (e) {
+        const name = e.target.value;
+        const cl = st.clients.filter(function (c) { return c.name === name; })[0];
+        const kids = cl && cl.kids ? cl.kids.split(' · ').map(function (k) { return { name: k, on: true }; }) : [];
+        self.setState(function (s2) { return { draft: Object.assign({}, s2.draft, { client: name, kids: kids }) }; });
+      },
+      setDraftNote: function (e) { const v = e.target.value; self.setState(function (s2) { return { draft: Object.assign({}, s2.draft, { note: v }) }; }); },
+      setDraftOneTime: function (e) { const v = e.target.value; self.setState(function (s2) { return { draft: Object.assign({}, s2.draft, { oneTime: v }) }; }); },
+      createOrder: function () {
+        self.setState(function (s2) {
+          const d = s2.draft;
+          const cl = s2.clients.filter(function (c) { return c.name === d.client; })[0];
+          const one = parseInt(String(d.oneTime).replace(/\D/g, ''), 10) || 0;
+          const tariff = d.items.length ? d.items[0].name : 'Разовый, 2 ч';
+          const order = {
+            num: d.num, start: '14:40', end: '16:40', elapsed: '0:00', extraH: 0,
+            client: d.client, discount: cl ? cl.discount : 0, tariff: tariff,
+            items: d.items, paid: 0, status: 'open', pay: 'Не выбрано', oneTime: one, note: d.note,
+          };
+          return { orders: s2.orders.concat([order]), draft: null, modal: null, tab: 'orders' };
+        });
+      },
+      curKids: (function () {
+        const o = st.orders.filter(function (x) { return x.num === st.curOrder; })[0];
+        if (!o) return [];
+        const cl = st.clients.filter(function (c) { return c.name === o.client; })[0];
+        return cl && cl.kids ? cl.kids.split(' · ') : [];
+      })(),
+      closeOrder: function () {
+        const o = st.orders.filter(function (x) { return x.num === st.curOrder; })[0];
+        if (!o || self.calc(o).rest > 0) return;
+        self.setState(function (s2) {
+          return { modal: null, orders: s2.orders.map(function (x) { return x.num === o.num ? Object.assign({}, x, { status: 'closed' }) : x; }) };
+        });
+      },
+      given: st.given,
+      setGiven: function (e) { self.set({ given: e.target.value }); },
+      change: (function () {
+        const o = st.orders.filter(function (x) { return x.num === st.curOrder; })[0];
+        if (!o) return '0';
+        const rest = self.calc(o).rest;
+        const g = parseInt(String(st.given).replace(/\D/g, ''), 10) || 0;
+        return money(Math.max(0, g - rest));
+      })(),
+      quickSums: (function () {
+        const o = st.orders.filter(function (x) { return x.num === st.curOrder; })[0];
+        const rest = o ? self.calc(o).rest : 0;
+        const opts = [{ l: 'Без сдачи', v: rest }, { l: '1 000', v: 1000 }, { l: '2 000', v: 2000 }, { l: '5 000', v: 5000 }];
+        return opts.map(function (x) { return { label: x.l, pick: function () { self.set({ given: money(x.v) }); } }; });
+      })(),
+      cur: cur,
+      closeModal: function () { self.set({ modal: null }); },
+      openPay: function () {
+        const o = st.orders.filter(function (x) { return x.num === st.curOrder; })[0];
+        self.set({ modal: 'pay', given: o ? money(self.calc(o).rest) : '0' });
+      },
+      backToOrder: function () { self.set({ modal: 'order' }); },
+      method: st.method,
+      methods: ['Наличные', 'Карта', 'СБП'].map(function (m) {
+        return {
+          label: m,
+          style: st.method === m ? 'height:48px;justify-content:center;border-color:var(--owls-orange)' : 'height:48px;justify-content:center',
+          pick: function () { self.set({ method: m }); },
+        };
+      }),
+      takePayment: function () {
+        const o = st.orders.filter(function (x) { return x.num === st.curOrder; })[0];
+        if (!o) return;
+        const rest = self.calc(o).rest;
+        self.setState(function (s) {
+          return {
+            modal: null,
+            cashOnHandNum: s.cashOnHandNum + (st.method === 'Наличные' ? rest : 0),
+            orders: s.orders.map(function (x) {
+              return x.num === o.num ? Object.assign({}, x, { paid: x.paid + rest, status: 'closed', pay: st.method }) : x;
+            }),
+            ops: s.ops.concat([{ time: '14:35', order: '№ ' + o.num, client: o.client, op: 'Оплата заказа', method: st.method, sum: rest }]),
+          };
+        });
+      },
+
+      newOrder: function () {
+        self.setState(function (s2) {
+          const num = Math.max.apply(null, s2.orders.map(function (o) { return o.num; })) + 1;
+          const cl = s2.clients[0];
+          const kids = cl && cl.kids ? cl.kids.split(' · ').map(function (k) { return { name: k, on: true }; }) : [];
+          return {
+            draft: { num: num, date: '31.08.2026', client: cl ? cl.name : '', kids: kids, items: [], oneTime: '0', note: '' },
+            modal: 'new', tab: 'orders', catTab: 'Услуги', catQuery: '',
+          };
+        });
+      },
+
+      opsCount: st.ops.length,
+      unpaidCount: unpaid,
+      revenue: money(revenueNum),
+      cashOnHand: money(st.cashOnHandNum),
+      factCash: st.factCash,
+      setFactCash: function (e) { self.set({ factCash: e.target.value }); },
+      diffLabel: diff === 0 ? 'нет' : (diff > 0 ? 'излишек ' + money(diff) : 'недостача ' + money(diff)),
+      openClose: function () { self.set({ modal: 'close', factCash: money(st.cashOnHandNum) }); },
+      doCloseShift: function () { self.set({ modal: 'report' }); },
+    };
+  }
+}
+</script>
+</body>
+</html>

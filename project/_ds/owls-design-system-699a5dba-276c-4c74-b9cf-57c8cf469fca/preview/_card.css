@@ -1,0 +1,38 @@
+/* Helpers used by all preview cards. Imports colors_and_type via the cards themselves. */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg-surface);
+  padding: 20px 24px;
+  color: var(--fg-1);
+  font-family: var(--font-text);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 110px;
+}
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.col { display: flex; flex-direction: column; gap: 8px; }
+.tag {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+}
+.mono { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); }
+.swatch {
+  width: 100%;
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 92px;
+  border: 1px solid var(--border-1);
+}
+.swatch .name { font-weight: 700; font-size: 13px; }
+.swatch .hex  { font-family: var(--font-mono); font-size: 11px; opacity: 0.7; }
+.swatch.dark .name, .swatch.dark .hex { color: white; }
+.swatch.dark .hex { opacity: 0.65; }

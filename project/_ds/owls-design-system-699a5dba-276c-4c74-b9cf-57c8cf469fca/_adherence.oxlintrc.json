@@ -1,0 +1,231 @@
+{
+  "plugins": [
+    "react",
+    "import"
+  ],
+  "rules": {
+    "react/forbid-elements": [
+      "warn",
+      {
+        "forbid": []
+      }
+    ],
+    "no-restricted-imports": [
+      "warn",
+      {
+        "patterns": [
+          {
+            "group": [
+              "ui_kits/dashboard/**"
+            ],
+            "message": "Import design-system components from 'index.js', not component internals."
+          }
+        ]
+      }
+    ],
+    "no-restricted-syntax": [
+      "warn",
+      {
+        "selector": "Literal[value=/#[0-9a-fA-F]{3,8}\\b/]",
+        "message": "Raw hex color — use a design-system color token via var()."
+      },
+      {
+        "selector": "Literal[value=/\\b\\d+px\\b/]",
+        "message": "Raw px value — use a design-system spacing token via var()."
+      },
+      {
+        "selector": "Literal[value=/font-family\\s*:\\s*(?!['\\\"]?(?:Unbounded|Manrope))/i]",
+        "message": "Font not provided by the design system. Available: Unbounded, Manrope."
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/index.js"
+      ],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    }
+  ],
+  "x-omelette": {
+    "components": {},
+    "tokens": [
+      "--bg-accent-soft",
+      "--bg-app",
+      "--bg-sunken",
+      "--bg-surface",
+      "--border-1",
+      "--border-2",
+      "--border-strong",
+      "--dur-fast",
+      "--dur-med",
+      "--dur-slow",
+      "--ease-in-out",
+      "--ease-out",
+      "--fg-1",
+      "--fg-2",
+      "--fg-3",
+      "--fg-4",
+      "--fg-accent",
+      "--fg-inverse",
+      "--font-display",
+      "--font-mono",
+      "--font-text",
+      "--lh-body",
+      "--lh-loose",
+      "--lh-snug",
+      "--lh-tight",
+      "--owls-danger-bg",
+      "--owls-danger-text",
+      "--owls-graphite",
+      "--owls-info-bg",
+      "--owls-info-text",
+      "--owls-ink",
+      "--owls-line",
+      "--owls-line-soft",
+      "--owls-navy",
+      "--owls-navy-700",
+      "--owls-navy-800",
+      "--owls-orange",
+      "--owls-orange-100",
+      "--owls-orange-50",
+      "--owls-orange-600",
+      "--owls-paper",
+      "--owls-progress-bg",
+      "--owls-progress-text",
+      "--owls-stone",
+      "--owls-success-bg",
+      "--owls-success-text",
+      "--owls-warn-bg",
+      "--owls-warn-text",
+      "--owls-white",
+      "--radius-lg",
+      "--radius-md",
+      "--radius-pill",
+      "--radius-sm",
+      "--radius-xl",
+      "--shadow-1",
+      "--shadow-2",
+      "--shadow-3",
+      "--shadow-focus",
+      "--space-1",
+      "--space-10",
+      "--space-12",
+      "--space-16",
+      "--space-2",
+      "--space-20",
+      "--space-3",
+      "--space-4",
+      "--space-5",
+      "--space-6",
+      "--space-8",
+      "--text-2xl",
+      "--text-3xl",
+      "--text-4xl",
+      "--text-5xl",
+      "--text-6xl",
+      "--text-base",
+      "--text-lg",
+      "--text-md",
+      "--text-sm",
+      "--text-xl",
+      "--text-xs",
+      "--tracking-normal",
+      "--tracking-tight",
+      "--tracking-wide",
+      "--tracking-wider"
+    ],
+    "tokenKinds": {
+      "--owls-navy": "color",
+      "--owls-orange": "color",
+      "--owls-white": "color",
+      "--owls-paper": "color",
+      "--owls-stone": "color",
+      "--owls-graphite": "color",
+      "--owls-ink": "color",
+      "--owls-orange-50": "color",
+      "--owls-orange-100": "color",
+      "--owls-orange-600": "color",
+      "--owls-navy-700": "color",
+      "--owls-navy-800": "color",
+      "--owls-line": "color",
+      "--owls-line-soft": "color",
+      "--owls-success-bg": "color",
+      "--owls-success-text": "font",
+      "--owls-warn-bg": "color",
+      "--owls-warn-text": "font",
+      "--owls-info-bg": "color",
+      "--owls-info-text": "font",
+      "--owls-progress-bg": "color",
+      "--owls-progress-text": "font",
+      "--owls-danger-bg": "color",
+      "--owls-danger-text": "font",
+      "--fg-1": "color",
+      "--fg-2": "color",
+      "--fg-3": "color",
+      "--fg-4": "color",
+      "--fg-inverse": "color",
+      "--fg-accent": "color",
+      "--bg-app": "color",
+      "--bg-surface": "color",
+      "--bg-sunken": "color",
+      "--bg-accent-soft": "color",
+      "--border-1": "color",
+      "--border-2": "color",
+      "--border-strong": "color",
+      "--font-display": "font",
+      "--font-text": "font",
+      "--font-mono": "font",
+      "--text-xs": "font",
+      "--text-sm": "font",
+      "--text-md": "font",
+      "--text-base": "font",
+      "--text-lg": "font",
+      "--text-xl": "font",
+      "--text-2xl": "font",
+      "--text-3xl": "font",
+      "--text-4xl": "font",
+      "--text-5xl": "font",
+      "--text-6xl": "font",
+      "--tracking-tight": "font",
+      "--tracking-normal": "font",
+      "--tracking-wide": "font",
+      "--tracking-wider": "font",
+      "--lh-tight": "other",
+      "--lh-snug": "other",
+      "--lh-body": "other",
+      "--lh-loose": "other",
+      "--space-1": "spacing",
+      "--space-2": "spacing",
+      "--space-3": "spacing",
+      "--space-4": "spacing",
+      "--space-5": "spacing",
+      "--space-6": "spacing",
+      "--space-8": "spacing",
+      "--space-10": "spacing",
+      "--space-12": "spacing",
+      "--space-16": "spacing",
+      "--space-20": "spacing",
+      "--radius-sm": "radius",
+      "--radius-md": "radius",
+      "--radius-lg": "radius",
+      "--radius-xl": "radius",
+      "--radius-pill": "radius",
+      "--shadow-1": "shadow",
+      "--shadow-2": "shadow",
+      "--shadow-3": "shadow",
+      "--shadow-focus": "shadow",
+      "--ease-out": "other",
+      "--ease-in-out": "other",
+      "--dur-fast": "other",
+      "--dur-med": "other",
+      "--dur-slow": "other"
+    },
+    "fontFamilies": [
+      "Manrope",
+      "Unbounded"
+    ]
+  }
+}
