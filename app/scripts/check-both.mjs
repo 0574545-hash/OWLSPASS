@@ -15,6 +15,7 @@ for (const [name, file] of [
   for (const d of '1111') await p.getByRole('button', { name: d, exact: true }).click()
   await p.waitForTimeout(500)
   const start = (await p.locator('.modal-aside .card-total > span:last-child').first().textContent())?.trim()
+  await p.locator('.field-col', { hasText: 'Администратор' }).locator('select').selectOption('Смирнова Е. В.'); await p.waitForTimeout(150)
   await p.getByRole('button', { name: 'Открыть смену' }).click()
   await p.waitForTimeout(400)
   await p.goto('file://' + resolve(file) + '#/orders'); await p.waitForTimeout(500)

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent, type ReactNode } from 'react'
 import { ArrowDown, Check, ChevronsUpDown, Search } from 'lucide-react'
-import { money } from '../lib/format'
+import { MIN_SEARCH, digitsOnly, money } from '../lib/format'
 
 /* ===== Form fields ===== */
 
@@ -205,17 +205,19 @@ export function ClientPicker({
     return () => document.removeEventListener('mousedown', onDown)
   }, [])
 
-  const digits = (s: string) => s.replace(/\D/g, '')
-  const q = query.trim().toLowerCase()
-  const matches = clients
-    .filter((c) => {
-      if (!q) return true
-      if (c.fullName.toLowerCase().includes(q)) return true
-      if (c.children.some((ch) => ch.name.toLowerCase().includes(q))) return true
-      const d = digits(q)
-      return d.length > 0 && digits(c.phone).includes(d)
-    })
-    .slice(0, 8)
+  const raw = query.trim().toLowerCase()
+  const short = raw.length > 0 && raw.length < MIN_SEARCH
+  const q = raw.length >= MIN_SEARCH ? raw : ''
+  const matches = q
+    ? clients
+        .filter((c) => {
+          if (c.fullName.toLowerCase().includes(q)) return true
+          if (c.children.some((ch) => ch.name.toLowerCase().includes(q))) return true
+          const d = digitsOnly(q)
+          return d.length > 0 && digitsOnly(c.phone).includes(d)
+        })
+        .slice(0, 8)
+    : []
 
   const choose = (id: string) => {
     onSelect(id)
@@ -255,6 +257,11 @@ export function ClientPicker({
 
       {open && (
         <div className="picker">
+          {(raw.length === 0 || short) && (
+            <div className="picker-empty">
+              Введите не менее {MIN_SEARCH} символов — ФИО родителя, имя ребёнка или телефон
+            </div>
+          )}
           {matches.map((c) => (
             <button key={c.id} type="button" className="picker-row" onClick={() => choose(c.id)}>
               <span className="picker-name">{c.fullName}</span>
@@ -264,7 +271,7 @@ export function ClientPicker({
               </span>
             </button>
           ))}
-          {matches.length === 0 && (
+          {q !== '' && matches.length === 0 && (
             <div className="picker-empty">
               Никого не нашли — нажмите «+», чтобы завести карточку
             </div>

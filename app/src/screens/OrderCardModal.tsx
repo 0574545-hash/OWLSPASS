@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Undo2 } from 'lucide-react'
+import { Printer, Undo2 } from 'lucide-react'
 import { Modal } from '../components/Modal'
 import {
   Card,
@@ -21,10 +21,13 @@ import { ageOf } from './OrdersPage'
 
 /** Screen 06 — «Карточка заказа»: where «Открыть» in the list leads.
  *  Check the order, take the money, close it. */
-export function OrderCardModal() {
+/** `readOnly` — вид по кнопке «Чек» из журнала кассы: те же параметры заказа,
+ *  но ничего изменить нельзя. */
+export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}) {
   const { no } = useParams()
   const navigate = useNavigate()
-  const close = () => navigate('/orders')
+  // Просмотр открывают из журнала кассы — туда и возвращаемся.
+  const close = () => navigate(readOnly ? '/cash' : '/orders')
 
   const orderNo = Number(no)
   const order = useStore((s) => s.orders.find((o) => o.no === orderNo))
@@ -87,16 +90,29 @@ export function OrderCardModal() {
 
   return (
     <Modal
-      title={`Заказ № ${order.no}`}
+      title={readOnly ? `Чек по заказу № ${order.no}` : `Заказ № ${order.no}`}
       onClose={close}
       hint={
-        order.status === 'closed'
+        readOnly
+          ? 'Просмотр заказа — изменить ничего нельзя'
+          : order.status === 'closed'
           ? 'Заказ закрыт — оплачен полностью'
           : totals.remainder > 0
             ? `Остаток ${money(totals.remainder)} — примите оплату, тогда заказ можно будет закрыть`
             : 'Остатка нет — заказ можно закрыть'
       }
       actions={
+        readOnly ? (
+          <>
+            <button className="btn btn-secondary" type="button" onClick={close}>
+              Закрыть
+            </button>
+            <button className="btn btn-primary" type="button" onClick={() => window.print()}>
+              <Printer />
+              Печать
+            </button>
+          </>
+        ) : (
         <>
           <button
             className="btn btn-secondary"
@@ -126,6 +142,7 @@ export function OrderCardModal() {
             Принять оплату
           </button>
         </>
+        )
       }
       aside={
         <>
@@ -186,6 +203,7 @@ export function OrderCardModal() {
                 key={ch.id}
                 checked={order.childIds.includes(ch.id)}
                 onChange={() =>
+                  readOnly ? undefined :
                   actions.updateOrder(order.id, {
                     childIds: order.childIds.includes(ch.id)
                       ? order.childIds.filter((x) => x !== ch.id)
@@ -200,30 +218,79 @@ export function OrderCardModal() {
         )}
       </div>
 
-      <SubTabs
-        active={tab}
-        onChange={(id) => setTab(id as 'services' | 'goods')}
-        style={{ margin: 0 }}
-        tabs={[
-          { id: 'services', label: 'Услуги' },
-          { id: 'goods', label: 'Товары' },
-        ]}
+      {readOnly ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <span style={{ fontSize: 12, color: 'var(--fg-3)' }}>Позиции заказа</span>
+          <table className="tbl">
+            <thead>
+              <tr>
+                <th>Наименование</th>
+                <th style={{ width: 90 }}>Кол-во</th>
+                <th style={{ width: 110 }}>Цена</th>
+                <th style={{ width: 110 }}>Сумма</th>
+              </tr>
+            </thead>
+            <tbody>
+              {order.items.map((i) => (
+                <tr key={i.id}>
+                  <td>{i.name}</td>
+                  <td>
+                    {i.qty} {i.unit}
+                  </td>
+                  <td className="mono">{money(i.price)}</td>
+                  <td style={{ fontWeight: 700 }}>{money(i.price * i.qty)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <>
+          <SubTabs
+            active={tab}
+            onChange={(id) => setTab(id as 'services' | 'goods')}
+            style={{ margin: 0 }}
+            tabs={[
+              { id: 'services', label: 'Услуги' },
+              { id: 'goods', label: 'Товары' },
+            ]}
+          />
+
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {visible.map((c) => (
+              <CatalogRow
+                key={c.id}
+                name={c.name}
+                meta={`${c.unit} · ${money(c.price)}`}
+                qty={qtyOf(c.id)}
+                onChange={(next) => setQty(c.id, next)}
+              />
+            ))}
+          </div>
+        </>
+      )}
+
+      {readOnly && order.payments.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <span style={{ fontSize: 12, color: 'var(--fg-3)' }}>Оплаты</span>
+          {order.payments.map((pay) => (
+            <div className="ref-row" key={pay.id}>
+              <span>
+                {clock(pay.at)} · {pay.title} · {pay.method} · {pay.cashier}
+              </span>
+              <b>{money(pay.amount)}</b>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <TextArea
+        label="Комментарий к заказу"
+        value={comment}
+        onChange={readOnly ? undefined : saveComment}
       />
 
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        {visible.map((c) => (
-          <CatalogRow
-            key={c.id}
-            name={c.name}
-            meta={`${c.unit} · ${money(c.price)}`}
-            qty={qtyOf(c.id)}
-            onChange={(next) => setQty(c.id, next)}
-          />
-        ))}
-      </div>
-
-      <TextArea label="Комментарий к заказу" value={comment} onChange={saveComment} />
-
+      {!readOnly && (
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
         <button
           className="btn btn-secondary btn-sm"
@@ -247,6 +314,7 @@ export function OrderCardModal() {
           </span>
         )}
       </div>
+      )}
     </Modal>
   )
 }

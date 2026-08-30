@@ -22,7 +22,9 @@ export function ClientModal() {
   const { id } = useParams()
   const navigate = useNavigate()
   const isNew = id === undefined
-  const close = () => navigate('/clients')
+  // Карточку открывают и из «Клиентов», и кнопкой «+» со страницы заказов —
+  // возвращаемся туда, откуда пришли, а не всегда в список клиентов.
+  const close = () => navigate(-1)
 
   const existing = useStore((s) => s.clients.find((c) => c.id === id))
   const grounds = useStore((s) => s.discountGrounds)

@@ -1,28 +1,32 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Modal } from '../components/Modal'
 import { Card, CardKicker, CardRow, CardTotal, MoneyField, SelectField, TextArea, TextField } from '../components/ui'
 import { clock, money } from '../lib/format'
-import { actions, openOrders, unpaidOrders, useStore } from '../state/store'
+import { actions, currentUser, openOrders, unpaidOrders, useStore } from '../state/store'
 
 /** Screen 02 — «Открытие смены».
  *  Runs straight after the PIN: who is on, and how much cash the drawer
  *  starts the day with. */
 export function ShiftOpenModal() {
+  const navigate = useNavigate()
   const shift = useStore((s) => s.shift)
+  // За кассой стоит тот, кто вошёл по PIN — его подпись пойдёт в операции.
+  const me = useStore(currentUser)
   const users = useStore((s) => s.users)
   const previous = useStore((s) => s.shifts[0])
   const openCount = useStore((s) => openOrders(s).length)
   const unpaidCount = useStore((s) => unpaidOrders(s).length)
 
-  const [admin, setAdmin] = useState(shift.admin)
-  const [cashier, setCashier] = useState(shift.cashier)
+  // Администратор выбирается, кассир подставлен входом по PIN.
+  const [admin, setAdmin] = useState('')
+  const cashier = me ? shortForm(me.fullName) : shift.cashier
   const [openedAt] = useState(clock(shift.openedAt))
   const [plannedClose, setPlannedClose] = useState('21:00')
   const [opening, setOpening] = useState(shift.opening)
   const [comment, setComment] = useState(shift.openComment)
 
   const admins = users.filter((u) => u.role !== 'Кассир').map((u) => shortForm(u.fullName))
-  const cashiers = users.map((u) => shortForm(u.fullName))
 
   // What the previous shift left in the drawer; the cashier confirms it.
   const carried = previous?.closingCash ?? 0
@@ -31,7 +35,11 @@ export function ShiftOpenModal() {
     <Modal
       title="Открыть смену"
       onClose={() => actions.logout()}
-      hint="Остаток на начало дня — это деньги, уже лежащие в кассе, отдельной операцией он не проводится"
+      hint={
+        admin === ''
+          ? 'Выберите администратора смены — он отвечает за кассу'
+          : 'Остаток на начало дня — это деньги, уже лежащие в кассе, отдельной операцией он не проводится'
+      }
       actions={
         <>
           <button className="btn btn-secondary" type="button" onClick={() => actions.logout()}>
@@ -40,7 +48,13 @@ export function ShiftOpenModal() {
           <button
             className="btn btn-primary"
             type="button"
-            onClick={() => actions.openShift({ opening, admin, cashier, comment })}
+            disabled={admin === ''}
+            title={admin === '' ? 'Выберите администратора смены' : 'Открыть смену'}
+            onClick={() => {
+              actions.openShift({ opening, admin, cashier, comment })
+              // Смена открыта — администратор идёт к заказам.
+              navigate('/orders')
+            }}
           >
             Открыть смену
           </button>
@@ -96,8 +110,13 @@ export function ShiftOpenModal() {
       }
     >
       <div className="form-grid">
-        <SelectField label="Администратор" value={admin} options={admins} onChange={setAdmin} />
-        <SelectField label="Кассир" value={cashier} options={cashiers} onChange={setCashier} />
+        <SelectField
+          label="Администратор"
+          value={admin}
+          options={['', ...admins]}
+          onChange={setAdmin}
+        />
+        <TextField label="Кассир (по PIN)" value={cashier} />
       </div>
       <div className="form-grid">
         <TextField label="Открытие" value={openedAt} />

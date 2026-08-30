@@ -12,6 +12,7 @@ const ok = (n, cond, extra='') => console.log(`  ${cond ? 'ok  ' : 'ПЛОХО'}
 await p.goto(FILE, { waitUntil: 'load' }); await p.waitForTimeout(700)
 for (const d of '1111') await p.getByRole('button', { name: d, exact: true }).click()
 await p.waitForTimeout(500)
+await p.locator('.field-col', { hasText: 'Администратор' }).locator('select').selectOption('Смирнова Е. В.'); await p.waitForTimeout(150)
 await p.getByRole('button', { name: 'Открыть смену' }).click(); await p.waitForTimeout(400)
 
 await p.goto(FILE + '#/orders/new'); await p.waitForTimeout(600)

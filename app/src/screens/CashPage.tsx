@@ -116,11 +116,15 @@ function OpsTab() {
                           <button
                             className="btn btn-secondary btn-sm"
                             type="button"
-                            onClick={() => op.orderNo && navigate(`/orders/${op.orderNo}`)}
+                            disabled={op.orderNo === undefined}
+                            title={
+                              op.orderNo === undefined
+                                ? 'Операция не привязана к заказу'
+                                : 'Посмотреть параметры заказа'
+                            }
+                            onClick={() => op.orderNo && navigate(`/orders/${op.orderNo}/view`)}
                           >
-                            {op.kind === 'Возврат' || op.kind === 'Выемка' || op.kind === 'Внесение'
-                              ? 'Акт'
-                              : 'Чек'}
+                            {op.kind === 'Возврат' ? 'Акт' : 'Чек'}
                           </button>
                         )}
                       </div>

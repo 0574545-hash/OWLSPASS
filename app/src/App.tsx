@@ -43,6 +43,7 @@ export function App() {
           <Route path="/orders" element={<OrdersPage />} />
           <Route path="/orders/new" element={<OrdersPage />} />
           <Route path="/orders/:no" element={<OrdersPage />} />
+          <Route path="/orders/:no/view" element={<OrdersPage />} />
           <Route path="/orders/:no/pay" element={<OrdersPage />} />
           <Route path="/orders/:no/refund" element={<OrdersPage />} />
 
@@ -76,6 +77,7 @@ export function App() {
       <Routes>
         <Route path="/orders/new" element={<OrderCreateModal />} />
         <Route path="/orders/:no" element={<OrderCardModal />} />
+        <Route path="/orders/:no/view" element={<OrderCardModal readOnly />} />
         <Route path="/orders/:no/pay" element={<PaymentModal />} />
         <Route path="/orders/:no/refund" element={<RefundModal />} />
 

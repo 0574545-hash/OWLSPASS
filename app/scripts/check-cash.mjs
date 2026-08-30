@@ -17,8 +17,12 @@ console.log('Окно открытия смены:')
 for (const r of rows) console.log('   ', r.replace(/\s+/g,' ').trim())
 console.log('    В кассе на старте:', start)
 
+await p.locator('.field-col', { hasText: 'Администратор' }).locator('select').selectOption('Смирнова Е. В.'); await p.waitForTimeout(150)
+
 await p.getByRole('button', { name: 'Открыть смену' }).click()
 await p.waitForTimeout(500)
+// Смена теперь открывается на «Заказах» — на Главную идём явно.
+await p.goto('file://' + resolve('Аква пати — CRM.html') + '#/'); await p.waitForTimeout(500)
 console.log('\nГлавная — выручка за смену:', await txt('.stat-value'))
 
 await p.getByRole('link', { name: 'Касса' }).click()

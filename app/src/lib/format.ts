@@ -75,3 +75,18 @@ export function topbarName(fullName: string): string {
   const [last, first] = fullName.split(' ')
   return first ? `${first.charAt(0)}. ${last}` : (last ?? '')
 }
+
+/** Поиск клиента начинается с третьего символа — по одной-двум буквам
+ *  совпадает пол-базы, и список подсказок бесполезен. */
+export const MIN_SEARCH = 3
+
+/** Нормализует запрос: пусто, пока символов меньше порога. */
+export function searchQuery(raw: string): string {
+  const q = raw.trim().toLowerCase()
+  return q.length >= MIN_SEARCH ? q : ''
+}
+
+/** Цифры телефона без форматирования — «+7 921 448-12-06» → «79214481206». */
+export function digitsOnly(s: string): string {
+  return s.replace(/\D/g, '')
+}

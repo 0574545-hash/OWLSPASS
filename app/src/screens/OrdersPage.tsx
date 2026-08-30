@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Plus } from 'lucide-react'
 import { Page } from '../components/AppShell'
 import { ListFoot, PageHead, Pill, SearchBar, SortableTh, SubTabs } from '../components/ui'
-import { DASH, clock, duration, money, percent, plural } from '../lib/format'
+import { DASH, MIN_SEARCH, clock, digitsOnly, duration, money, percent, plural, searchQuery } from '../lib/format'
 import { OVERTIME_RATE, elapsed, endTime, paymentLabel, statusLabel, statusTone } from '../domain/rules'
 import { clientOf, tariffDuration, totalsOf, useStore, type AppState } from '../state/store'
 import type { Order } from '../domain/types'
@@ -40,13 +40,13 @@ export function OrdersPage() {
       return true
     })
     .filter((r) => {
-      const q = query.trim().toLowerCase()
+      const q = searchQuery(query)
       if (!q) return true
-      return (
-        String(r.no).includes(q) ||
-        r.client.toLowerCase().includes(q) ||
-        r.phone.toLowerCase().includes(q)
-      )
+      if (String(r.no).includes(q)) return true
+      if (r.client.toLowerCase().includes(q)) return true
+      if (r.children.toLowerCase().includes(q)) return true
+      const d = digitsOnly(q)
+      return d.length > 0 && digitsOnly(r.phone).includes(d)
     })
 
   const shown = filtered.slice(0, limit)
@@ -62,9 +62,9 @@ export function OrdersPage() {
         <SearchBar
           value={query}
           onChange={setQuery}
-          placeholder="Поиск по номеру заказа, ФИО родителя или телефону"
-          onPlus={() => navigate('/orders/new')}
-          plusLabel="Добавить заказ"
+          placeholder="Поиск по номеру заказа, ФИО родителя, имени ребёнка или телефону"
+          onPlus={() => navigate('/clients/new')}
+          plusLabel="Добавить клиента"
         />
         <button className="btn btn-primary" type="button" onClick={() => navigate('/orders/new')}>
           <Plus />
@@ -150,7 +150,7 @@ export function OrdersPage() {
               {shown.length === 0 && (
                 <tr>
                   <td colSpan={11} className="empty">
-                    Ничего не найдено — измените запрос или выберите другую вкладку
+                    <EmptyResult query={query} tab={tab} />
                   </td>
                 </tr>
               )}
@@ -164,6 +164,49 @@ export function OrdersPage() {
       </div>
     </Page>
   )
+}
+
+/** Пустой результат объясняет, почему пусто: слишком короткий запрос, клиент
+ *  без заказов или просто нет совпадений. */
+function EmptyResult({ query, tab }: { query: string; tab: string }) {
+  const navigate = useNavigate()
+  const raw = query.trim()
+  const q = searchQuery(query)
+  const clients = useStore((s) => s.clients)
+
+  if (raw.length > 0 && q === '') {
+    return <>Введите не менее {MIN_SEARCH} символов</>
+  }
+
+  // Клиент в базе есть, а заказов у него нет — это самый частый случай, и
+  // «ничего не найдено» тут сбивает с толку.
+  const found = q
+    ? clients.find(
+        (c) =>
+          c.fullName.toLowerCase().includes(q) ||
+          c.children.some((ch) => ch.name.toLowerCase().includes(q)) ||
+          (digitsOnly(q).length > 0 && digitsOnly(c.phone).includes(digitsOnly(q))),
+      )
+    : undefined
+
+  if (found) {
+    return (
+      <>
+        У клиента «{found.fullName}» нет заказов
+        {tab !== 'all' && ' на этой вкладке'}.{' '}
+        <button
+          className="btn btn-secondary btn-sm"
+          type="button"
+          style={{ marginLeft: 6 }}
+          onClick={() => navigate('/orders/new')}
+        >
+          Создать заказ
+        </button>
+      </>
+    )
+  }
+
+  return <>Ничего не найдено — измените запрос или выберите другую вкладку</>
 }
 
 export interface OrderRow {

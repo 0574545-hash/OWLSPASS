@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Page } from '../components/AppShell'
 import { ListFoot, PageHead, SearchBar, SortableTh, SubTabs } from '../components/ui'
-import { DASH, money, percent, plural } from '../lib/format'
+import { DASH, MIN_SEARCH, digitsOnly, money, percent, plural, searchQuery } from '../lib/format'
 import { clientBalance, debtSummary, useStore } from '../state/store'
 import { ageOf } from './OrdersPage'
 
@@ -49,14 +49,12 @@ export function ClientsPage() {
       return true
     })
     .filter((r) => {
-      const q = query.trim().toLowerCase()
+      const q = searchQuery(query)
       if (!q) return true
-      return (
-        r.fullName.toLowerCase().includes(q) ||
-        r.childNames.toLowerCase().includes(q) ||
-        r.phone.replace(/\D/g, '').includes(q.replace(/\D/g, '')) ||
-        r.phone.toLowerCase().includes(q)
-      )
+      if (r.fullName.toLowerCase().includes(q)) return true
+      if (r.childNames.toLowerCase().includes(q)) return true
+      const d = digitsOnly(q)
+      return d.length > 0 && digitsOnly(r.phone).includes(d)
     })
 
   const shown = filtered.slice(0, limit)
@@ -143,7 +141,9 @@ export function ClientsPage() {
               {shown.length === 0 && (
                 <tr>
                   <td colSpan={7} className="empty">
-                    Ничего не найдено — измените запрос или создайте карточку кнопкой «+»
+                    {query.trim().length > 0 && searchQuery(query) === ''
+                      ? `Введите не менее ${MIN_SEARCH} символов`
+                      : 'Ничего не найдено — измените запрос или создайте карточку кнопкой «+»'}
                   </td>
                 </tr>
               )}
