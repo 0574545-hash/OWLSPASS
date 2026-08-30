@@ -132,19 +132,30 @@ function initialState(mode: DataMode = 'demo'): AppState {
    state rides in sessionStorage and deep links survive a reload.
    Bump STORAGE_VERSION whenever the shape changes.
    ------------------------------------------------------------ */
-const STORAGE_KEY = 'aqua-party-crm'
 const STORAGE_VERSION = 1
+
+/** Which dataset a fresh session starts on. The standalone «пустая касса»
+ *  build sets this before the app script runs; everything else opens on the
+ *  demo shift. */
+function startMode(): DataMode {
+  const flag = (globalThis as { __AQUA_MODE__?: string }).__AQUA_MODE__
+  return flag === 'clean' ? 'clean' : 'demo'
+}
+
+/** Keyed by mode so the demo and the empty till never restore each other's
+ *  state — both builds can share one file:// origin. */
+const STORAGE_KEY = `aqua-party-crm:${startMode()}`
 
 function load(): AppState {
   try {
     const raw = sessionStorage.getItem(STORAGE_KEY)
-    if (!raw) return initialState()
+    if (!raw) return initialState(startMode())
     const parsed = JSON.parse(raw) as { version: number; state: AppState }
-    if (parsed.version !== STORAGE_VERSION) return initialState()
+    if (parsed.version !== STORAGE_VERSION) return initialState(startMode())
     return parsed.state
   } catch {
-    // Private mode, blocked storage, corrupt payload — start clean.
-    return initialState()
+    // Private mode, blocked storage, corrupt payload — start fresh.
+    return initialState(startMode())
   }
 }
 

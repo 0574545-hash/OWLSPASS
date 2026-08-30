@@ -9,6 +9,8 @@ import { join } from 'node:path'
 
 const DIST = 'dist'
 const OUT = process.argv[2] ?? 'Аква пати — CRM.html'
+/** «clean» собирает файл, который открывается с пустой кассой. */
+const MODE = process.argv[3] === 'clean' ? 'clean' : 'demo'
 
 const assets = readdirSync(join(DIST, 'assets'))
 const cssName = assets.find((f) => f.endsWith('.css'))
@@ -41,12 +43,12 @@ const html = `<!doctype html>
   </head>
   <body>
     <div id="app"></div>
-    <script type="module">${js}</script>
+${MODE === 'clean' ? '    <script>window.__AQUA_MODE__ = "clean"</script>\n' : ''}    <script type="module">${js}</script>
   </body>
 </html>
 `
 
 writeFileSync(OUT, html)
 const kb = (Buffer.byteLength(html) / 1024).toFixed(0)
-console.log(`Готово: ${OUT} — ${kb} КБ, шрифтов встроено: ${inlined}`)
+console.log(`Готово: ${OUT} — ${kb} КБ, шрифтов встроено: ${inlined}, данные: ${MODE === 'clean' ? 'пустая касса' : 'демо-смена'}`)
 console.log('Файл самодостаточный: откройте его двойным щелчком, интернет не нужен.')
