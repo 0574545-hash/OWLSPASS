@@ -309,12 +309,16 @@ export function cashSummary(s: AppState): CashSummary {
 
 function buildCashSummary(s: AppState): CashSummary {
   const ops = cashJournal(s)
-  let cashOnHand = 0
+  // The previous shift is handed over to the safe in full, so the day opens
+  // on the float alone. Kept explicit: change the policy and the drawer
+  // balance follows without touching anything else.
+  let cashOnHand = s.shifts[0]?.closingCash ?? 0
   let cashless = 0
   let refunds = 0
   let collected = 0
   let deposits = 0
   let payments = 0
+  let taken = 0
 
   for (const op of ops) {
     if (op.kind === 'Не оплачено') continue
@@ -324,13 +328,16 @@ function buildCashSummary(s: AppState): CashSummary {
     if (op.kind === 'Возврат') refunds += -op.amount
     else if (op.kind === 'Выемка') collected += -op.amount
     else if (op.kind === 'Внесение') deposits += op.amount
-    else payments += 1
+    else {
+      payments += 1
+      taken += op.amount
+    }
   }
 
-  // Выручка is what the shift took in and can account for — cash still in the
-  // drawer plus everything that went through the terminal, the definition the
-  // canvas uses on the Касса and Закрытие смены screens.
-  const revenue = cashOnHand + cashless
+  // Выручка is what the centre actually earned: money taken from clients less
+  // what was handed back. The float and the collection move cash around
+  // without earning anything, so neither belongs here.
+  const revenue = taken - refunds
   return {
     cashOnHand,
     cashless,
@@ -584,7 +591,8 @@ export const actions = {
       ops: summary.ops,
       cash: summary.cashOnHand,
       cashless: summary.cashless,
-      closingCash: input.counted,
+      // The counted cash goes to the safe, so the drawer closes on nothing.
+      closingCash: 0,
       discrepancy,
       status: discrepancy === 0 ? 'closed' : 'discrepancy',
       comment: input.comment,

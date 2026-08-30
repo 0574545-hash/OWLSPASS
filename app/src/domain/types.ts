@@ -163,8 +163,9 @@ export interface Shift {
   /** Cash that went through the drawer during the shift. */
   cash: number
   cashless: number
-  /** What was actually left in the drawer at close, after collections —
-   *  this is what the next shift starts on top of. */
+  /** What was left in the drawer at close. The centre's policy is to hand
+   *  the whole till over to the safe every evening, so this is 0 and each
+   *  day starts on the float alone. */
   closingCash: number
   discrepancy: number
   status: ShiftStatus

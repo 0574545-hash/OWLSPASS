@@ -24,7 +24,8 @@ export function ShiftOpenModal() {
   const admins = users.filter((u) => u.role !== 'Кассир').map((u) => shortForm(u.fullName))
   const cashiers = users.map((u) => shortForm(u.fullName))
 
-  // What the last shift actually left in the drawer, not what passed through it.
+  // The till is handed to the safe in full every evening, so nothing carries
+  // and the day opens on the float alone.
   const carried = previous ? previous.closingCash : 0
 
   return (
@@ -61,6 +62,7 @@ export function ShiftOpenModal() {
                 label={`Смена № ${previous.no} закрыта`}
                 value={previous.closedAt !== undefined ? clock(previous.closedAt) : '—'}
               />
+              <CardRow label="Сдано в сейф" value={money(previous.cash)} />
               <CardRow label="Остаток в кассе" value={money(previous.closingCash)} />
               <CardRow
                 label="Расхождение"

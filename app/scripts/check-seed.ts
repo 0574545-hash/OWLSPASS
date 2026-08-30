@@ -55,13 +55,20 @@ for (const c of seed.clients) {
   }
 }
 
+// Cash taken from clients, less what was handed back — the drawer's float and
+// the collection move money without earning it, so they stay out.
+const taken = seed.orders.reduce(
+  (sum, o) => sum + o.payments.reduce((a, p) => a + p.amount, 0),
+  0,
+)
+
 const rows: [string, unknown, unknown][] = [
   ['Заказов за смену', seed.orders.length, 42],
   ['Открытых заказов', open.length, 7],
   ['Не оплачено', unpaid.length, 5],
   ['Наличные в кассе', money(cashOnHand), '38 420'],
   ['Безнал за смену', money(cashless), '102 920'],
-  ['Выручка (наличные + безнал)', money(cashOnHand + cashless), '141 340'],
+  ['Выручка (принято − возвращено)', money(taken - refunds), '166 340'],
   ['Возвраты', money(refunds), '1 543'],
   ['Инкассировано', money(collected), '30 000'],
   ['Задолженность', money(debt), '13 802'],
