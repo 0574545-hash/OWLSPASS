@@ -360,33 +360,84 @@ export function Pill({ tone, children }: { tone: PillTone; children: ReactNode }
 
 /* ===== Search bar with the orange «+» ===== */
 
+export interface Suggestion {
+  id: string
+  title: string
+  meta: string
+}
+
 export function SearchBar({
   value,
   onChange,
   placeholder,
   onPlus,
   plusLabel,
+  suggestions,
+  onPick,
 }: {
   value: string
   onChange: (v: string) => void
   placeholder: string
   onPlus?: () => void
   plusLabel?: string
+  /** Клиенты, подходящие под запрос — показываются списком под полем. */
+  suggestions?: Suggestion[]
+  onPick?: (id: string) => void
 }) {
+  const [open, setOpen] = useState(false)
+  const box = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const onDown = (e: MouseEvent) => {
+      if (box.current && !box.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onDown)
+    return () => document.removeEventListener('mousedown', onDown)
+  }, [])
+
+  const list = suggestions ?? []
+  const showList = open && list.length > 0
+
   return (
-    <div className="search-wrap">
+    <div className="search-wrap" ref={box}>
       <Search className="search-icon" />
       <input
         className="input"
         type="text"
         value={value}
         placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
+        onFocus={() => setOpen(true)}
+        onChange={(e) => {
+          onChange(e.target.value)
+          setOpen(true)
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') setOpen(false)
+        }}
       />
       {onPlus && (
         <button type="button" className="search-plus" aria-label={plusLabel} title={plusLabel} onClick={onPlus}>
           +
         </button>
+      )}
+
+      {showList && (
+        <div className="picker">
+          {list.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              className="picker-row"
+              onClick={() => {
+                setOpen(false)
+                onPick?.(s.id)
+              }}
+            >
+              <span className="picker-name">{s.title}</span>
+              <span className="picker-meta">{s.meta}</span>
+            </button>
+          ))}
+        </div>
       )}
     </div>
   )

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Modal } from '../components/Modal'
 import {
   Card,
@@ -29,8 +29,10 @@ export function OrderCreateModal() {
   const catalog = useStore((s) => s.catalog)
   const nextNo = useStore(nextOrderNo)
 
-  // Поле клиента пустое: администратор ищет и выбирает сам.
-  const [clientId, setClientId] = useState('')
+  // Поле клиента пустое, если только заказ не создают из поиска по клиенту —
+  // тогда он уже выбран.
+  const [params] = useSearchParams()
+  const [clientId, setClientId] = useState(params.get('client') ?? '')
   const [checkedChildren, setCheckedChildren] = useState<string[]>([])
   const [tab, setTab] = useState<'services' | 'goods'>('services')
   const [qty, setQty] = useState<Record<string, number>>({})

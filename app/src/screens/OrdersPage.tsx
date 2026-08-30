@@ -51,6 +51,24 @@ export function OrdersPage() {
 
   const shown = filtered.slice(0, limit)
 
+  // Клиенты, подходящие под запрос: по клику — новый заказ на них.
+  const q = searchQuery(query)
+  const clientHits = q
+    ? state.clients
+        .filter(
+          (c) =>
+            c.fullName.toLowerCase().includes(q) ||
+            c.children.some((ch) => ch.name.toLowerCase().includes(q)) ||
+            (digitsOnly(q).length > 0 && digitsOnly(c.phone).includes(digitsOnly(q))),
+        )
+        .slice(0, 6)
+        .map((c) => ({
+          id: c.id,
+          title: c.fullName,
+          meta: `${c.phone}${c.children.length ? ` · ${c.children.map((ch) => ch.name).join(', ')}` : ''}`,
+        }))
+    : []
+
   return (
     <Page>
       <PageHead
@@ -65,6 +83,8 @@ export function OrdersPage() {
           placeholder="Поиск по номеру заказа, ФИО родителя, имени ребёнка или телефону"
           onPlus={() => navigate('/clients/new')}
           plusLabel="Добавить клиента"
+          suggestions={clientHits}
+          onPick={(id) => navigate(`/orders/new?client=${id}`)}
         />
         <button className="btn btn-primary" type="button" onClick={() => navigate('/orders/new')}>
           <Plus />
@@ -150,7 +170,7 @@ export function OrdersPage() {
               {shown.length === 0 && (
                 <tr>
                   <td colSpan={11} className="empty">
-                    <EmptyResult query={query} tab={tab} />
+                    <EmptyResult query={query} />
                   </td>
                 </tr>
               )}
@@ -166,46 +186,12 @@ export function OrdersPage() {
   )
 }
 
-/** Пустой результат объясняет, почему пусто: слишком короткий запрос, клиент
- *  без заказов или просто нет совпадений. */
-function EmptyResult({ query, tab }: { query: string; tab: string }) {
-  const navigate = useNavigate()
-  const raw = query.trim()
-  const q = searchQuery(query)
-  const clients = useStore((s) => s.clients)
-
-  if (raw.length > 0 && q === '') {
+/** Пустой результат: либо запрос ещё короткий, либо совпадений нет.
+ *  Найденные клиенты показываются подсказками в самом поиске. */
+function EmptyResult({ query }: { query: string }) {
+  if (query.trim().length > 0 && searchQuery(query) === '') {
     return <>Введите не менее {MIN_SEARCH} символов</>
   }
-
-  // Клиент в базе есть, а заказов у него нет — это самый частый случай, и
-  // «ничего не найдено» тут сбивает с толку.
-  const found = q
-    ? clients.find(
-        (c) =>
-          c.fullName.toLowerCase().includes(q) ||
-          c.children.some((ch) => ch.name.toLowerCase().includes(q)) ||
-          (digitsOnly(q).length > 0 && digitsOnly(c.phone).includes(digitsOnly(q))),
-      )
-    : undefined
-
-  if (found) {
-    return (
-      <>
-        У клиента «{found.fullName}» нет заказов
-        {tab !== 'all' && ' на этой вкладке'}.{' '}
-        <button
-          className="btn btn-secondary btn-sm"
-          type="button"
-          style={{ marginLeft: 6 }}
-          onClick={() => navigate('/orders/new')}
-        >
-          Создать заказ
-        </button>
-      </>
-    )
-  }
-
   return <>Ничего не найдено — измените запрос или выберите другую вкладку</>
 }
 
