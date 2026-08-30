@@ -1,0 +1,163 @@
+/* ============================================================
+   Аква пати CRM — layer on top of the OWLS dashboard kit.
+   Everything here comes from the design canvas
+   («Аква пати - Главный экран.dc.html») and the window format
+   spec («Промт - формат окон (вариант A).md»).
+   ============================================================ */
+
+#app { min-height: 100%; }
+
+/* Navigation is anchors here (real links, real deep-linking) where the
+   canvas drew buttons — strip the anchor look the kit gives them. */
+.sb-item { text-decoration: none; }
+.sb-item:hover { text-decoration: none; }
+
+/* The canvas is a fixed 1440×900 desktop workstation. Below that
+   width the shell scrolls rather than squashing — the prototype
+   hit exactly this problem and was fixed the same way. */
+.viewport { min-width: 1440px; }
+
+/* ===== Compact table mode (used by every list screen) ===== */
+[data-compact] .tbl { font-size: 12.5px; }
+[data-compact] .tbl th { padding: 9px 12px; font-size: 11px; position: sticky; top: 0; z-index: 1; background: #fff; }
+[data-compact] .tbl td { padding: 7px 12px; line-height: 1.35; white-space: normal; overflow: visible; text-overflow: clip; max-width: none; word-break: normal; }
+[data-compact] .tbl td.mono { white-space: nowrap; }
+[data-compact] .btn-sm { padding: 5px 9px; font-size: 11px; }
+[data-compact] .pill { padding: 3px 9px; font-size: 10.5px; }
+
+.subtabs { flex: none; }
+.page > div:first-child { flex: none; }
+
+/* `.input` ships with min-width:160px, which overflows narrow grid
+   columns. Inside modal forms the column is the constraint. */
+.form-grid .input,
+.field-col .input { min-width: 0; }
+
+/* ===== Form field (label above control) ===== */
+.field-col { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--fg-3); min-width: 0; }
+.field-col > .input { color: var(--fg-1); }
+.field-col textarea.input { min-height: 74px; resize: none; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.input:disabled { background: var(--owls-paper); color: var(--fg-3); cursor: not-allowed; }
+
+/* Orange «+» tucked into the right edge of a field — used in the
+   order/client search and on the last child row. */
+.field-plus { position: relative; display: block; }
+.field-plus > .input { width: 100%; padding-right: 44px; }
+.field-plus > button {
+  position: absolute; right: 5px; top: 5px; width: 30px; height: 30px;
+  border: none; border-radius: 8px; background: var(--owls-orange); color: #fff;
+  font: 700 20px var(--font-text); line-height: 1;
+  display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2;
+}
+.field-plus > button:hover { background: var(--owls-orange-600); }
+
+.search-wrap { position: relative; width: 651px; }
+.search-wrap > .input { padding-left: 38px; padding-right: 56px; width: 100%; height: 48px; }
+.search-wrap > .search-icon { position: absolute; left: 13px; top: 16px; width: 16px; height: 16px; color: var(--fg-3); pointer-events: none; }
+.search-wrap > .search-plus {
+  position: absolute; right: 7px; top: 7px; width: 34px; height: 34px;
+  border: none; border-radius: 8px; background: var(--owls-orange); color: #fff;
+  font: 700 22px var(--font-text); line-height: 1;
+  display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2;
+}
+.search-wrap > .search-plus:hover { background: var(--owls-orange-600); }
+
+/* ===== Modal — «формат А»: 1040×720, header 64 / body / footer 68 ===== */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(11, 30, 53, .45);
+  display: flex; align-items: center; justify-content: center; padding: 40px; z-index: 100;
+}
+.modal {
+  width: 1040px; height: 720px; max-height: calc(100vh - 80px);
+  background: #fff; border: 1px solid var(--border-1); border-radius: 14px;
+  display: flex; flex-direction: column; overflow: hidden; box-shadow: var(--shadow-3);
+}
+.modal-head {
+  height: 64px; flex: none; display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; padding: 0 24px; border-bottom: 1px solid var(--border-1);
+}
+.modal-title { font: 800 22px var(--font-display); }
+.modal-body { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 360px; }
+.modal-main { padding: 24px; border-right: 1px solid var(--border-1); display: flex; flex-direction: column; gap: 18px; overflow-y: auto; }
+.modal-aside { padding: 24px; display: flex; flex-direction: column; gap: 14px; background: var(--bg-app); overflow-y: auto; }
+.modal-foot {
+  height: 68px; flex: none; display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; padding: 0 24px; border-top: 1px solid var(--border-1);
+}
+.modal-hint { font-size: 12px; color: var(--fg-3); }
+.modal-actions { display: flex; gap: 8px; }
+
+/* ===== Summary card — the right column's building block ===== */
+.card { border: 1px solid var(--border-1); border-radius: 14px; background: #fff; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.card-kicker { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--fg-3); }
+.card-row { display: flex; justify-content: space-between; font-size: 13px; gap: 12px; }
+.card-row > span:first-child { color: var(--fg-3); }
+.card-rule { height: 1px; background: var(--border-1); margin: 4px 0; }
+.card-total { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.card-total > span:first-child { font-size: 13px; color: var(--fg-3); }
+.card-total > span:last-child { font: 800 26px var(--font-display); }
+.card-total.sm > span:last-child { font-size: 22px; }
+.card-note { font-size: 12px; color: var(--fg-3); text-wrap: pretty; }
+.neg { color: var(--owls-danger-text); }
+.accent { color: var(--owls-orange); }
+
+/* ===== KPI strip ===== */
+.stat { border: 1px solid var(--border-1); border-radius: 14px; background: #fff; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.stat-label { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-3); }
+.stat-value { font: 800 24px var(--font-display); letter-spacing: -.01em; }
+.stat-note { font-size: 12px; color: var(--fg-3); }
+
+/* ===== Catalog row with − qty + stepper ===== */
+.cat-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border-1); }
+.cat-row:last-child { border-bottom: none; }
+.cat-name { font-size: 13px; font-weight: 600; }
+.cat-meta { font-size: 12px; color: var(--fg-3); }
+.stepper { display: flex; align-items: center; gap: 6px; }
+.stepper > button { width: 28px; padding: 0; justify-content: center; }
+.stepper > span { min-width: 20px; text-align: center; font-size: 13px; font-weight: 700; }
+
+/* ===== Segmented choice (Активен / Скрыт, payment methods) ===== */
+.seg { display: flex; gap: 8px; }
+.seg.equal { display: grid; grid-template-columns: repeat(3, 1fr); }
+.seg.equal > .pill-btn { height: 40px; justify-content: center; }
+.pill-btn.on { border-color: var(--owls-orange); color: var(--owls-navy); }
+
+/* ===== File row ===== */
+.file-row { display: flex; align-items: center; gap: 10px; border: 1px solid var(--border-1); border-radius: 10px; padding: 10px 12px; }
+.file-row .file-name { font-size: 13px; }
+.file-row .file-size { margin-left: auto; font-size: 11px; color: var(--fg-3); }
+
+/* ===== List row used by the settings reference lists ===== */
+.ref-row { display: flex; align-items: center; gap: 10px; border: 1px solid var(--border-1); border-radius: 10px; padding: 9px 12px; }
+.ref-row > span { font-size: 13px; flex: 1; }
+
+/* ===== Big choice button (logout screen) ===== */
+.choice {
+  display: flex; align-items: center; gap: 12px; text-align: left; width: 100%;
+  border: 1px solid var(--border-1); border-radius: 12px; background: #fff; padding: 14px; cursor: pointer;
+}
+.choice:hover { background: var(--owls-paper); }
+.choice.on { border-color: var(--owls-orange); }
+.choice-title { display: block; font-size: 14px; font-weight: 600; }
+.choice-sub { display: block; font-size: 12px; color: var(--fg-3); }
+
+/* ===== Login ===== */
+.login-screen { height: 100vh; background: var(--owls-navy); display: flex; align-items: center; justify-content: center; }
+.login-card { width: 460px; background: #fff; border-radius: 14px; padding: 36px 32px; display: flex; flex-direction: column; gap: 22px; }
+.pin-cells { display: flex; gap: 10px; justify-content: center; }
+.pin-cell {
+  width: 52px; height: 60px; border: 1px solid var(--border-1); border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; font: 800 24px var(--font-display);
+}
+.pin-cell.next { border-color: var(--owls-orange); }
+.pin-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.pin-pad > .btn { height: 52px; font: 700 18px var(--font-text); justify-content: center; }
+.pin-error { font-size: 12px; color: var(--owls-danger-text); text-align: center; min-height: 16px; }
+
+/* ===== Table footer strip ===== */
+.list-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 18px; border-top: 1px solid var(--border-1); }
+
+.row-click { cursor: pointer; }
+.empty { padding: 48px 18px; text-align: center; color: var(--fg-3); font-size: 13px; }

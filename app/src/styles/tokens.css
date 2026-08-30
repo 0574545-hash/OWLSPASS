@@ -1,0 +1,194 @@
+/* ============================================================
+   OWLS Design System — Colors & Typography
+   Source: OWLS_BrandBook_v1.0.pdf + space.sellertech.ru product
+   ============================================================ */
+
+/* ---------- Unbounded + Manrope + JetBrains Mono ----------
+   Vendored under src/fonts rather than pulled from Google at runtime:
+   the workstation at the desk has to render correctly with no network. */
+@import url('./fonts.css');
+
+:root {
+  /* ============================================================
+     COLOR PALETTE
+     Two brand colors + neutral scale. Orange is accent only
+     (≤20% of any layout area, per brand book rule).
+     ============================================================ */
+
+  /* Primary brand */
+  --owls-navy:    #0B1E35;   /* Deep Navy — primary base, headlines, marks */
+  --owls-orange:  #F26336;   /* Signal Orange — accent, active state, badges */
+
+  /* Neutrals (warm cream → ink) */
+  --owls-white:    #FFFFFF;  /* Pure White — primary surface */
+  --owls-paper:    #F6F4EF;  /* Paper — secondary / app background, sidebar */
+  --owls-stone:    #E9E5DC;  /* Stone — dividers, hover, tertiary surface */
+  --owls-graphite: #6B7280;  /* Graphite — muted text, icons, placeholders */
+  --owls-ink:      #0B1E35;  /* Ink — primary text (= navy) */
+
+  /* Derived shades (observed in product) */
+  --owls-orange-50:  #FEEFEA;
+  --owls-orange-100: #FBD5C7;
+  --owls-orange-600: #D94B1F;
+  --owls-navy-700:   #16304E;
+  --owls-navy-800:   #0F2742;
+  --owls-line:       #E1DCD0;   /* slightly cooler than stone — table rules */
+  --owls-line-soft:  #EFECE3;
+
+  /* Semantic — status pills (from product screenshots) */
+  --owls-success-bg:   #DCF5E4;
+  --owls-success-text: #1E7A3C;
+  --owls-warn-bg:      #FBE9CA;
+  --owls-warn-text:    #8A5A0F;
+  --owls-info-bg:      #DDE6FB;
+  --owls-info-text:    #2A4FB6;
+  --owls-progress-bg:  #E5DCFB;
+  --owls-progress-text:#5E3FB5;
+  --owls-danger-bg:    #FBD9D9;
+  --owls-danger-text:  #B43232;
+
+  /* Foreground tokens (what to USE in product) */
+  --fg-1: var(--owls-ink);       /* primary text */
+  --fg-2: #2A3A52;               /* secondary text */
+  --fg-3: var(--owls-graphite);  /* tertiary / muted */
+  --fg-4: #9AA1AB;               /* disabled / hint */
+  --fg-inverse: var(--owls-white);
+  --fg-accent:  var(--owls-orange);
+
+  /* Background tokens */
+  --bg-app:     var(--owls-paper);   /* whole-app canvas */
+  --bg-surface: var(--owls-white);   /* cards, panels */
+  --bg-sunken:  var(--owls-stone);   /* inputs disabled, dividers */
+  --bg-accent-soft: var(--owls-orange-50);
+
+  /* Borders */
+  --border-1: var(--owls-line);
+  --border-2: var(--owls-line-soft);
+  --border-strong: #C9C2B1;
+
+  /* ============================================================
+     TYPOGRAPHY
+     Pair: Unbounded (display) + Manrope (text/UI)
+     Both open-source via Google Fonts.
+     ============================================================ */
+
+  --font-display: 'Unbounded', 'Inter', system-ui, sans-serif;
+  --font-text:    'Manrope', 'Inter', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+  /* Type scale (modular, ~1.2 ratio for UI, larger jumps for display) */
+  --text-xs:   12px;
+  --text-sm:   13px;
+  --text-md:   14px;   /* body default in product UI */
+  --text-base: 15px;
+  --text-lg:   17px;
+  --text-xl:   20px;
+  --text-2xl:  24px;
+  --text-3xl:  32px;
+  --text-4xl:  44px;
+  --text-5xl:  60px;
+  --text-6xl:  84px;
+
+  /* Tracking — Unbounded loves loose letter-spacing for short caps */
+  --tracking-tight:  -0.02em;
+  --tracking-normal: 0em;
+  --tracking-wide:   0.04em;
+  --tracking-wider:  0.18em;   /* for the "B R A N D B O O K" style caps */
+
+  /* Line heights */
+  --lh-tight: 1.05;
+  --lh-snug:  1.2;
+  --lh-body:  1.5;
+  --lh-loose: 1.65;
+
+  /* ============================================================
+     SPACING & RADII
+     ============================================================ */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;     /* default — inputs, pills */
+  --radius-lg: 14px;     /* cards, panels */
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+
+  /* ============================================================
+     SHADOWS — minimal, paper-on-paper feel
+     ============================================================ */
+  --shadow-1: 0 1px 0 rgba(11,30,53,0.04), 0 1px 2px rgba(11,30,53,0.04);
+  --shadow-2: 0 2px 8px rgba(11,30,53,0.06), 0 1px 2px rgba(11,30,53,0.04);
+  --shadow-3: 0 8px 24px rgba(11,30,53,0.10), 0 2px 6px rgba(11,30,53,0.05);
+  --shadow-focus: 0 0 0 3px rgba(242,99,54,0.22);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 120ms;
+  --dur-med:  200ms;
+  --dur-slow: 320ms;
+}
+
+/* ============================================================
+   SEMANTIC ELEMENT STYLES
+   Anyone importing this file gets sane defaults out of the box.
+   ============================================================ */
+
+html, body {
+  background: var(--bg-app);
+  color: var(--fg-1);
+  font-family: var(--font-text);
+  font-size: var(--text-md);
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  color: var(--fg-1);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--lh-tight);
+  font-weight: 800;
+  margin: 0;
+}
+
+h1 { font-size: var(--text-5xl); font-weight: 800; }
+h2 { font-size: var(--text-4xl); font-weight: 800; }
+h3 { font-size: var(--text-2xl); font-weight: 700; letter-spacing: var(--tracking-normal); }
+h4 { font-size: var(--text-xl); font-weight: 700; letter-spacing: var(--tracking-normal); }
+h5 { font-size: var(--text-lg); font-weight: 700; letter-spacing: var(--tracking-normal); }
+h6 { font-size: var(--text-md); font-weight: 700; text-transform: uppercase; letter-spacing: var(--tracking-wide); }
+
+p { margin: 0; }
+small { font-size: var(--text-sm); color: var(--fg-3); }
+
+/* Brand-flavored utility classes */
+.eyebrow {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--fg-3);
+}
+.display-spaced {
+  /* The "O W L S — B R A N D B O O K" treatment — caps with tracking & spaces. */
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+}
+.mark-orange { color: var(--owls-orange); }
+.mark-navy   { color: var(--owls-navy); }
+
+code, pre, kbd, samp { font-family: var(--font-mono); font-size: 0.92em; }
