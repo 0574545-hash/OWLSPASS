@@ -114,25 +114,62 @@ await p.waitForTimeout(600)
 const box = await p.locator('.stepper > button').first().boundingBox()
 ok('20. Кнопки ± увеличены', box.width >= 36 && box.height >= 36, `${Math.round(box.width)}×${Math.round(box.height)}`)
 
-/* ---------- 21/22: тарифы в минутах ---------- */
-await p.goto(FILE + '#/directories/item/tariff-2h')
+/* ---------- 21/22: тарифы заводятся заново, в минутах ---------- */
+await p.goto(FILE + '#/directories/tariffs')
 await p.waitForTimeout(600)
-const unitOptions = await p
-  .locator('.modal-main .field-col', { hasText: 'Единица' })
-  .locator('select option')
-  .allTextContents()
-ok('21. В единицах есть «мин»', unitOptions.includes('мин'), unitOptions.join(' | '))
-ok('21. Единицы «час» больше нет', !unitOptions.includes('час'), unitOptions.join(' | '))
+ok(
+  'Тарифов в пустой сборке нет',
+  (await p.locator('.tbl tbody').innerText()).includes('не найдено'),
+  (await p.locator('.tbl tbody').innerText()).replace(/\n/g, ' ').slice(0, 60),
+)
 
+await p.getByRole('button', { name: 'Добавить тариф' }).click()
+await p.waitForTimeout(600)
 const unitSel = p.locator('.modal-main .field-col', { hasText: 'Единица' }).locator('select')
 const durField = p.locator('.modal-main .field-col', { hasText: 'Длительность' }).locator('input')
-ok('21. Тариф измеряется в минутах', (await unitSel.inputValue()) === 'мин', await unitSel.inputValue())
-ok('21. Длительность в минутах', (await durField.inputValue()) === '120', await durField.inputValue())
+const unitOptions = await unitSel.locator('option').allTextContents()
+ok('21. В единицах есть «мин»', unitOptions.includes('мин'), unitOptions.join(' | '))
+ok('21. Единицы «час» больше нет', !unitOptions.includes('час'), unitOptions.join(' | '))
+ok('21. Новый тариф сразу в «мин»', (await unitSel.inputValue()) === 'мин', await unitSel.inputValue())
 ok('21. Длительность активна при единице «мин»', !(await durField.isDisabled()))
 
-await p.locator('.modal-main .field-col', { hasText: 'Единица' }).locator('select').selectOption('шт.')
+await unitSel.selectOption('шт.')
 await p.waitForTimeout(250)
 ok('21. Длительность выключена при другой единице', await durField.isDisabled())
+await unitSel.selectOption('мин')
+await p.waitForTimeout(250)
+
+/* ---------- 22: цена за длительность ---------- */
+const nameF = p.locator('.modal-main .field-col', { hasText: 'Наименование' }).locator('input')
+const priceF = p.locator('.modal-main .field-col', { hasText: 'Цена' }).first().locator('input')
+await nameF.fill('Час игры')
+await durField.fill('60')
+await priceF.fill('1000')
+await p.locator('.modal-foot').getByRole('button', { name: 'Сохранить' }).click()
+await p.waitForTimeout(600)
+ok(
+  '22. Тариф сохранён: мин · 60 · 1 000',
+  (await p.locator('.tbl tbody').innerText()).includes('Час игры'),
+  (await p.locator('.tbl tbody tr').first().innerText()).replace(/\n/g, ' '),
+)
+
+await p.goto(FILE + '#/orders/new')
+await p.waitForTimeout(600)
+const pick = p.locator('.field-plus .input')
+await pick.click()
+await pick.fill('Смирнова')
+await p.waitForTimeout(300)
+await p.locator('.picker-row').first().click()
+await p.waitForTimeout(250)
+await p.locator('.cat-row', { hasText: 'Час игры' }).getByRole('button', { name: 'Увеличить' }).click()
+await p.locator('.modal-foot').getByRole('button', { name: 'Создать заказ' }).click()
+await p.waitForTimeout(700)
+const row = (await p.locator('.tbl tbody tr').first().innerText()).replace(/\n/g, ' ')
+const times = row.match(/(\d\d:\d\d)\s+(\d\d:\d\d)/)
+const span = times ? (Number(times[2].slice(0, 2)) * 60 + Number(times[2].slice(3))) -
+  (Number(times[1].slice(0, 2)) * 60 + Number(times[1].slice(3))) : null
+ok('22. Окончание считается по длительности тарифа (60 мин)', span === 60, `${times?.[1]} — ${times?.[2]}`)
+ok('22. Цена тарифа — за всю длительность (1 000 − 10 %)', row.includes('900'), row)
 
 /* ---------- 23/25: демо-файл ---------- */
 const p2 = await b.newPage({ viewport: { width: 1440, height: 900 } })

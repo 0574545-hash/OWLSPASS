@@ -116,7 +116,8 @@ function initialState(mode: DataMode = 'demo'): AppState {
     houseOps: seed.cashOps,
     users: seed.users,
     shifts: seed.shifts,
-    catalog: CATALOG,
+    // Тарифы заказчик заводит сам — в пустой сборке их нет.
+    catalog: mode === 'clean' ? CATALOG.filter((c) => c.category !== 'Тариф') : CATALOG,
     discountGrounds: DISCOUNT_GROUNDS,
     roles: ROLES,
     notifications: NOTIFICATIONS,
@@ -698,7 +699,9 @@ export const actions = {
       id: nextId('cat'),
       name: '',
       category,
-      unit: category === 'Товар' ? 'шт.' : category === 'Скидка' ? '%' : 'чел.',
+      // Тариф меряется временем: «мин» + длительность + цена за эту длительность.
+      unit:
+        category === 'Товар' ? 'шт.' : category === 'Скидка' ? '%' : category === 'Тариф' ? 'мин' : 'чел.',
       price: 0,
       status: 'active',
       usedInOrders: 0,

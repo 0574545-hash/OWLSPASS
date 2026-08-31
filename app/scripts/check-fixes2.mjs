@@ -1,6 +1,7 @@
 /** Проверяет замечания 7–12. */
 import { chromium } from 'playwright'
 import { resolve } from 'node:path'
+import { addTariff } from './lib-tariff.mjs'
 const FILE = 'file://' + resolve('Аква пати — CRM (пустая касса).html')
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' })
 const p = await b.newPage({ viewport: { width: 1440, height: 900 } })
@@ -25,6 +26,8 @@ ok('7. «Открыть смену» ждёт администратора',
 await adminSel.selectOption('Смирнова Е. В.'); await p.waitForTimeout(200)
 await p.locator('.modal-foot').getByRole('button', { name: 'Открыть смену' }).click()
 await p.waitForTimeout(600)
+// Тарифы заказчик заводит сам — создаём тот, на котором построен сценарий.
+await addTariff(p, FILE)
 
 // 8 — после открытия смены — заказы
 ok('8. Переход на «Заказы»', p.url().includes('/orders'), p.url().split('#')[1])

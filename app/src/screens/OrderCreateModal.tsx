@@ -63,7 +63,7 @@ export function OrderCreateModal() {
       items,
       comment,
       manualDiscount,
-      tariffItemId: tariffItem?.id ?? 'tariff-2h',
+      tariffItemId: tariffItem?.id ?? '',
       tariffLabel: labelFor(tariffItem),
     })
     // Окно закрывается: карточка заказа нужна, когда его открывают из списка.
@@ -223,7 +223,7 @@ export function pickTariff(catalog: CatalogItem[], qty: Record<string, number>):
 }
 
 export function labelFor(item: CatalogItem | undefined): string {
-  if (!item) return 'Разовый, 2 ч'
+  if (!item) return 'Без тарифа'
   if (item.category === 'Услуга') return 'Праздничная программа'
   if (isUnlimitedItem(item)) return 'Безлимит'
   const hours = (item.durationMin ?? 120) / 60

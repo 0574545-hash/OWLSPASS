@@ -1,6 +1,7 @@
 /** Поиск на «Заказах» выводит ФИО; клик подставляет клиента в новый заказ. */
 import { chromium } from 'playwright'
 import { resolve } from 'node:path'
+import { addTariff } from './lib-tariff.mjs'
 const FILE = 'file://' + resolve('Аква пати — CRM (пустая касса).html')
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' })
 const p = await b.newPage({ viewport: { width: 1440, height: 900 } })
@@ -14,6 +15,8 @@ await p.waitForTimeout(600)
 await p.locator('.field-col', { hasText: 'Администратор' }).locator('select').selectOption('Смирнова Е. В.')
 await p.locator('.modal-foot').getByRole('button', { name: 'Открыть смену' }).click()
 await p.waitForTimeout(600)
+// Тарифы заказчик заводит сам — создаём тот, на котором построен сценарий.
+await addTariff(p, FILE)
 
 const box = p.locator('.search-wrap .input')
 await box.click(); await box.fill('Зыков'); await p.waitForTimeout(400)

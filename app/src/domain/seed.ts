@@ -213,7 +213,8 @@ const price = (id: string) => CATALOG.find((c) => c.id === id)!.price
 /** Duration of the tariff/service that governs an order's окончание. */
 export function tariffDuration(itemId: string, catalog: CatalogItem[] = CATALOG): number {
   const item = catalog.find((c) => c.id === itemId)
-  if (!item) return 120
+  // Тариф не выбран или его удалили из справочника — времени не ограничиваем.
+  if (!item) return UNLIMITED
   // Единица «мин» без длительности — безлимитный тариф.
   return item.durationMin ?? (item.unit === 'мин' ? UNLIMITED : 120)
 }

@@ -1,6 +1,7 @@
 /** Проверяет шесть замечаний заказчика. */
 import { chromium } from 'playwright'
 import { resolve } from 'node:path'
+import { addTariff } from './lib-tariff.mjs'
 const FILE = 'file://' + resolve('Аква пати — CRM (пустая касса).html')
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' })
 const p = await b.newPage({ viewport: { width: 1440, height: 900 } })
@@ -14,6 +15,8 @@ for (const d of '1111') await p.getByRole('button', { name: d, exact: true }).cl
 await p.waitForTimeout(500)
 await p.locator('.field-col', { hasText: 'Администратор' }).locator('select').selectOption('Смирнова Е. В.'); await p.waitForTimeout(150)
 await p.getByRole('button', { name: 'Открыть смену' }).click(); await p.waitForTimeout(400)
+// Тарифы заказчик заводит сам — создаём тот, на котором построен сценарий.
+await addTariff(p, FILE)
 
 await p.goto(FILE + '#/orders/new'); await p.waitForTimeout(600)
 const field = p.locator('.field-plus .input')

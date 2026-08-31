@@ -1,6 +1,7 @@
 /** Проходит ваш сценарий на пустой кассе: внесение → заказ → оплата → сверка. */
 import { chromium } from 'playwright'
 import { resolve } from 'node:path'
+import { addTariff } from './lib-tariff.mjs'
 const FILE = 'file://' + resolve('Аква пати — CRM.html')
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' })
 const p = await b.newPage({ viewport: { width: 1440, height: 900 } })
@@ -40,6 +41,9 @@ await p.locator('.modal-foot').getByRole('button', { name: 'Внести' }).cli
 await p.waitForTimeout(500)
 step('Наличные в кассе', await txt('.stat-value'))
 step('Операций в журнале', await p.locator('.tbl tbody tr').count())
+
+// Тарифы заводит заказчик — создаём тот, на котором построен сценарий.
+await addTariff(p, FILE)
 
 console.log('\n=== 2. Новый заказ ===')
 await p.goto(FILE + '#/orders/new'); await p.waitForTimeout(600)
