@@ -123,12 +123,35 @@ export function maskPhone(raw: string): string {
 }
 
 /** Дата заполнена и правдоподобна. */
+/** Настоящая календарная дата: «31.02.2020» и «99.99.9999» не проходят. */
 export function isDateComplete(value: string): boolean {
   const d = digitsOnly(value)
   if (d.length !== DATE_DIGITS) return false
   const day = Number(d.slice(0, 2))
   const month = Number(d.slice(2, 4))
-  return day >= 1 && day <= 31 && month >= 1 && month <= 12
+  const year = Number(d.slice(4))
+  if (month < 1 || month > 12 || day < 1 || year < 1900) return false
+  const dt = new Date(year, month - 1, day)
+  return dt.getFullYear() === year && dt.getMonth() === month - 1 && dt.getDate() === day
+}
+
+/** Дата в прошлом или сегодня — для дней рождения. */
+export function isPastDate(value: string): boolean {
+  if (!isDateComplete(value)) return false
+  const d = digitsOnly(value)
+  const dt = new Date(Number(d.slice(4)), Number(d.slice(2, 4)) - 1, Number(d.slice(0, 2)))
+  const today = new Date()
+  today.setHours(23, 59, 59, 999)
+  return dt <= today
+}
+
+/** Ошибка даты рождения — общая для родителя и ребёнка. */
+export function birthDateError(value: string): string {
+  if (value.trim() === '') return ''
+  if (digitsOnly(value).length !== DATE_DIGITS) return 'Заполните дату целиком'
+  if (!isDateComplete(value)) return 'Такой даты не бывает'
+  if (!isPastDate(value)) return 'Дата в будущем'
+  return ''
 }
 
 export function isPhoneComplete(value: string): boolean {
@@ -148,12 +171,9 @@ export function isChildNameValid(name: string): boolean {
 export const CHILD_MIN_YEAR = 2010
 
 export function childBirthError(value: string): string {
-  const d = digitsOnly(value)
-  if (d.length !== DATE_DIGITS) return 'Заполните дату целиком'
-  if (!isDateComplete(value)) return 'Такой даты не бывает'
-  const year = Number(d.slice(4))
-  if (year < CHILD_MIN_YEAR) return `Не раньше ${CHILD_MIN_YEAR} года`
-  if (year > new Date().getFullYear()) return 'Дата в будущем'
+  const common = birthDateError(value)
+  if (common) return common
+  if (Number(digitsOnly(value).slice(4)) < CHILD_MIN_YEAR) return `Не раньше ${CHILD_MIN_YEAR} года`
   return ''
 }
 
@@ -162,4 +182,66 @@ export function childBirthError(value: string): string {
  *  ни адрес, ни режим работы, ни «Разовое посещение, 2 ч». */
 export function onlyCyrillic(value: string): string {
   return value.replace(/[A-Za-z]/g, '')
+}
+
+/** Скидка — процент, а не что угодно: 0–100 включительно. */
+export const MAX_DISCOUNT_PCT = 100
+
+export function clampPercent(raw: string): number {
+  const n = Number(digitsOnly(raw))
+  if (!Number.isFinite(n)) return 0
+  return Math.min(MAX_DISCOUNT_PCT, Math.max(0, n))
+}
+
+/** Телефон на экране: «+7 (921) 448-12-06». Хранится всегда 10 цифр. */
+export function formatPhone(value: string): string {
+  const d = digitsOnly(value).slice(0, PHONE_DIGITS)
+  if (d.length === 0) return ''
+  let out = `+7 (${d.slice(0, 3)}`
+  if (d.length >= 3) out += ')'
+  if (d.length > 3) out += ` ${d.slice(3, 6)}`
+  if (d.length > 6) out += `-${d.slice(6, 8)}`
+  if (d.length > 8) out += `-${d.slice(8, 10)}`
+  return out
+}
+
+export function phoneError(value: string): string {
+  if (value.trim() === '') return ''
+  return isPhoneComplete(value) ? '' : `Нужно ${PHONE_DIGITS} цифр`
+}
+
+/** Потолок для любой денежной операции: миллион рублей за раз. */
+export const MAX_AMOUNT = 1_000_000
+
+const WEEKDAYS = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота']
+const MONTHS_GEN = [
+  'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+  'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
+]
+
+/** «30.08.2026» → Date. Пустая или битая строка — undefined. */
+export function parseDate(value: string): Date | undefined {
+  const d = digitsOnly(value)
+  if (d.length !== DATE_DIGITS) return undefined
+  const dt = new Date(Number(d.slice(4)), Number(d.slice(2, 4)) - 1, Number(d.slice(0, 2)))
+  return Number.isNaN(dt.getTime()) ? undefined : dt
+}
+
+/** День недели считается из даты, а не задаётся руками. */
+export function weekday(value: string): string {
+  const dt = parseDate(value)
+  return dt ? WEEKDAYS[dt.getDay()]! : DASH
+}
+
+/** «30 августа» — заголовок смены. */
+export function dayAndMonth(value: string): string {
+  const dt = parseDate(value)
+  return dt ? `${dt.getDate()} ${MONTHS_GEN[dt.getMonth()]}` : value
+}
+
+/** Сегодняшняя дата в «дд.мм.гггг». */
+export function today(): string {
+  const d = new Date()
+  const p2 = (n: number) => String(n).padStart(2, '0')
+  return `${p2(d.getDate())}.${p2(d.getMonth() + 1)}.${d.getFullYear()}`
 }

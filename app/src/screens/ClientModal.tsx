@@ -13,7 +13,19 @@ import {
   TextArea,
   TextField,
 } from '../components/ui'
-import { CHILD_MIN_YEAR, DASH, childBirthError, isChildNameValid, money } from '../lib/format'
+import {
+  CHILD_MIN_YEAR,
+  DASH,
+  MAX_DISCOUNT_PCT,
+  birthDateError,
+  childBirthError,
+  clampPercent,
+  digitsOnly,
+  isChildNameValid,
+  isPhoneComplete,
+  money,
+  phoneError,
+} from '../lib/format'
 import { actions, clientBalance, useCan, useStore } from '../state/store'
 import type { Child, Client } from '../domain/types'
 
@@ -30,6 +42,7 @@ export function ClientModal() {
   const existing = useStore((s) => s.clients.find((c) => c.id === id))
   const grounds = useStore((s) => s.discountGrounds)
   const balance = useStore((s) => (id ? clientBalance(s, id) : 0))
+  const allClients = useStore((s) => s.clients)
 
   const mayEdit = useCan('clients.edit')
   const mayCreate = useCan('clients.create')
@@ -91,15 +104,42 @@ export function ClientModal() {
     close()
   }
 
+  const phoneErr = phoneError(draft.phone)
+  const birthErr = birthDateError(draft.birthDate)
+  // Один телефон — один клиент: иначе в поиске две одинаковые карточки.
+  const duplicate =
+    isPhoneComplete(draft.phone) &&
+    allClients.some((c) => c.id !== draft.id && digitsOnly(c.phone) === digitsOnly(draft.phone))
+  const phoneMessage = duplicate ? 'Клиент с таким телефоном уже есть' : phoneErr
+
+  // Скидка без основания не сохраняется: иначе непонятно, за что она дана.
+  const discountError =
+    draft.discountPct > 0 && draft.discountGround.trim() === ''
+      ? 'Выберите основание скидки'
+      : draft.discountPct > MAX_DISCOUNT_PCT
+        ? `Не больше ${MAX_DISCOUNT_PCT} %`
+        : ''
+
   const childrenOk = children.every((c) => childBlank(c) || childValid(c))
   const mayWrite = isNew ? mayCreate : mayEdit
-  const canSave = mayWrite && draft.fullName.trim() !== '' && draft.phone.trim() !== '' && childrenOk
+  const canSave =
+    mayWrite &&
+    draft.fullName.trim() !== '' &&
+    isPhoneComplete(draft.phone) &&
+    !duplicate &&
+    birthErr === '' &&
+    childrenOk &&
+    discountError === ''
 
   return (
     <Modal
       title={isNew ? 'Добавить клиента' : draft.fullName}
       onClose={close}
-      hint={isNew ? 'Обязательные поля: ФИО и телефон' : 'Изменения применяются к новым заказам клиента'}
+      hint={
+        isNew
+          ? 'Обязательные поля: ФИО и телефон из 10 цифр'
+          : 'Изменения применяются к новым заказам клиента'
+      }
       actions={
         isNew ? (
           <>
@@ -159,23 +199,33 @@ export function ClientModal() {
       <TextField label="ФИО родителя" value={draft.fullName} onChange={(v) => patch({ fullName: v })} />
 
       <div className="form-grid">
-        <PhoneField label="Телефон" value={draft.phone} onChange={(v) => patch({ phone: v })} />
-        <DateField label="Дата рождения" value={draft.birthDate} onChange={(v) => patch({ birthDate: v })} />
+        <PhoneField
+          label="Телефон"
+          value={draft.phone}
+          onChange={(v) => patch({ phone: v })}
+          error={phoneMessage}
+        />
+        <DateField
+          label="Дата рождения родителя"
+          value={draft.birthDate}
+          onChange={(v) => patch({ birthDate: v })}
+          error={birthErr}
+        />
       </div>
 
       <div className="form-grid">
         <SelectField
           label="Основание скидки"
           value={draft.discountGround}
-          options={grounds.map((g) => g.name)}
+          options={['', ...grounds.map((g) => g.name)]}
           onChange={mayDiscount ? applyGround : () => undefined}
         />
         <TextField
           label="Скидка"
+          placeholder="0–100 %"
           value={draft.discountPct > 0 ? `${draft.discountPct} %` : ''}
-          onChange={
-            mayDiscount ? (v) => patch({ discountPct: Number(v.replace(/\D/g, '')) || 0 }) : undefined
-          }
+          onChange={mayDiscount ? (v) => patch({ discountPct: clampPercent(v) }) : undefined}
+          error={discountError}
         />
       </div>
 

@@ -27,7 +27,12 @@ ok('15. Основание перед скидкой', labels[0].includes('Ос�
 // 14 — телефон
 const phone = F('Телефон')
 await phone.click(); await phone.type('+7 (921) 448-12-06')
-ok('14. Телефон 10 цифр без +7', (await phone.inputValue()) === '9214481206', await phone.inputValue())
+// Теперь на экране маска, а в данных те же 10 цифр.
+ok(
+  '14. Телефон 10 цифр в маске',
+  (await phone.inputValue()) === '+7 (921) 448-12-06',
+  await phone.inputValue(),
+)
 
 // 16 — автопереход после телефона
 ok('16. Фокус ушёл дальше после телефона',

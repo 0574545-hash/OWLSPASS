@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Page } from '../components/AppShell'
 import { ListFoot, PageHead, SearchBar, SortableTh, SubTabs } from '../components/ui'
-import { DASH, MIN_SEARCH, digitsOnly, money, percent, plural, searchQuery } from '../lib/format'
+import { DASH, MIN_SEARCH, digitsOnly, formatPhone, money, percent, plural, searchQuery } from '../lib/format'
 import { clientBalance, debtSummary, useCan, useStore } from '../state/store'
 import { ageOf } from './OrdersPage'
 
@@ -116,7 +116,7 @@ export function ClientsPage() {
                   <td>
                     <div style={{ fontWeight: 600 }}>{r.fullName}</div>
                   </td>
-                  <td className="mono">{r.phone}</td>
+                  <td className="mono">{formatPhone(r.phone)}</td>
                   <td>{r.children || DASH}</td>
                   <td>{percent(r.discountPct)}</td>
                   <td className="mono">{r.lastVisit}</td>

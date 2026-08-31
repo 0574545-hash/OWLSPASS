@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { Plus } from 'lucide-react'
 import { Page } from '../components/AppShell'
 import { ListFoot, PageHead, Pill, SearchBar, SortableTh, SubTabs } from '../components/ui'
-import { DASH, MIN_SEARCH, clock, digitsOnly, duration, money, percent, plural, searchQuery } from '../lib/format'
-import { elapsed, endTime, paymentLabel, statusLabel, statusTone } from '../domain/rules'
+import { DASH, MIN_SEARCH, clock, digitsOnly, duration, formatPhone, money, percent, plural, searchQuery } from '../lib/format'
+import { effectiveStatus, elapsed, endTime, paymentLabel, statusLabel, statusTone } from '../domain/rules'
 import { clientOf, tariffDurationOf, tariffTermsOf, totalsOf, useCan, useStore, type AppState } from '../state/store'
 import type { Order } from '../domain/types'
 
@@ -67,7 +67,7 @@ export function OrdersPage() {
         .map((c) => ({
           id: c.id,
           title: c.fullName,
-          meta: `${c.phone}${c.children.length ? ` · ${c.children.map((ch) => ch.name).join(', ')}` : ''}`,
+          meta: `${formatPhone(c.phone)}${c.children.length ? ` · ${c.children.map((ch) => ch.name).join(', ')}` : ''}`,
         }))
     : []
 
@@ -167,7 +167,14 @@ export function OrdersPage() {
                   <td className="mono" style={r.discount === 0 ? { color: 'var(--fg-3)' } : undefined}>
                     {percent(r.discount)}
                   </td>
-                  <td style={{ fontWeight: 700 }}>{money(r.sum)}</td>
+                  <td style={{ fontWeight: 700 }}>
+                    {money(r.sum)}
+                    {r.refunded > 0 && (
+                      <div className="neg" style={{ fontSize: 11, fontWeight: 600 }}>
+                        возврат {money(r.refunded)}
+                      </div>
+                    )}
+                  </td>
                   <td>
                     <Pill tone={r.tone}>{r.statusLabel}</Pill>
                   </td>
@@ -217,6 +224,7 @@ export interface OrderRow {
   payment: string
   discount: number
   sum: number
+  refunded: number
   remainder: number
   status: Order['status']
   statusLabel: string
@@ -249,10 +257,12 @@ export function buildRow(s: AppState, order: Order): OrderRow {
     discount: client?.discountPct ?? 0,
     // The column shows what the order is worth after discounts, before the
     // time surcharge — the surcharge has a column of its own.
-    sum: Math.max(0, totals.items - totals.discount - totals.manualDiscount),
+    // Возврат уменьшает то, что заказ в итоге принёс.
+    sum: Math.max(0, totals.items - totals.discount - totals.manualDiscount - totals.refunded),
+    refunded: totals.refunded,
     remainder: totals.remainder,
-    status: order.status,
-    statusLabel: statusLabel(order),
+    status: effectiveStatus(order, totals),
+    statusLabel: statusLabel(order, totals),
     tone: statusTone(order, client, tariffTermsOf(s, order.tariffItemId)),
   }
 }

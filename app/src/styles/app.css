@@ -15,7 +15,11 @@
 /* The canvas is a fixed 1440×900 desktop workstation. Below that
    width the shell scrolls rather than squashing — the prototype
    hit exactly this problem and was fixed the same way. */
-.viewport { min-width: 1440px; }
+/* Рабочее место — десктоп, но при 1200 px список не должен обрезаться:
+   узкой становится не страница, а сама таблица внутри карточки. */
+.viewport { min-width: 1180px; }
+[data-compact] > div { overflow-x: auto; }
+[data-compact] .tbl { min-width: 1040px; }
 
 /* ===== Compact table mode (used by every list screen) ===== */
 [data-compact] .tbl { font-size: 12.5px; }

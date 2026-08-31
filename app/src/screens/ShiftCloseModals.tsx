@@ -113,14 +113,15 @@ export function ShiftReportModal() {
 
   const done = () => {
     actions.finishShiftReport()
-    navigate('/')
+    // Смена закрыта, но работа не окончена: показываем историю смен.
+    navigate('/cash/shifts')
   }
 
   return (
     <Modal
       title={`Смена № ${report.no} закрыта`}
       onClose={done}
-      hint="Отчёт уже сохранён в истории смен"
+      hint="Отчёт сохранён в истории смен — выйти из системы можно в шапке"
       actions={
         <>
           <button className="btn btn-secondary" type="button" onClick={done}>
@@ -136,7 +137,8 @@ export function ShiftReportModal() {
         <>
           <Card>
             <CardRow label="Операций" value={report.ops} />
-            <CardRow label="Наличные" value={money(report.cash)} />
+            <CardRow label="Наличные по расчёту" value={money(report.cash)} />
+            <CardRow label="Фактически в кассе" value={money(report.counted)} />
             <CardRow label="Безнал" value={money(report.cashless)} />
             <CardRow label="Возвраты" value={money(-report.refunds)} tone="neg" />
             <CardRow label="Инкассировано" value={money(report.collected)} />

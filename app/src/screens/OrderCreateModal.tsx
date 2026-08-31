@@ -43,8 +43,9 @@ export function OrderCreateModal() {
   const client = clients.find((c) => c.id === clientId)
   const balance = useStore((s) => (clientId ? clientBalance(s, clientId) : 0))
 
-  const services = catalog.filter((c) => c.status !== 'hidden' && (c.category === 'Тариф' || c.category === 'Услуга'))
-  const goods = catalog.filter((c) => c.status !== 'hidden' && c.category === 'Товар')
+  // В заказ идут только активные позиции: «На согласовании» ещё не продаётся.
+  const services = catalog.filter((c) => c.status === 'active' && (c.category === 'Тариф' || c.category === 'Услуга'))
+  const goods = catalog.filter((c) => c.status === 'active' && c.category === 'Товар')
   const visible = tab === 'services' ? services : goods
 
   const items = useMemo(() => toItems(catalog, qty, nextNo), [catalog, qty, nextNo])
@@ -189,7 +190,12 @@ export function OrderCreateModal() {
 
       <TextArea label="Комментарий к заказу" value={comment} onChange={setComment} />
       {mayDiscount && (
-        <MoneyField label="Разовая скидка" value={manualDiscount} onChange={setManualDiscount} />
+        <MoneyField
+          label="Разовая скидка"
+          value={manualDiscount}
+          // Скидка не может быть больше того, что осталось после процентной.
+          onChange={(v) => setManualDiscount(Math.min(v, Math.max(0, gross - discount)))}
+        />
       )}
     </Modal>
   )

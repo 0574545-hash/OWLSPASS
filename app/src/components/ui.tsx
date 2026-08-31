@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState, type ChangeEvent, type ReactNode } from 'react'
 import { ArrowDown, Check, ChevronsUpDown, Search } from 'lucide-react'
 import {
+  MAX_AMOUNT,
   MIN_SEARCH,
   digitsOnly,
+  formatPhone,
   isDateComplete,
   isPhoneComplete,
   maskDate,
@@ -76,23 +78,29 @@ export function MoneyField({
   value,
   onChange,
   disabled,
+  error,
+  max = MAX_AMOUNT,
 }: {
   label: string
   value: number
   onChange?: (v: number) => void
   disabled?: boolean
+  error?: string
+  /** Потолок суммы: миллион за операцию, если не сказано иное. */
+  max?: number
 }) {
   return (
-    <Field label={label}>
+    <Field label={label} error={error}>
       <input
-        className="input"
+        className={error ? 'input invalid' : 'input'}
         type="text"
         inputMode="numeric"
         value={money(value)}
         disabled={disabled || !onChange}
         onChange={(e) => {
           const digits = e.target.value.replace(/[^\d]/g, '')
-          onChange?.(digits === '' ? 0 : Number(digits))
+          const next = digits === '' ? 0 : Number(digits)
+          onChange?.(Math.min(next, max))
         }}
       />
     </Field>
@@ -297,7 +305,7 @@ export function ClientPicker({
             <button key={c.id} type="button" className="picker-row" onClick={() => choose(c.id)}>
               <span className="picker-name">{c.fullName}</span>
               <span className="picker-meta">
-                {c.phone}
+                {formatPhone(c.phone)}
                 {c.children.length > 0 && ` · ${c.children.map((ch) => ch.name).join(', ')}`}
               </span>
             </button>
@@ -377,21 +385,24 @@ export function PhoneField({
   value,
   onChange,
   className = '',
+  error,
 }: {
   label: string
   value: string
   onChange?: (v: string) => void
   className?: string
+  error?: string
 }) {
   return (
-    <Field label={label} className={className}>
+    <Field label={label} className={className} error={error}>
       <input
-        className="input"
+        className={error ? 'input invalid' : 'input'}
         type="text"
         inputMode="numeric"
-        placeholder="10 цифр без +7"
-        maxLength={11}
-        value={value}
+        placeholder="+7 (___) ___-__-__"
+        maxLength={18}
+        // На экране маска, в данных — те же 10 цифр, что и раньше.
+        value={formatPhone(value)}
         disabled={!onChange}
         onChange={(e) => {
           const next = maskPhone(e.target.value)

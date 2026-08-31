@@ -122,6 +122,19 @@ export function paidTotal(order: Order): number {
   return order.payments.reduce((sum, p) => sum + p.amount, 0)
 }
 
+/** Сколько штук позиции уже вернули. */
+export function refundedQty(order: Order, orderItemId: string): number {
+  return order.refunds.reduce(
+    (sum, r) => sum + r.lines.filter((l) => l.orderItemId === orderItemId).reduce((n, l) => n + l.qty, 0),
+    0,
+  )
+}
+
+/** Позиции, которые ещё числятся за заказом: возвращённые не в счёт. */
+export function livePositions(order: Order): number {
+  return order.items.filter((i) => i.qty - refundedQty(order, i.id) > 0).length
+}
+
 export function refundedTotal(order: Order): number {
   return order.refunds.reduce((sum, r) => sum + r.amount, 0)
 }
@@ -187,8 +200,16 @@ export function statusTone(
   return remainder > 0 ? 'warn' : 'success'
 }
 
-export function statusLabel(order: Order): string {
-  return order.status === 'open' ? 'Открыт' : 'Закрыт'
+/** Статус, каким его видит зал. Остаток никогда не кэшируется: если после
+ *  правки состава, цены или возврата платить снова есть за что, заказ
+ *  возвращается в «Открыт» сам. */
+export function effectiveStatus(order: Order, totals: OrderTotals): Order['status'] {
+  return totals.remainder > 0 ? 'open' : order.status
+}
+
+export function statusLabel(order: Order, totals?: OrderTotals): string {
+  const status = totals ? effectiveStatus(order, totals) : order.status
+  return status === 'open' ? 'Открыт' : 'Закрыт'
 }
 
 /** The «Оплата» column: the method actually used, qualified when the

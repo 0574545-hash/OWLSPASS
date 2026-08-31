@@ -32,10 +32,10 @@ import {
   buildSeed,
   tariffDuration,
 } from '../domain/seed'
-import { NOW, SHIFT_DATE, now, orderTotals, setNowSource, wallClock } from '../domain/rules'
+import { NOW, SHIFT_DATE, effectiveStatus, now, orderTotals, setNowSource, wallClock } from '../domain/rules'
 import { ALL_PERMISSION_IDS } from '../domain/permissions'
 import type { TariffTerms } from '../domain/rules'
-import { shortName } from '../lib/format'
+import { DASH, shortName, today } from '../lib/format'
 
 export interface CurrentShift {
   no: number
@@ -93,6 +93,8 @@ export interface ShiftReport {
   cashless: number
   refunds: number
   collected: number
+  /** Сколько денег насчитали руками при закрытии. */
+  counted: number
   discrepancy: number
   revenue: number
   comment: string
@@ -107,7 +109,8 @@ function initialState(mode: DataMode = 'demo'): AppState {
     shiftStarted: false,
     shift: {
       no: CURRENT_SHIFT_NO,
-      date: SHIFT_DATE,
+      // Демо-смена стоит на дате макета, рабочая живёт по календарю.
+      date: mode === 'clean' ? today() : SHIFT_DATE,
       openedAt: 9 * 60,
       admin: 'Смирнова Е. В.',
       cashier: 'Бекетов И. С.',
@@ -319,6 +322,20 @@ function buildCashJournal(s: AppState): CashOp[] {
       })
     }
 
+    // Бесплатный визит — операция на 0: денег нет, а след в кассе есть.
+    if (order.freeReason) {
+      ops.push({
+        id: `op-${order.no}-free`,
+        at: order.closedAt ?? order.createdAt,
+        orderNo: order.no,
+        subject: name,
+        kind: 'Бесплатно',
+        method: 'Без оплаты',
+        amount: 0,
+        cashier: s.shift.cashier,
+      })
+    }
+
     // An order with nothing paid still belongs in the journal — that is where
     // the administrator picks it up with «Оплатить».
     if (order.payments.length === 0 && order.status === 'open') {
@@ -424,7 +441,9 @@ export function debtSummary(s: AppState): { total: number; clients: number } {
 }
 
 export function openOrders(s: AppState): Order[] {
-  return derive(s, 'openOrders', () => s.orders.filter((o) => o.status === 'open'))
+  return derive(s, 'openOrders', () =>
+    s.orders.filter((o) => effectiveStatus(o, totalsOf(s, o)) === 'open'),
+  )
 }
 
 export function unpaidOrders(s: AppState): Order[] {
@@ -488,11 +507,14 @@ export const actions = {
   openShift(input: {
     opening: number
     admin: string
+    /** Кого выбрали администратором — он и кассир встают «в смену». */
+    adminId?: string
     cashier: string
     comment: string
     /** Момент открытия — фактический, а не плановый. */
     openedAt: Minutes
   }): void {
+    const onShift = new Set([input.adminId, state.session.userId].filter(Boolean) as string[])
     set({
       shiftStarted: true,
       shift: {
@@ -503,6 +525,7 @@ export const actions = {
         cashier: input.cashier,
         openComment: input.comment,
       },
+      users: state.users.map((u) => (onShift.has(u.id) ? { ...u, presence: 'in-shift' } : u)),
     })
   },
 
@@ -536,7 +559,13 @@ export const actions = {
       status: 'open',
       refunds: [],
     }
-    set({ orders: [order, ...state.orders] })
+    set({
+      orders: [order, ...state.orders],
+      // Заказ — это и есть визит: счётчик и дата обновляются здесь.
+      clients: state.clients.map((c) =>
+        c.id === input.clientId ? { ...c, visits: c.visits + 1, lastVisit: state.shift.date } : c,
+      ),
+    })
     return order
   },
 
@@ -579,12 +608,37 @@ export const actions = {
   },
 
   /** «Закрыть заказ» — only legal with nothing outstanding. */
-  closeOrder(orderId: string): void {
-    const order = state.orders.find((o) => o.id === orderId)
-    if (!order || totalsOf(state, order).remainder > 0) return
+  /** «Вернуть в работу» — снять закрытие, чтобы поправить состав.
+   *  Фактическое окончание визита сохраняется: доплата за время уже
+   *  посчитана и заново не набегает. */
+  reopenOrder(orderId: string): void {
     set({
       orders: state.orders.map((o) =>
-        o.id === orderId ? { ...o, status: 'closed', closedAt: o.closedAt ?? now() } : o,
+        o.id === orderId ? { ...o, status: 'open', closedAt: undefined } : o,
+      ),
+    })
+  },
+
+  /** Закрытие заказа. Если денег по нему не прошло вовсе — обязательно
+   *  основание: такой визит должен быть виден в журнале кассы. */
+  closeOrder(orderId: string, freeReason?: string): void {
+    const order = state.orders.find((o) => o.id === orderId)
+    if (!order) return
+    const totals = totalsOf(state, order)
+    if (totals.remainder > 0) return
+    const free = totals.paid === 0 && totals.payable === 0
+    if (free && !freeReason) return
+    set({
+      orders: state.orders.map((o) =>
+        o.id === orderId
+          ? {
+              ...o,
+              status: 'closed',
+              closedAt: o.closedAt ?? now(),
+              endedAt: o.endedAt ?? now(),
+              freeReason: free ? freeReason : o.freeReason,
+            }
+          : o,
       ),
     })
   },
@@ -621,6 +675,9 @@ export const actions = {
       method: 'Наличные',
       amount: input.amount,
       cashier: shortName(input.to.split(',')[0]!.trim()),
+      from: input.from,
+      to: input.to,
+      comment: input.comment,
     }
     set({ houseOps: [...state.houseOps, op] })
   },
@@ -629,11 +686,14 @@ export const actions = {
     const op: CashOp = {
       id: nextId('op'),
       at: now(),
-      subject: 'Инкассация',
+      subject: input.ground,
       kind: 'Выемка',
       method: 'Наличные',
       amount: -input.amount,
       cashier: shortName(input.to.split(',')[0]!.trim()),
+      from: input.from,
+      to: input.to,
+      comment: input.comment,
     }
     set({ houseOps: [...state.houseOps, op] })
   },
@@ -650,6 +710,7 @@ export const actions = {
       cashier: state.shift.cashier,
       ops: summary.ops,
       cash: summary.cashOnHand,
+      counted: input.counted,
       cashless: summary.cashless,
       refunds: summary.refunds,
       collected: summary.collected,
@@ -689,8 +750,10 @@ export const actions = {
     return report
   },
 
+  /** Отчёт закрыт. Из системы не выбрасываем: смену ещё смотрят в истории,
+   *  а выйти можно кнопкой в шапке. */
   finishShiftReport(): void {
-    set({ lastReport: null, shiftStarted: false, session: { userId: null, locked: false } })
+    set({ lastReport: null })
   },
 
   saveClient(client: Client): void {
@@ -715,7 +778,8 @@ export const actions = {
       children: [],
       since: SHIFT_DATE,
       visits: 0,
-      lastVisit: SHIFT_DATE,
+      // Визитов ещё не было — дата появится с первым заказом.
+      lastVisit: DASH,
       seededBalance: 0,
       ordersTotal: 0,
     }

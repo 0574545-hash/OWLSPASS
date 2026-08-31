@@ -33,8 +33,10 @@ export function PaymentModal() {
       : undefined
   const due = dueTotals?.remainder ?? 0
   const [given, setGiven] = useState<number | null>(null)
-  const tendered = given ?? due
-  const change = Math.max(0, tendered - due)
+  // Сдачу считают только с наличных: карта и СБП списывают ровно сумму.
+  const cash = method === 'Наличные'
+  const tendered = cash ? (given ?? due) : due
+  const change = cash ? Math.max(0, tendered - due) : 0
 
   if (!order || !dueTotals) {
     return (
@@ -60,6 +62,13 @@ export function PaymentModal() {
             className="btn btn-primary"
             type="button"
             disabled={tendered < due || due <= 0}
+            title={
+              due <= 0
+                ? 'По заказу нет остатка к оплате'
+                : tendered < due
+                  ? `Постоплата отключена: принимается вся сумма, не меньше ${money(due)}`
+                  : 'Принять оплату'
+            }
             onClick={() => {
               actions.payOrder(order.id, { amount: due, method, comment })
               navigate('/orders')
@@ -91,18 +100,20 @@ export function PaymentModal() {
                 label={
                   earlier ? `Оплачено ${earlier.method.toLowerCase()} ${clock(earlier.at)}` : 'Оплачено ранее'
                 }
-                value={`−${money(dueTotals.paid)}`}
+                value={money(dueTotals.paid)}
               />
             )}
             <CardTotal label="К оплате" value={money(due)} />
           </Card>
 
-          <div className="card" style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: 13, color: 'var(--fg-3)' }}>Сдача</span>
-            <span style={{ font: '800 22px var(--font-display)', color: 'var(--owls-orange)' }}>
-              {money(change)}
-            </span>
-          </div>
+          {cash && (
+            <div className="card" style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 13, color: 'var(--fg-3)' }}>Сдача</span>
+              <span style={{ font: '800 22px var(--font-display)', color: 'var(--owls-orange)' }}>
+                {money(change)}
+              </span>
+            </div>
+          )}
 
           <div className="card-note">
             Фактическое окончание фиксируется в момент оплаты: если время вышло за тариф, в расчёт
@@ -114,7 +125,10 @@ export function PaymentModal() {
       <Segmented
         equal
         value={method}
-        onChange={setMethod}
+        onChange={(v) => {
+          setMethod(v)
+          setGiven(null)
+        }}
         options={[
           { value: 'Наличные', label: 'Наличные', icon: <Banknote /> },
           { value: 'Карта', label: 'Карта', icon: <CreditCard /> },
@@ -123,7 +137,12 @@ export function PaymentModal() {
       />
 
       <MoneyField label="К оплате" value={due} />
-      <MoneyField label="Внесено" value={tendered} onChange={setGiven} />
+      <MoneyField
+        label="Внесено"
+        value={tendered}
+        onChange={cash ? setGiven : undefined}
+        disabled={!cash}
+      />
       <TextArea label="Комментарий" value={comment} onChange={setComment} />
     </Modal>
   )

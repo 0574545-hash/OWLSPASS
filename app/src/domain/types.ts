@@ -112,6 +112,9 @@ export interface Order {
   payments: Payment[]
   status: OrderStatus
   refunds: Refund[]
+  /** Заказ закрыт без денег: почему именно. Пустой заказ без основания
+   *  закрыть нельзя — иначе он теряется в учёте. */
+  freeReason?: string
 }
 
 export interface RefundLine {
@@ -138,6 +141,7 @@ export type CashOpKind =
   | 'Выемка'
   | 'Внесение'
   | 'Не оплачено'
+  | 'Бесплатно'
 
 export interface CashOp {
   id: string
@@ -146,9 +150,13 @@ export interface CashOp {
   /** Client name, or «Инкассация» / «Открытие смены» for house operations. */
   subject: string
   kind: CashOpKind
-  method: PaymentMethod | 'Не оплачено'
+  method: PaymentMethod | 'Не оплачено' | 'Без оплаты'
   amount: number
   cashier: string
+  /** Внесение и выемка: кто передал деньги и кто принял. */
+  from?: string
+  to?: string
+  comment?: string
 }
 
 export type ShiftStatus = 'open' | 'closed' | 'discrepancy'
@@ -239,4 +247,6 @@ export interface PaymentSettings {
   depositGrounds: string[]
   discrepancyReasons: string[]
   refundReasons: string[]
+  /** Основания закрытия заказа с нулевой суммой. */
+  freeReasons: string[]
 }

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowDownToLine, ArrowUpFromLine, Lock } from 'lucide-react'
 import { Page } from '../components/AppShell'
 import { ListFoot, PageHead, Pill, SortableTh, Stat, SubTabs } from '../components/ui'
-import { DASH, clock, counted, money, plural } from '../lib/format'
+import { DASH, clock, counted, money, plural, shortName } from '../lib/format'
 import { cashJournal, cashSummary, useCan, useStore } from '../state/store'
 
 const PAGE = 12
@@ -60,7 +60,11 @@ function OpsTab() {
       />
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, margin: '0 0 20px' }}>
-        <Stat label="Наличные в кассе" value={money(summary.cashOnHand)} note="после инкассации" />
+        <Stat
+          label="Наличные в кассе"
+          value={money(summary.cashOnHand)}
+          note={summary.collected > 0 ? `после изъятия ${money(summary.collected)}` : 'изъятий не было'}
+        />
         <Stat label="Безнал за смену" value={money(summary.cashless)} note="карта и СБП" />
         <Stat
           label="Средний чек"
@@ -97,6 +101,7 @@ function OpsTab() {
                 <th style={{ width: 150 }}>Способ</th>
                 <th style={{ width: 140 }}>Сумма</th>
                 <th style={{ width: 150 }}>Кассир</th>
+                <th style={{ width: 220 }}>Кто передал → принял</th>
                 <th style={{ width: 88 }} />
               </tr>
             </thead>
@@ -117,6 +122,9 @@ function OpsTab() {
                       {money(op.amount)}
                     </td>
                     <td>{op.cashier}</td>
+                    <td className={op.from ? '' : 'muted'}>
+                      {op.from ? `${shortName(op.from.split(',')[0]!.trim())} → ${shortName(op.to?.split(',')[0]?.trim() ?? '')}` : DASH}
+                    </td>
                     <td>
                       <div className="cell-actions">
                         {unpaid && op.orderNo ? (
@@ -151,7 +159,7 @@ function OpsTab() {
               })}
               {shown.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="empty">
+                  <td colSpan={9} className="empty">
                     Операций пока нет — внесите деньги в кассу или создайте заказ
                   </td>
                 </tr>

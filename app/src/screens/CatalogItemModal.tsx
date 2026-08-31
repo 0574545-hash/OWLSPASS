@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Trash2 } from 'lucide-react'
+import { EyeOff, Trash2 } from 'lucide-react'
 import { Modal } from '../components/Modal'
 import { Card, CardRow, CardTotal, MoneyField, Segmented, SelectField, TextField } from '../components/ui'
 import { money } from '../lib/format'
@@ -21,6 +21,8 @@ export function CatalogItemModal() {
   const back = () => navigate(-1)
 
   const existing = useStore((s) => s.catalog.find((c) => c.id === id))
+  // Позицию, по которой прошли заказы, физически не удаляют: иначе из
+  // старых чеков пропадёт наименование.
   const mayEdit = useCan('catalog.edit')
   const mayDelete = useCan('catalog.delete')
   const [draft, setDraft] = useState<CatalogItem>(
@@ -37,24 +39,41 @@ export function CatalogItemModal() {
 
   const patch = (p: Partial<CatalogItem>) => setDraft((d) => ({ ...d, ...p }))
 
+  const used = draft.usedInOrders ?? 0
   const byMinutes = draft.unit === DURATION_UNIT
   // Экстра-время есть только там, где есть от чего его отсчитывать.
   const hasDuration = byMinutes && !!draft.durationMin
 
   return (
     <Modal
-      title={draft.name || 'Новая позиция'}
+      title={draft.name || (existing ? 'Редактирование позиции' : 'Новая позиция')}
       onClose={back}
       footerLeft={
         existing && mayDelete ? (
-          <button
-            className="btn btn-ghost btn-sm"
-            type="button"
-            onClick={() => navigate(`/directories/item/${existing.id}/delete`)}
-          >
-            <Trash2 />
-            Удалить
-          </button>
+          used > 0 ? (
+            <button
+              className="btn btn-ghost btn-sm"
+              type="button"
+              title={`Позиция уже в ${used} заказах — её нельзя удалить, только скрыть`}
+              disabled={draft.status === 'hidden'}
+              onClick={() => {
+                actions.saveCatalogItem({ ...draft, status: 'hidden' })
+                back()
+              }}
+            >
+              <EyeOff />
+              {draft.status === 'hidden' ? 'Уже скрыта' : 'Скрыть'}
+            </button>
+          ) : (
+            <button
+              className="btn btn-ghost btn-sm"
+              type="button"
+              onClick={() => navigate(`/directories/item/${existing.id}/delete`)}
+            >
+              <Trash2 />
+              Удалить
+            </button>
+          )
         ) : (
           <span className="modal-hint">Позиция появится в каталоге сразу после сохранения</span>
         )

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Modal } from '../components/Modal'
 import { Card, CardKicker, CardRow, CardTotal, MoneyField, SelectField, TextArea } from '../components/ui'
-import { clock, money } from '../lib/format'
+import { DASH, MAX_AMOUNT, clock, money } from '../lib/format'
 import { actions, cashJournal, cashSummary, useStore } from '../state/store'
 
 /** Screen 13 — «Внесение»: cash into the drawer.
@@ -38,6 +38,7 @@ export function DepositModal() {
             className="btn btn-primary"
             type="button"
             disabled={amount <= 0}
+            title={amount <= 0 ? 'Укажите сумму внесения' : 'Внести'}
             onClick={() => {
               actions.deposit({ amount, ground, from, to, comment })
               close()
@@ -51,7 +52,7 @@ export function DepositModal() {
         <>
           <Card>
             <CardRow label="Сейчас в кассе" value={money(summary.cashOnHand)} />
-            <CardRow label="Внесение" value={`+${money(amount)}`} />
+            <CardRow label="Внесение" value={amount > 0 ? `+${money(amount)}` : DASH} />
             <CardTotal label="Станет в кассе" value={money(summary.cashOnHand + amount)} />
           </Card>
 
@@ -71,7 +72,12 @@ export function DepositModal() {
         </>
       }
     >
-      <MoneyField label="Сумма внесения" value={amount} onChange={setAmount} />
+      <MoneyField
+        label="Сумма внесения"
+        value={amount}
+        onChange={setAmount}
+        error={amount >= MAX_AMOUNT ? `Не больше ${money(MAX_AMOUNT)} за операцию` : ''}
+      />
       <SelectField label="Основание" value={ground} options={grounds} onChange={setGround} />
       <div className="form-grid">
         <SelectField label="Кто внёс" value={from} options={[from]} onChange={setFrom} />
@@ -116,6 +122,13 @@ export function CollectionModal() {
             className="btn btn-primary"
             type="button"
             disabled={amount <= 0 || tooMuch}
+            title={
+              tooMuch
+                ? `В кассе только ${money(summary.cashOnHand)} — изъять больше нельзя`
+                : amount <= 0
+                  ? 'Укажите сумму выемки'
+                  : 'Провести выемку'
+            }
             onClick={() => {
               actions.collect({ amount, ground, from, to, comment })
               close()
@@ -129,7 +142,7 @@ export function CollectionModal() {
         <>
           <Card>
             <CardRow label="Сейчас в кассе" value={money(summary.cashOnHand)} />
-            <CardRow label="Выемка" value={`−${money(amount)}`} tone="neg" />
+            <CardRow label="Выемка" value={amount > 0 ? `−${money(amount)}` : DASH} tone="neg" />
             <CardTotal
               label="Останется в кассе"
               value={money(summary.cashOnHand - amount)}
@@ -154,7 +167,18 @@ export function CollectionModal() {
         </>
       }
     >
-      <MoneyField label="Сумма выемки" value={amount} onChange={setAmount} />
+      <MoneyField
+        label="Сумма выемки"
+        value={amount}
+        onChange={setAmount}
+        error={
+          tooMuch
+            ? `В кассе только ${money(summary.cashOnHand)}`
+            : amount >= MAX_AMOUNT
+              ? `Не больше ${money(MAX_AMOUNT)} за операцию`
+              : ''
+        }
+      />
       <SelectField label="Основание" value={ground} options={grounds} onChange={setGround} />
       <div className="form-grid">
         <SelectField label="Кто передал" value={from} options={[from]} onChange={setFrom} />

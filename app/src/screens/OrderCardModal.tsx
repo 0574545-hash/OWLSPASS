@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Printer, Undo2 } from 'lucide-react'
+import { Printer, RotateCcw, Undo2 } from 'lucide-react'
 import { Modal } from '../components/Modal'
 import {
   Card,
@@ -11,11 +11,20 @@ import {
   Checkbox,
   Field,
   Pill,
+  SelectField,
   SubTabs,
   TextArea,
 } from '../components/ui'
 import { DASH, clock, duration, money } from '../lib/format'
-import { elapsed, endTime, statusLabel, statusTone } from '../domain/rules'
+import {
+  effectiveStatus,
+  elapsed,
+  endTime,
+  livePositions,
+  refundedQty,
+  statusLabel,
+  statusTone,
+} from '../domain/rules'
 import { actions, clientOf, tariffDurationOf, tariffTermsOf, totalsOf, useCan, useStore } from '../state/store'
 import { ageOf } from './OrdersPage'
 
@@ -44,6 +53,8 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
   const mayPrint = useCan('orders.print')
   const [tab, setTab] = useState<'services' | 'goods'>('services')
   const [comment, setComment] = useState(order?.comment ?? '')
+  const freeReasons = useStore((s) => s.paymentSettings.freeReasons)
+  const [freeReason, setFreeReason] = useState('')
 
   useEffect(() => {
     if (order) setComment(order.comment)
@@ -58,13 +69,29 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
   }
 
   const dur = tariffDurationOf(state, order.tariffItemId)
+  // Закрытый заказ не правят: сумма уже прошла по кассе. Чтобы поменять
+  // состав, его сначала возвращают в работу.
+  const locked = effectiveStatus(order, totals) === 'closed'
+  // Заказ на нулевую сумму, по которому денег не прошло: закрываем только
+  // с основанием, чтобы визит не пропал из учёта.
+  const freeVisit = !locked && totals.payable === 0 && totals.paid === 0 && order.items.length > 0
+  const freeReady = !freeVisit || freeReason !== ''
   const tone = statusTone(order, client, tariffTermsOf(state, order.tariffItemId))
-  const services = catalog.filter((c) => c.status !== 'hidden' && (c.category === 'Тариф' || c.category === 'Услуга'))
-  const goods = catalog.filter((c) => c.status !== 'hidden' && c.category === 'Товар')
+  // В заказ идут только активные позиции: «На согласовании» ещё не продаётся.
+  const services = catalog.filter((c) => c.status === 'active' && (c.category === 'Тариф' || c.category === 'Услуга'))
+  const goods = catalog.filter((c) => c.status === 'active' && c.category === 'Товар')
   const visible = tab === 'services' ? services : goods
 
   const qtyOf = (catalogItemId: string) =>
     order.items.find((i) => i.catalogItemId === catalogItemId)?.qty ?? 0
+
+  /** «· возвращено 1 из 1» рядом с ценой, если по позиции был возврат. */
+  const returnedMeta = (catalogItemId: string) => {
+    const line = order.items.find((i) => i.catalogItemId === catalogItemId)
+    if (!line) return ''
+    const back = refundedQty(order, line.id)
+    return back > 0 ? ` · возвращено ${back} из ${line.qty}` : ''
+  }
 
   const setQty = (catalogItemId: string, next: number) => {
     const c = catalog.find((x) => x.id === catalogItemId)!
@@ -102,8 +129,8 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
       hint={
         readOnly
           ? 'Просмотр заказа — изменить ничего нельзя'
-          : order.status === 'closed'
-          ? 'Заказ закрыт — оплачен полностью'
+          : locked
+          ? 'Заказ закрыт: состав не меняется. Чтобы поправить — «Вернуть в работу»'
           : totals.remainder > 0
             ? `Остаток ${money(totals.remainder)} — примите оплату, тогда заказ можно будет закрыть`
             : 'Остатка нет — заказ можно закрыть'
@@ -123,21 +150,39 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
           </>
         ) : (
         <>
+          {locked && (
+            <button
+              className="btn btn-secondary"
+              type="button"
+              disabled={!mayEdit}
+              title={
+                mayEdit
+                  ? 'Снять закрытие, чтобы поправить состав'
+                  : 'Нет права «Изменение состава»'
+              }
+              onClick={() => actions.reopenOrder(order.id)}
+            >
+              <RotateCcw />
+              Вернуть в работу
+            </button>
+          )}
           <button
             className="btn btn-secondary"
             type="button"
-            disabled={!mayClose || totals.remainder > 0 || order.status === 'closed'}
+            disabled={!mayClose || totals.remainder > 0 || locked || !freeReady}
             title={
               !mayClose
                 ? 'Нет права «Закрытие заказа»'
-                : order.status === 'closed'
+                : locked
                 ? 'Заказ уже закрыт'
                 : totals.remainder > 0
                   ? `Сначала примите оплату: остаток ${money(totals.remainder)}`
-                  : 'Закрыть заказ'
+                  : !freeReady
+                    ? 'Укажите основание: по заказу не прошло ни рубля'
+                    : 'Закрыть заказ'
             }
             onClick={() => {
-              actions.closeOrder(order.id)
+              actions.closeOrder(order.id, freeVisit ? freeReason : undefined)
               close()
             }}
           >
@@ -164,7 +209,7 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
       aside={
         <>
           <Card>
-            <CardRow label={`Позиции · ${order.items.length}`} value={money(totals.items)} />
+            <CardRow label={`Позиции · ${livePositions(order)}`} value={money(totals.items)} />
             <CardRow
               label={client && client.discountPct > 0 ? `Скидка ${client.discountPct} %` : 'Скидка'}
               value={totals.discount > 0 ? `−${money(totals.discount)}` : DASH}
@@ -181,7 +226,7 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
             {totals.refunded > 0 && (
               <CardRow label="Возвращено" value={`−${money(totals.refunded)}`} tone="neg" />
             )}
-            <CardRow label="Оплачено" value={totals.paid > 0 ? `−${money(totals.paid)}` : DASH} />
+            <CardRow label="Оплачено" value={totals.paid > 0 ? money(totals.paid) : DASH} />
             <CardTotal
               label="Остаток"
               value={money(totals.remainder)}
@@ -208,7 +253,7 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
 
           <div className="card" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <span style={{ fontSize: 13, color: 'var(--fg-3)' }}>Статус</span>
-            <Pill tone={tone}>{statusLabel(order)}</Pill>
+            <Pill tone={tone}>{statusLabel(order, totals)}</Pill>
           </div>
         </>
       }
@@ -252,21 +297,28 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
               <tr>
                 <th>Наименование</th>
                 <th style={{ width: 90 }}>Кол-во</th>
+                <th style={{ width: 120 }}>Возвращено</th>
                 <th style={{ width: 110 }}>Цена</th>
                 <th style={{ width: 110 }}>Сумма</th>
               </tr>
             </thead>
             <tbody>
-              {order.items.map((i) => (
-                <tr key={i.id}>
-                  <td>{i.name}</td>
-                  <td>
-                    {i.qty} {i.unit}
-                  </td>
-                  <td className="mono">{money(i.price)}</td>
-                  <td style={{ fontWeight: 700 }}>{money(i.price * i.qty)}</td>
-                </tr>
-              ))}
+              {order.items.map((i) => {
+                const back = refundedQty(order, i.id)
+                return (
+                  <tr key={i.id}>
+                    <td>{i.name}</td>
+                    <td>
+                      {i.qty} {i.unit}
+                    </td>
+                    <td className={back > 0 ? 'neg' : 'muted'}>
+                      {back > 0 ? `возвращено ${back} из ${i.qty}` : DASH}
+                    </td>
+                    <td className="mono">{money(i.price)}</td>
+                    <td style={{ fontWeight: 700 }}>{money(i.price * i.qty)}</td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
@@ -287,9 +339,9 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
               <CatalogRow
                 key={c.id}
                 name={c.name}
-                meta={`${c.unit} · ${money(c.price)}`}
+                meta={`${c.unit} · ${money(c.price)}${returnedMeta(c.id)}`}
                 qty={qtyOf(c.id)}
-                onChange={mayEdit ? (next) => setQty(c.id, next) : undefined}
+                onChange={mayEdit && !locked ? (next) => setQty(c.id, next) : undefined}
               />
             ))}
           </div>
@@ -308,6 +360,15 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
             </div>
           ))}
         </div>
+      )}
+
+      {freeVisit && (
+        <SelectField
+          label="Основание бесплатного визита"
+          value={freeReason}
+          options={['', ...freeReasons]}
+          onChange={setFreeReason}
+        />
       )}
 
       <TextArea

@@ -24,7 +24,11 @@ export function RefundModal() {
   const [mode, setMode] = useState<'whole' | 'lines'>('lines')
   const [picked, setPicked] = useState<Record<string, number>>({})
   const [reason, setReason] = useState(reasons[0] ?? '')
-  const [method, setMethod] = useState<PaymentMethod>('Наличные')
+  // Возврат идёт тем же способом, каким платили: иначе картой оплаченный
+  // заказ опустошает денежный ящик.
+  const paidBy = order?.payments[order.payments.length - 1]?.method
+  const [method, setMethod] = useState<PaymentMethod>(paidBy ?? 'Наличные')
+  const [otherWayOk, setOtherWayOk] = useState(false)
 
   /** Already-refunded quantities cap what can still go back. */
   const returnable = useMemo(() => {
@@ -59,6 +63,8 @@ export function RefundModal() {
   const payout = Math.max(0, gross - discountBack)
   // Never hand back more than the client actually paid.
   const capped = Math.min(payout, totals.paid - totals.refunded)
+  const otherWay = paidBy !== undefined && method !== paidBy
+  const methodBlocked = otherWay && !otherWayOk
 
   return (
     <Modal
@@ -73,7 +79,14 @@ export function RefundModal() {
           <button
             className="btn btn-primary"
             type="button"
-            disabled={capped <= 0}
+            disabled={capped <= 0 || methodBlocked}
+            title={
+              methodBlocked
+                ? `Заказ оплачен «${paidBy}» — подтвердите возврат другим способом`
+                : capped <= 0
+                  ? 'Выберите, что возвращать'
+                  : 'Провести возврат'
+            }
             onClick={() => {
               actions.refundOrder(order.id, { lines, amount: capped, reason, method })
               back()
@@ -157,7 +170,10 @@ export function RefundModal() {
           label="Способ возврата"
           value={method}
           options={['Наличные', 'Карта', 'СБП по QR']}
-          onChange={(v) => setMethod(v as PaymentMethod)}
+          onChange={(v) => {
+            setMethod(v as PaymentMethod)
+            setOtherWayOk(false)
+          }}
         />
         <SelectField
           label="Кто оформляет"
@@ -166,6 +182,17 @@ export function RefundModal() {
           onChange={() => undefined}
         />
       </div>
+
+      {otherWay && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <span className="field-error">
+            Заказ оплачен «{paidBy}» — возврат «{method}» опустошает денежный ящик.
+          </span>
+          <Checkbox checked={otherWayOk} onChange={() => setOtherWayOk(!otherWayOk)}>
+            Подтверждаю возврат другим способом, причина указана выше
+          </Checkbox>
+        </div>
+      )}
     </Modal>
   )
 }
