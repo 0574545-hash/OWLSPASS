@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { Plus, ShieldCheck, ShieldPlus, UserPlus } from 'lucide-react'
 import { Page } from '../components/AppShell'
 import { Checkbox, ListFoot, PageHead, PhoneField, Pill, SubTabs, TextField } from '../components/ui'
-import { clock, plural } from '../lib/format'
+import { clock, onlyCyrillic, plural } from '../lib/format'
 import { actions, cashJournal, useCan, useStore, type DataMode } from '../state/store'
 import { ALL_PERMISSION_IDS, PERMISSION_SECTIONS, permissionsOfSection } from '../domain/permissions'
 import type { AccessRights, PaymentSettings, Requisites } from '../domain/types'
@@ -304,9 +304,9 @@ function RequisitesTab() {
           <div className="card-kicker">Контакты для клиентов</div>
           <div className="form-grid">
             <PhoneField label="Телефон" value={draft.phone} onChange={(v) => patch({ phone: v })} />
-            <TextField label="Почта" value={draft.email} onChange={(v) => patch({ email: v })} />
+            <TextField label="Почта" latin value={draft.email} onChange={(v) => patch({ email: v })} />
           </div>
-          <TextField label="Сайт" value={draft.site} onChange={(v) => patch({ site: v })} />
+          <TextField label="Сайт" latin value={draft.site} onChange={(v) => patch({ site: v })} />
           <TextField
             label="Режим работы центра"
             value={draft.schedule}
@@ -343,7 +343,8 @@ function PaymentsTab() {
     }))
 
   const addTo = (key: ListKey, label: string) => {
-    const value = window.prompt(label)
+    const raw = window.prompt(label)
+    const value = onlyCyrillic(raw ?? '').trim()
     if (!value) return
     setDraft((d) => ({ ...d, [key]: [...d[key], value] }))
   }
@@ -390,7 +391,7 @@ function PaymentsTab() {
                   className="btn btn-ghost btn-sm"
                   type="button"
                   onClick={() => {
-                    const next = window.prompt('Изменить', value)
+                    const next = onlyCyrillic(window.prompt('Изменить', value) ?? '').trim()
                     if (!next) return
                     setDraft((d) => ({
                       ...d,

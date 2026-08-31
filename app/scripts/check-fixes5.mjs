@@ -73,11 +73,8 @@ const childName = p.locator('.modal-main .field-plus input')
 await childName.click()
 await childName.type('Misha')
 await p.waitForTimeout(200)
-ok(
-  '19. Латиница в имени — ошибка',
-  (await p.locator('.field-error').first().textContent()) === 'Только буквы кириллицы',
-  await p.locator('.field-error').first().textContent(),
-)
+// Латиница теперь не набирается вовсе — поле остаётся пустым.
+ok('19. Латиница в имени не вводится', (await childName.inputValue()) === '', `«${await childName.inputValue()}»`)
 ok('19. «+» всё ещё выключен', await plus.isDisabled())
 
 await childName.fill('')

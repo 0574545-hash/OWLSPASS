@@ -55,10 +55,15 @@ export function OrderCreateModal() {
 
   // The tariff line drives окончание; the longest-running chosen line wins.
   const tariffItem = pickTariff(catalog, qty)
+  // Только штучное, без временной услуги — продажа через прилавок: такой
+  // заказ незачем держать открытым, его сразу оплачивают и закрывают.
+  const goodsOnly = items.length > 0 && tariffItem === undefined
+  const mayPay = useCan('orders.pay')
+  const payNow = goodsOnly && mayPay
 
   const create = () => {
-    if (!clientId || items.length === 0) return
-    actions.createOrder({
+    if (items.length === 0) return
+    const order = actions.createOrder({
       clientId,
       childIds: checkedChildren,
       items,
@@ -67,8 +72,8 @@ export function OrderCreateModal() {
       tariffItemId: tariffItem?.id ?? '',
       tariffLabel: labelFor(tariffItem),
     })
-    // Окно закрывается: карточка заказа нужна, когда его открывают из списка.
-    navigate('/orders')
+    // Штучная продажа уходит прямо в оплату, остальные — в список.
+    navigate(payNow ? `/orders/${order.no}/pay` : '/orders')
   }
 
   return (
@@ -76,10 +81,10 @@ export function OrderCreateModal() {
       title="Новый заказ"
       onClose={close}
       hint={
-        !clientId
-          ? 'Выберите клиента — начните вводить ФИО, имя ребёнка или телефон'
-          : items.length === 0
-            ? 'Добавьте хотя бы одну позицию'
+        items.length === 0
+          ? 'Добавьте хотя бы одну позицию. Клиента можно не выбирать — для продажи с прилавка'
+          : payNow
+            ? 'Только штучные позиции — сразу примем оплату и закроем заказ'
             : 'Заказ появится в списке со статусом «Открыт»'
       }
       actions={
@@ -91,12 +96,10 @@ export function OrderCreateModal() {
             className="btn btn-primary"
             type="button"
             onClick={create}
-            disabled={!clientId || items.length === 0}
-            title={
-              !clientId ? 'Сначала выберите клиента' : items.length === 0 ? 'Добавьте позиции' : 'Создать заказ'
-            }
+            disabled={items.length === 0}
+            title={items.length === 0 ? 'Добавьте позиции' : 'Создать заказ'}
           >
-            Создать заказ
+            {payNow ? 'Принять оплату' : 'Создать заказ'}
           </button>
         </>
       }
@@ -219,7 +222,8 @@ export function pickTariff(catalog: CatalogItem[], qty: Record<string, number>):
     .filter(([id, n]) => n > 0 && id !== 'tariff-overtime')
     .map(([id]) => catalog.find((c) => c.id === id))
     .filter((c): c is CatalogItem => !!c && (!!c.durationMin || isUnlimitedItem(c)))
-  if (chosen.length === 0) return catalog.find((c) => c.id === 'tariff-2h')
+  // Нет ни одной временной позиции — тарифа у заказа нет.
+  if (chosen.length === 0) return undefined
   const unlimited = chosen.find(isUnlimitedItem)
   if (unlimited) return unlimited
   return chosen.reduce((a, b) => ((a.durationMin ?? 0) >= (b.durationMin ?? 0) ? a : b))

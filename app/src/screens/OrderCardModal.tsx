@@ -215,7 +215,12 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <Field label="Клиент">
-          <input className="input" type="text" value={client?.fullName ?? ''} disabled />
+          <input
+            className="input"
+            type="text"
+            value={client?.fullName ?? 'Без клиента'}
+            disabled
+          />
         </Field>
         {client && client.children.length > 0 && (
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

@@ -156,3 +156,10 @@ export function childBirthError(value: string): string {
   if (year > new Date().getFullYear()) return 'Дата в будущем'
   return ''
 }
+
+/** Ввод текста — только кириллицей: латинские буквы не набираются.
+ *  Цифры, пробелы и знаки препинания остаются — без них не написать
+ *  ни адрес, ни режим работы, ни «Разовое посещение, 2 ч». */
+export function onlyCyrillic(value: string): string {
+  return value.replace(/[A-Za-z]/g, '')
+}

@@ -283,7 +283,8 @@ function buildCashJournal(s: AppState): CashOp[] {
 
   for (const order of s.orders) {
     const client = clientOf(s, order.clientId)
-    const name = client?.fullName ?? '—'
+    // Продажа с прилавка идёт без клиента — так и подписываем.
+    const name = client?.fullName ?? 'Без клиента'
 
     for (const p of order.payments) {
       ops.push({

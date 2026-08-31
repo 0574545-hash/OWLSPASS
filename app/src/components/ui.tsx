@@ -8,6 +8,7 @@ import {
   maskDate,
   maskPhone,
   money,
+  onlyCyrillic,
 } from '../lib/format'
 
 /* ===== Form fields ===== */
@@ -41,6 +42,7 @@ export function TextField({
   placeholder,
   className = '',
   error,
+  latin = false,
 }: {
   label: string
   value: string
@@ -49,6 +51,8 @@ export function TextField({
   placeholder?: string
   className?: string
   error?: string
+  /** Поля, которые по природе латинские: почта и сайт. */
+  latin?: boolean
 }) {
   return (
     <Field label={label} className={className} error={error}>
@@ -58,7 +62,9 @@ export function TextField({
         value={value}
         placeholder={placeholder}
         disabled={disabled || !onChange}
-        onChange={(e: ChangeEvent<HTMLInputElement>) => onChange?.(e.target.value)}
+        onChange={(e: ChangeEvent<HTMLInputElement>) =>
+          onChange?.(latin ? e.target.value : onlyCyrillic(e.target.value))
+        }
       />
     </Field>
   )
@@ -137,7 +143,7 @@ export function TextArea({
         className="input"
         value={value}
         disabled={disabled || !onChange}
-        onChange={(e) => onChange?.(e.target.value)}
+        onChange={(e) => onChange?.(onlyCyrillic(e.target.value))}
       />
     </Field>
   )
@@ -182,7 +188,7 @@ export function FieldWithPlus({
             type="text"
             value={value}
             disabled={!onChange}
-            onChange={(e) => onChange?.(e.target.value)}
+            onChange={(e) => onChange?.(onlyCyrillic(e.target.value))}
           />
         )}
         <button
@@ -264,7 +270,7 @@ export function ClientPicker({
             setOpen(true)
           }}
           onChange={(e) => {
-            setQuery(e.target.value)
+            setQuery(onlyCyrillic(e.target.value))
             setOpen(true)
           }}
           onKeyDown={(e) => {
@@ -523,7 +529,7 @@ export function SearchBar({
         placeholder={placeholder}
         onFocus={() => setOpen(true)}
         onChange={(e) => {
-          onChange(e.target.value)
+          onChange(onlyCyrillic(e.target.value))
           setOpen(true)
         }}
         onKeyDown={(e) => {

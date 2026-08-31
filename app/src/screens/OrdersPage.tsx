@@ -125,8 +125,9 @@ export function OrdersPage() {
                 <th style={{ width: 84 }}>Окончание</th>
                 <th style={{ width: 76 }}>Прошло</th>
                 <th style={{ width: 80 }}>Доплата</th>
-                <th style={{ width: 230 }}>Клиент</th>
-                <th style={{ width: 180 }}>Тариф</th>
+                <th style={{ width: 200 }}>Клиент</th>
+                <th style={{ width: 150 }}>Тариф</th>
+                <th style={{ width: 200 }}>Комментарий</th>
                 <th style={{ width: 120 }}>Оплата</th>
                 <th style={{ width: 84 }}>Скидка</th>
                 <th style={{ width: 96 }}>Сумма</th>
@@ -161,6 +162,7 @@ export function OrdersPage() {
                   <td>
                     <div>{r.tariff}</div>
                   </td>
+                  <td className={r.comment ? '' : 'muted'}>{r.comment || DASH}</td>
                   <td>{r.payment}</td>
                   <td className="mono" style={r.discount === 0 ? { color: 'var(--fg-3)' } : undefined}>
                     {percent(r.discount)}
@@ -173,7 +175,7 @@ export function OrdersPage() {
               ))}
               {shown.length === 0 && (
                 <tr>
-                  <td colSpan={11} className="empty">
+                  <td colSpan={12} className="empty">
                     <EmptyResult query={query} />
                   </td>
                 </tr>
@@ -211,6 +213,7 @@ export interface OrderRow {
   phone: string
   children: string
   tariff: string
+  comment: string
   payment: string
   discount: number
   sum: number
@@ -237,10 +240,11 @@ export function buildRow(s: AppState, order: Order): OrderRow {
     endAt: endTime(order, dur),
     elapsed: elapsed(order, dur),
     overtime: totals.overtime,
-    client: client?.fullName ?? '—',
+    client: client?.fullName ?? 'Без клиента',
     phone: client?.phone ?? '',
     children: childNames,
     tariff: order.tariffLabel,
+    comment: order.comment,
     payment: paymentLabel(order, totals),
     discount: client?.discountPct ?? 0,
     // The column shows what the order is worth after discounts, before the
