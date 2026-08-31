@@ -36,6 +36,8 @@ export function CatalogItemModal() {
   const patch = (p: Partial<CatalogItem>) => setDraft((d) => ({ ...d, ...p }))
 
   const byMinutes = draft.unit === DURATION_UNIT
+  // Экстра-время есть только там, где есть от чего его отсчитывать.
+  const hasDuration = byMinutes && !!draft.durationMin
 
   return (
     <Modal
@@ -79,15 +81,23 @@ export function CatalogItemModal() {
             <CardRow label="Категория" value={draft.category} />
             <CardRow label="Использован в заказах" value={draft.usedInOrders ?? 0} />
             <CardRow label="Изменён" value={draft.changedAt ?? '—'} />
+            <CardRow
+              label="Экстра время"
+              value={
+                draft.extraPerMin === undefined
+                  ? `${OVERTIME_RATE} за начатый час`
+                  : `${money(draft.extraPerMin)} за мин`
+              }
+            />
             <CardTotal
-              label={`Цена за ${draft.unit}`}
+              label={draft.durationMin ? `Цена за ${draft.durationMin} мин` : `Цена за ${draft.unit}`}
               value={draft.category === 'Скидка' ? `${draft.price} %` : money(draft.price)}
             />
           </Card>
           <div className="card-note">
-            Длительность задаёт время окончания в заказе; превышение считается по тарифу «Доплата за
-            час сверх тарифа» — {OVERTIME_RATE} за час. Единица «мин» без длительности — безлимитный
-            тариф: время окончания не ставится и доплаты нет.
+            Длительность задаёт время окончания в заказе. Минуты сверх неё считаются по цене
+            экстра-времени; если она не задана — по {OVERTIME_RATE} за начатый час. Единица «мин» без
+            длительности — безлимитный тариф: время окончания не ставится и доплаты нет.
           </div>
         </>
       }
@@ -109,7 +119,7 @@ export function CatalogItemModal() {
         />
       </div>
 
-      <div className="form-grid">
+      <div className="form-grid-3">
         <MoneyField label="Цена" value={draft.price} onChange={(v) => patch({ price: v })} />
         <TextField
           label="Длительность, мин"
@@ -120,6 +130,21 @@ export function CatalogItemModal() {
               ? (v) => {
                   const min = Number(v.replace(/\D/g, ''))
                   patch({ durationMin: Number.isFinite(min) && min > 0 ? min : undefined })
+                }
+              : undefined
+          }
+        />
+        <TextField
+          label="Экстра время, цена за мин"
+          placeholder={
+            hasDuration ? `пусто — ${OVERTIME_RATE} за начатый час` : 'нужны «мин» и длительность'
+          }
+          value={draft.extraPerMin === undefined ? '' : String(draft.extraPerMin)}
+          onChange={
+            hasDuration
+              ? (v) => {
+                  const digits = v.replace(/\D/g, '')
+                  patch({ extraPerMin: digits === '' ? undefined : Number(digits) })
                 }
               : undefined
           }

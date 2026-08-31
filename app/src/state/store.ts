@@ -31,6 +31,7 @@ import {
   tariffDuration,
 } from '../domain/seed'
 import { NOW, SHIFT_DATE, now, orderTotals, setNowSource, wallClock } from '../domain/rules'
+import type { TariffTerms } from '../domain/rules'
 import { shortName } from '../lib/format'
 
 export interface CurrentShift {
@@ -252,8 +253,17 @@ export function tariffDurationOf(s: AppState, itemId: string): number {
   return tariffDuration(itemId, s.catalog)
 }
 
+/** Длительность плюс цена экстра-времени — всё, что нужно для расчёта
+ *  доплаты за превышение. */
+export function tariffTermsOf(s: AppState, itemId: string): TariffTerms {
+  return {
+    durationMin: tariffDuration(itemId, s.catalog),
+    extraPerMin: s.catalog.find((c) => c.id === itemId)?.extraPerMin,
+  }
+}
+
 export function totalsOf(s: AppState, order: Order) {
-  return orderTotals(order, clientOf(s, order.clientId), tariffDurationOf(s, order.tariffItemId))
+  return orderTotals(order, clientOf(s, order.clientId), tariffTermsOf(s, order.tariffItemId))
 }
 
 /** The cash journal: house operations plus everything the orders generated. */

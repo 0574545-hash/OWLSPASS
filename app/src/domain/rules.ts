@@ -1,10 +1,30 @@
 import type { Client, Minutes, Order } from './types'
 
-/** «при закрытии заказа время сверх тарифа начисляется автоматически
- *  по 350 за час» — the rate lives in the catalog as «Доплата за час
- *  сверх тарифа»; this is the id and the rounding rule. */
+/** Ставка по умолчанию: пока у тарифа не задано «Экстра время, цена за
+ *  мин», превышение считается по 350 за начатый час — как было в макете. */
 export const OVERTIME_ITEM_ID = 'tariff-overtime'
 export const OVERTIME_RATE = 350
+
+/** Условия тарифа, от которых зависит доплата за превышение времени.
+ *  Число вместо объекта — это только длительность: так продолжают
+ *  работать все места, которым цена экстра-времени не нужна. */
+export interface TariffTerms {
+  durationMin: number
+  /** Цена минуты сверх тарифа. Не задана — берётся ставка за начатый час. */
+  extraPerMin?: number
+}
+
+export function tariffTerms(t: number | TariffTerms): TariffTerms {
+  return typeof t === 'number' ? { durationMin: t } : t
+}
+
+/** Доплата за `over` минут сверх тарифа. */
+function extraCharge(over: Minutes, terms: TariffTerms): number {
+  if (over <= 0) return 0
+  // У тарифа своя цена экстра-времени — считаем поминутно.
+  if (terms.extraPerMin !== undefined) return Math.round(over * terms.extraPerMin)
+  return Math.ceil(over / 60) * OVERTIME_RATE
+}
 
 /** The moment the canvas is drawn at: every «Прошло» value in the demo
  *  shift resolves against 15:00 on 30.08.2026. */
@@ -78,28 +98,25 @@ export function elapsed(order: Order, tariffDurationMin: number, at: Minutes = n
   return Math.max(0, end - order.createdAt)
 }
 
-/** Over-time surcharge, billed per started hour, counted from the moment
- *  the visit actually ended. */
-export function overtimeCharge(order: Order, tariffDurationMin: number): number {
-  if (isUnlimited(tariffDurationMin)) return 0
+/** Over-time surcharge, counted from the moment the visit actually ended. */
+export function overtimeCharge(order: Order, tariff: number | TariffTerms): number {
+  const terms = tariffTerms(tariff)
+  if (isUnlimited(terms.durationMin)) return 0
   const end = actualEnd(order)
   if (end === undefined) return 0
-  const over = end - plannedEnd(order, tariffDurationMin)
-  if (over <= 0) return 0
-  return Math.ceil(over / 60) * OVERTIME_RATE
+  return extraCharge(end - plannedEnd(order, terms.durationMin), terms)
 }
 
 /** What the surcharge would be if the order were settled right now — used
  *  by the payment window, which is the thing that closes the order. */
 export function overtimeChargeAt(
   order: Order,
-  tariffDurationMin: number,
+  tariff: number | TariffTerms,
   at: Minutes = now(),
 ): number {
-  if (isUnlimited(tariffDurationMin)) return 0
-  const over = at - plannedEnd(order, tariffDurationMin)
-  if (over <= 0) return 0
-  return Math.ceil(over / 60) * OVERTIME_RATE
+  const terms = tariffTerms(tariff)
+  if (isUnlimited(terms.durationMin)) return 0
+  return extraCharge(at - plannedEnd(order, terms.durationMin), terms)
 }
 
 export function paidTotal(order: Order): number {
@@ -125,7 +142,7 @@ export interface OrderTotals {
 export function orderTotals(
   order: Order,
   client: Client | undefined,
-  tariffDurationMin: number,
+  tariff: number | TariffTerms,
   overtimeAt?: Minutes,
 ): OrderTotals {
   const items = itemsTotal(order)
@@ -133,8 +150,8 @@ export function orderTotals(
   const manualDiscount = order.manualDiscount
   const overtime =
     overtimeAt === undefined
-      ? overtimeCharge(order, tariffDurationMin)
-      : overtimeChargeAt(order, tariffDurationMin, overtimeAt)
+      ? overtimeCharge(order, tariff)
+      : overtimeChargeAt(order, tariff, overtimeAt)
   const payable = Math.max(0, items - discount - manualDiscount + overtime)
   const paid = paidTotal(order)
   const refunded = refundedTotal(order)
@@ -158,15 +175,16 @@ export type StatusTone = 'success' | 'warn' | 'danger'
 export function statusTone(
   order: Order,
   client: Client | undefined,
-  tariffDurationMin: number,
+  tariff: number | TariffTerms,
 ): StatusTone {
+  const tariffDurationMin = tariffTerms(tariff).durationMin
   // Красный — время окончания уже прошло, а заказ ещё открыт: ребёнок в зале
   // сверх оплаченного, администратору надо подойти.
   if (order.status === 'open' && !isUnlimited(tariffDurationMin)) {
     const end = actualEnd(order) ?? plannedEnd(order, tariffDurationMin)
     if (now() > end) return 'danger'
   }
-  const { remainder } = orderTotals(order, client, tariffDurationMin)
+  const { remainder } = orderTotals(order, client, tariff)
   return remainder > 0 ? 'warn' : 'success'
 }
 

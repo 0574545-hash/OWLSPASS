@@ -4,8 +4,8 @@ import { Plus } from 'lucide-react'
 import { Page } from '../components/AppShell'
 import { ListFoot, PageHead, Pill, SearchBar, SortableTh, SubTabs } from '../components/ui'
 import { DASH, MIN_SEARCH, clock, digitsOnly, duration, money, percent, plural, searchQuery } from '../lib/format'
-import { OVERTIME_RATE, elapsed, endTime, paymentLabel, statusLabel, statusTone } from '../domain/rules'
-import { clientOf, tariffDurationOf, totalsOf, useStore, type AppState } from '../state/store'
+import { elapsed, endTime, paymentLabel, statusLabel, statusTone } from '../domain/rules'
+import { clientOf, tariffDurationOf, tariffTermsOf, totalsOf, useStore, type AppState } from '../state/store'
 import type { Order } from '../domain/types'
 
 const PAGE = 18
@@ -178,7 +178,7 @@ export function OrdersPage() {
           </table>
         </div>
         <ListFoot
-          note={`Загружено ${Math.min(limit, filtered.length)} из ${filtered.length} · при закрытии заказа время сверх тарифа начисляется автоматически по ${OVERTIME_RATE} за час`}
+          note={`Загружено ${Math.min(limit, filtered.length)} из ${filtered.length} · при закрытии заказа время сверх тарифа начисляется автоматически по цене экстра-времени тарифа`}
           onMore={limit < filtered.length ? () => setLimit(limit + PAGE) : undefined}
         />
       </div>
@@ -245,7 +245,7 @@ export function buildRow(s: AppState, order: Order): OrderRow {
     remainder: totals.remainder,
     status: order.status,
     statusLabel: statusLabel(order),
-    tone: statusTone(order, client, dur),
+    tone: statusTone(order, client, tariffTermsOf(s, order.tariffItemId)),
   }
 }
 

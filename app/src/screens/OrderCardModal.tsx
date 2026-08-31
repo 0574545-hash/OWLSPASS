@@ -16,7 +16,7 @@ import {
 } from '../components/ui'
 import { DASH, clock, duration, money } from '../lib/format'
 import { elapsed, endTime, statusLabel, statusTone } from '../domain/rules'
-import { actions, clientOf, tariffDurationOf, totalsOf, useStore } from '../state/store'
+import { actions, clientOf, tariffDurationOf, tariffTermsOf, totalsOf, useStore } from '../state/store'
 import { ageOf } from './OrdersPage'
 
 /** Screen 06 — «Карточка заказа»: where «Открыть» in the list leads.
@@ -52,7 +52,7 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
   }
 
   const dur = tariffDurationOf(state, order.tariffItemId)
-  const tone = statusTone(order, client, dur)
+  const tone = statusTone(order, client, tariffTermsOf(state, order.tariffItemId))
   const services = catalog.filter((c) => c.status !== 'hidden' && (c.category === 'Тариф' || c.category === 'Услуга'))
   const goods = catalog.filter((c) => c.status !== 'hidden' && c.category === 'Товар')
   const visible = tab === 'services' ? services : goods

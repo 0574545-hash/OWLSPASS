@@ -9,12 +9,15 @@ export interface CatalogItem {
   id: string
   name: string
   category: CatalogCategory
-  /** «чел.», «шт.», «пара», «час», «набор», «%» */
+  /** «чел.», «шт.», «пара», «мин», «набор», «%» */
   unit: string
   price: number
   /** Tariffs and timed services carry a duration; it sets the order's
    *  окончание and therefore the over-time surcharge. */
   durationMin?: number
+  /** «Экстра время, цена за мин» — сколько стоит минута сверх длительности
+   *  тарифа. Не задана — доплата считается по общей ставке за начатый час. */
+  extraPerMin?: number
   status: CatalogStatus
   /** Услуги carry a sub-category and who performs them. */
   group?: string

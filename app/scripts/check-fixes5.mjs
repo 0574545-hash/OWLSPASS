@@ -139,12 +139,28 @@ ok('21. Длительность выключена при другой един
 await unitSel.selectOption('мин')
 await p.waitForTimeout(250)
 
-/* ---------- 22: цена за длительность ---------- */
+/* ---------- 22: цена за длительность, экстра-время ---------- */
 const nameF = p.locator('.modal-main .field-col', { hasText: 'Наименование' }).locator('input')
 const priceF = p.locator('.modal-main .field-col', { hasText: 'Цена' }).first().locator('input')
+const extraF = p.locator('.modal-main .field-col', { hasText: 'Экстра время' }).locator('input')
+ok('Экстра-время выключено, пока нет длительности', await extraF.isDisabled())
 await nameF.fill('Час игры')
 await durField.fill('60')
+await p.waitForTimeout(200)
+ok('Экстра-время включилось вместе с длительностью', !(await extraF.isDisabled()))
+ok(
+  'Пустое экстра-время — прежние 350 за начатый час',
+  (await extraF.getAttribute('placeholder')) === 'пусто — 350 за начатый час',
+  await extraF.getAttribute('placeholder'),
+)
 await priceF.fill('1000')
+await extraF.fill('20')
+await p.waitForTimeout(200)
+ok(
+  'В сводке позиции: цена за 60 мин и 20 за мин сверх',
+  (await p.locator('.modal-aside .card').first().innerText()).includes('20 за мин'),
+  (await p.locator('.modal-aside .card').first().innerText()).replace(/\n/g, ' '),
+)
 await p.locator('.modal-foot').getByRole('button', { name: 'Сохранить' }).click()
 await p.waitForTimeout(600)
 ok(

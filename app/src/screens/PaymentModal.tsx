@@ -4,8 +4,8 @@ import { Banknote, CreditCard, QrCode } from 'lucide-react'
 import { Modal } from '../components/Modal'
 import { Card, CardRow, CardTotal, MoneyField, Segmented, TextArea } from '../components/ui'
 import { DASH, clock, money } from '../lib/format'
-import { OVERTIME_RATE, now, orderTotals } from '../domain/rules'
-import { actions, clientOf, tariffDurationOf, totalsOf, useStore } from '../state/store'
+import { now, orderTotals } from '../domain/rules'
+import { actions, clientOf, tariffTermsOf, totalsOf, useStore } from '../state/store'
 import type { PaymentMethod } from '../domain/types'
 
 /** Screen 07 — «Оплата заказа»: where «Принять оплату» leads.
@@ -29,7 +29,7 @@ export function PaymentModal() {
   // card did not show while the order was still running.
   const dueTotals =
     order && stored
-      ? orderTotals(order, client, tariffDurationOf(state, order.tariffItemId), order.endedAt ?? now())
+      ? orderTotals(order, client, tariffTermsOf(state, order.tariffItemId), order.endedAt ?? now())
       : undefined
   const due = dueTotals?.remainder ?? 0
   const [given, setGiven] = useState<number | null>(null)
@@ -106,7 +106,7 @@ export function PaymentModal() {
 
           <div className="card-note">
             Фактическое окончание фиксируется в момент оплаты: если время вышло за тариф, в расчёт
-            добавится доплата по {OVERTIME_RATE} за час.
+            добавится экстра-время по цене тарифа за минуту.
           </div>
         </>
       }
