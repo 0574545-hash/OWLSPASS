@@ -149,8 +149,8 @@ await durField.fill('60')
 await p.waitForTimeout(200)
 ok('Экстра-время включилось вместе с длительностью', !(await extraF.isDisabled()))
 ok(
-  'Пустое экстра-время — прежние 350 за начатый час',
-  (await extraF.getAttribute('placeholder')) === 'пусто — 350 за начатый час',
+  'Пустое экстра-время — доплаты нет',
+  (await extraF.getAttribute('placeholder')) === 'пусто — доплаты нет',
   await extraF.getAttribute('placeholder'),
 )
 await priceF.fill('1000')

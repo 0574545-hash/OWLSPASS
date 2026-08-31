@@ -3,7 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { Trash2 } from 'lucide-react'
 import { Modal } from '../components/Modal'
 import { Card, CardRow, CardTotal, MoneyField, Segmented, SelectField, TextField } from '../components/ui'
-import { OVERTIME_RATE } from '../domain/rules'
 import { money } from '../lib/format'
 import { actions, useStore } from '../state/store'
 import type { CatalogCategory, CatalogItem } from '../domain/types'
@@ -83,11 +82,7 @@ export function CatalogItemModal() {
             <CardRow label="Изменён" value={draft.changedAt ?? '—'} />
             <CardRow
               label="Экстра время"
-              value={
-                draft.extraPerMin === undefined
-                  ? `${OVERTIME_RATE} за начатый час`
-                  : `${money(draft.extraPerMin)} за мин`
-              }
+              value={draft.extraPerMin ? `${money(draft.extraPerMin)} за мин` : 'не начисляется'}
             />
             <CardTotal
               label={draft.durationMin ? `Цена за ${draft.durationMin} мин` : `Цена за ${draft.unit}`}
@@ -96,8 +91,8 @@ export function CatalogItemModal() {
           </Card>
           <div className="card-note">
             Длительность задаёт время окончания в заказе. Минуты сверх неё считаются по цене
-            экстра-времени; если она не задана — по {OVERTIME_RATE} за начатый час. Единица «мин» без
-            длительности — безлимитный тариф: время окончания не ставится и доплаты нет.
+            экстра-времени; не указана или 0 — доплаты нет. Единица «мин» без длительности —
+            безлимитный тариф: время окончания не ставится.
           </div>
         </>
       }
@@ -136,9 +131,7 @@ export function CatalogItemModal() {
         />
         <TextField
           label="Экстра время, цена за мин"
-          placeholder={
-            hasDuration ? `пусто — ${OVERTIME_RATE} за начатый час` : 'нужны «мин» и длительность'
-          }
+          placeholder={hasDuration ? 'пусто — доплаты нет' : 'нужны «мин» и длительность'}
           value={draft.extraPerMin === undefined ? '' : String(draft.extraPerMin)}
           onChange={
             hasDuration

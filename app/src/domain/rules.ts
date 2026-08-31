@@ -1,7 +1,7 @@
 import type { Client, Minutes, Order } from './types'
 
-/** Ставка по умолчанию: пока у тарифа не задано «Экстра время, цена за
- *  мин», превышение считается по 350 за начатый час — как было в макете. */
+/** Историческая позиция каталога «Доплата за час сверх тарифа». Ставку
+ *  теперь задаёт сам тариф — полем «Экстра время, цена за мин». */
 export const OVERTIME_ITEM_ID = 'tariff-overtime'
 export const OVERTIME_RATE = 350
 
@@ -18,12 +18,11 @@ export function tariffTerms(t: number | TariffTerms): TariffTerms {
   return typeof t === 'number' ? { durationMin: t } : t
 }
 
-/** Доплата за `over` минут сверх тарифа. */
+/** Доплата за `over` минут сверх тарифа: минуты на цену экстра-времени.
+ *  Цена не указана или 0 — превышение не считается. */
 function extraCharge(over: Minutes, terms: TariffTerms): number {
-  if (over <= 0) return 0
-  // У тарифа своя цена экстра-времени — считаем поминутно.
-  if (terms.extraPerMin !== undefined) return Math.round(over * terms.extraPerMin)
-  return Math.ceil(over / 60) * OVERTIME_RATE
+  if (over <= 0 || !terms.extraPerMin) return 0
+  return Math.round(over * terms.extraPerMin)
 }
 
 /** The moment the canvas is drawn at: every «Прошло» value in the demo

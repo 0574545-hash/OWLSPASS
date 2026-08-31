@@ -1,5 +1,5 @@
 /** Экстра-время: цена минуты сверх тарифа. */
-import { OVERTIME_RATE, orderTotals, overtimeCharge } from '../src/domain/rules'
+import { orderTotals, overtimeCharge } from '../src/domain/rules'
 import type { Order } from '../src/domain/types'
 
 const ok = (n: string, c: boolean, x = '') => console.log(`  ${c ? 'ok  ' : 'ПЛОХО'} ${n}${x ? '  — ' + x : ''}`)
@@ -35,13 +35,13 @@ const perMin7 = overtimeCharge(o, { durationMin: 60, extraPerMin: 7 })
 ok('по 7 за мин = 175', perMin7 === 175, String(perMin7))
 
 const free = overtimeCharge(o, { durationMin: 60, extraPerMin: 0 })
-ok('цена 0 — экстра-время бесплатно', free === 0, String(free))
+ok('цена 0 — доплаты нет', free === 0, String(free))
 
-const legacy = overtimeCharge(o, { durationMin: 60 })
-ok(`цена не задана — прежние ${OVERTIME_RATE} за начатый час`, legacy === OVERTIME_RATE, String(legacy))
+const unset = overtimeCharge(o, { durationMin: 60 })
+ok('цена не указана — доплаты нет', unset === 0, String(unset))
 
 const asNumber = overtimeCharge(o, 60)
-ok('старый вызов числом работает как раньше', asNumber === legacy, String(asNumber))
+ok('тариф без цены экстра-времени — доплаты нет', asNumber === 0, String(asNumber))
 
 const unlimited = overtimeCharge(o, { durationMin: 0, extraPerMin: 20 })
 ok('безлимитный тариф — доплаты нет', unlimited === 0, String(unlimited))
