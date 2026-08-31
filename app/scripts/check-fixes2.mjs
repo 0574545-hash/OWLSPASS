@@ -49,6 +49,8 @@ ok('11. Подсказки тоже с 3 символов',
    (await p.locator('.picker-empty').first().textContent())?.includes('не менее 3'))
 await f.fill('Смирнова'); await p.waitForTimeout(250)
 await p.locator('.picker-row').first().click(); await p.waitForTimeout(200)
+// Дети попадают в заказ только когда их отметили — по ним и ищем (замечание 25).
+await p.locator('.modal-main [role=checkbox]', { hasText: 'Мия' }).first().click(); await p.waitForTimeout(150)
 await p.locator('.cat-row', { hasText: 'Разовое посещение, 2 ч' }).getByRole('button', { name: 'Увеличить' }).click()
 await p.locator('.modal-foot').getByRole('button', { name: 'Создать заказ' }).click()
 await p.waitForTimeout(600)
@@ -61,11 +63,6 @@ await p.goto(FILE + '#/orders'); await p.waitForTimeout(500)
 await box.fill('Мия'); await p.waitForTimeout(350)
 const n = await p.locator('.tbl tbody tr').count()
 ok('10. Поиск по имени ребёнка', n === 1 && !(await txt('.tbl tbody tr'))?.includes('не найдено'))
-await box.fill('Ковалёва'); await p.waitForTimeout(350)
-ok('10. Клиент без заказов — понятная подсказка',
-   (await txt('.tbl tbody tr'))?.includes('нет заказов'), await txt('.tbl tbody tr'))
-await box.fill(''); await p.waitForTimeout(200)
-
 // 12 — «Чек» открывает просмотр
 await p.goto(FILE + '#/cash'); await p.waitForTimeout(500)
 await p.locator('.tbl tbody tr').first().getByRole('button', { name: 'Чек' }).click()

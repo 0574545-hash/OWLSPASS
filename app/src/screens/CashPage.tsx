@@ -38,7 +38,7 @@ function OpsTab() {
             </button>
             <button className="btn btn-secondary" type="button" onClick={() => navigate('/cash/collect')}>
               <ArrowUpFromLine />
-              Инкассация
+              Изъятие
             </button>
             <button className="btn btn-primary" type="button" onClick={() => navigate('/cash/close')}>
               <Lock />

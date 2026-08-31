@@ -6,10 +6,33 @@ import type { Client, Minutes, Order } from './types'
 export const OVERTIME_ITEM_ID = 'tariff-overtime'
 export const OVERTIME_RATE = 350
 
-/** The moment the canvas is drawn at: every «Прошло» value in the orders
- *  table resolves against 15:00 on 30.08.2026. */
+/** The moment the canvas is drawn at: every «Прошло» value in the demo
+ *  shift resolves against 15:00 on 30.08.2026. */
 export const NOW: Minutes = 15 * 60
 export const SHIFT_DATE = '30.08.2026'
+
+/** Часы приложения. В демо-смене они стоят на 15:00, иначе её данные
+ *  разъедутся; на пустой кассе идут настоящие — смена открывается и
+ *  закрывается по факту. Источник задаётся при старте (state/store). */
+let nowSource: () => Minutes = () => NOW
+
+export function setNowSource(fn: () => Minutes): void {
+  nowSource = fn
+}
+
+export function now(): Minutes {
+  return nowSource()
+}
+
+/** Настоящее время суток в минутах. */
+export function wallClock(): Minutes {
+  const d = new Date()
+  return d.getHours() * 60 + d.getMinutes()
+}
+
+/** Тариф без длительности — безлимитный: окончания нет, доплате не с чего
+ *  считаться. Ноль как длительность и означает «безлимит». */
+export const UNLIMITED = 0
 
 /** Gross value of the lines, before any discount. */
 export function itemsTotal(order: Order): number {
@@ -28,6 +51,10 @@ export function plannedEnd(order: Order, tariffDurationMin: number): Minutes {
   return order.createdAt + tariffDurationMin
 }
 
+export function isUnlimited(tariffDurationMin: number): boolean {
+  return tariffDurationMin === UNLIMITED
+}
+
 /** The moment the visit actually finished, if it has: the closing time for
  *  a settled order, otherwise the recorded exit. */
 export function actualEnd(order: Order): Minutes | undefined {
@@ -36,20 +63,25 @@ export function actualEnd(order: Order): Minutes | undefined {
 
 /** «Окончание» as shown in the orders table — the actual end once the visit
  *  is over, the planned end while the child is still in the hall. */
-export function endTime(order: Order, tariffDurationMin: number): Minutes {
-  return actualEnd(order) ?? plannedEnd(order, tariffDurationMin)
+export function endTime(order: Order, tariffDurationMin: number): Minutes | undefined {
+  const actual = actualEnd(order)
+  if (actual !== undefined) return actual
+  return isUnlimited(tariffDurationMin) ? undefined : plannedEnd(order, tariffDurationMin)
 }
 
 /** «Прошло». While the visit runs the clock stops at the planned end — the
  *  order simply has not been settled yet. */
-export function elapsed(order: Order, tariffDurationMin: number, now: Minutes = NOW): Minutes {
-  const end = actualEnd(order) ?? Math.min(now, plannedEnd(order, tariffDurationMin))
+export function elapsed(order: Order, tariffDurationMin: number, at: Minutes = now()): Minutes {
+  const end =
+    actualEnd(order) ??
+    (isUnlimited(tariffDurationMin) ? at : Math.min(at, plannedEnd(order, tariffDurationMin)))
   return Math.max(0, end - order.createdAt)
 }
 
 /** Over-time surcharge, billed per started hour, counted from the moment
  *  the visit actually ended. */
 export function overtimeCharge(order: Order, tariffDurationMin: number): number {
+  if (isUnlimited(tariffDurationMin)) return 0
   const end = actualEnd(order)
   if (end === undefined) return 0
   const over = end - plannedEnd(order, tariffDurationMin)
@@ -62,8 +94,9 @@ export function overtimeCharge(order: Order, tariffDurationMin: number): number 
 export function overtimeChargeAt(
   order: Order,
   tariffDurationMin: number,
-  at: Minutes = NOW,
+  at: Minutes = now(),
 ): number {
+  if (isUnlimited(tariffDurationMin)) return 0
   const over = at - plannedEnd(order, tariffDurationMin)
   if (over <= 0) return 0
   return Math.ceil(over / 60) * OVERTIME_RATE
@@ -127,9 +160,14 @@ export function statusTone(
   client: Client | undefined,
   tariffDurationMin: number,
 ): StatusTone {
-  const { remainder, overtime } = orderTotals(order, client, tariffDurationMin)
-  if (remainder <= 0) return 'success'
-  return overtime > 0 ? 'danger' : 'warn'
+  // Красный — время окончания уже прошло, а заказ ещё открыт: ребёнок в зале
+  // сверх оплаченного, администратору надо подойти.
+  if (order.status === 'open' && !isUnlimited(tariffDurationMin)) {
+    const end = actualEnd(order) ?? plannedEnd(order, tariffDurationMin)
+    if (now() > end) return 'danger'
+  }
+  const { remainder } = orderTotals(order, client, tariffDurationMin)
+  return remainder > 0 ? 'warn' : 'success'
 }
 
 export function statusLabel(order: Order): string {

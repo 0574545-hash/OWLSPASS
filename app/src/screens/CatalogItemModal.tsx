@@ -8,7 +8,9 @@ import { money } from '../lib/format'
 import { actions, useStore } from '../state/store'
 import type { CatalogCategory, CatalogItem } from '../domain/types'
 
-const UNITS = ['чел.', 'шт.', 'пара', 'час', 'набор', '%']
+const UNITS = ['чел.', 'шт.', 'пара', 'мин', 'набор', '%']
+/** Длительность имеет смысл только у позиций, измеряемых в минутах. */
+const DURATION_UNIT = 'мин'
 const CATEGORIES: CatalogCategory[] = ['Тариф', 'Услуга', 'Товар', 'Скидка']
 
 /** Screen 23 — «Позиция справочника»: one form for a tariff, a service,
@@ -32,6 +34,8 @@ export function CatalogItemModal() {
   }
 
   const patch = (p: Partial<CatalogItem>) => setDraft((d) => ({ ...d, ...p }))
+
+  const byMinutes = draft.unit === DURATION_UNIT
 
   return (
     <Modal
@@ -82,7 +86,8 @@ export function CatalogItemModal() {
           </Card>
           <div className="card-note">
             Длительность задаёт время окончания в заказе; превышение считается по тарифу «Доплата за
-            час сверх тарифа» — {OVERTIME_RATE} за час.
+            час сверх тарифа» — {OVERTIME_RATE} за час. Единица «мин» без длительности — безлимитный
+            тариф: время окончания не ставится и доплаты нет.
           </div>
         </>
       }
@@ -96,18 +101,28 @@ export function CatalogItemModal() {
           options={CATEGORIES}
           onChange={(v) => patch({ category: v as CatalogCategory })}
         />
-        <SelectField label="Единица" value={draft.unit} options={UNITS} onChange={(v) => patch({ unit: v })} />
+        <SelectField
+          label="Единица"
+          value={draft.unit}
+          options={UNITS}
+          onChange={(v) => patch({ unit: v })}
+        />
       </div>
 
       <div className="form-grid">
         <MoneyField label="Цена" value={draft.price} onChange={(v) => patch({ price: v })} />
         <TextField
-          label="Длительность"
-          value={draft.durationMin ? `${draft.durationMin / 60} ч` : ''}
-          onChange={(v) => {
-            const hours = Number(v.replace(/[^\d.,]/g, '').replace(',', '.'))
-            patch({ durationMin: Number.isFinite(hours) && hours > 0 ? Math.round(hours * 60) : undefined })
-          }}
+          label="Длительность, мин"
+          placeholder={byMinutes ? 'пусто — безлимит' : 'только для единицы «мин»'}
+          value={draft.durationMin ? String(draft.durationMin) : ''}
+          onChange={
+            byMinutes
+              ? (v) => {
+                  const min = Number(v.replace(/\D/g, ''))
+                  patch({ durationMin: Number.isFinite(min) && min > 0 ? min : undefined })
+                }
+              : undefined
+          }
         />
       </div>
 

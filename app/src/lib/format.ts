@@ -134,3 +134,25 @@ export function isDateComplete(value: string): boolean {
 export function isPhoneComplete(value: string): boolean {
   return digitsOnly(value).length === PHONE_DIGITS
 }
+
+/* ===== Проверка данных ребёнка ===== */
+
+/** Имя ребёнка — только кириллица, дефис и пробел. */
+export const CYRILLIC_NAME = /^[А-Яа-яЁё][А-Яа-яЁё\- ]*$/
+
+export function isChildNameValid(name: string): boolean {
+  return CYRILLIC_NAME.test(name.trim())
+}
+
+/** Дети в центре — не старше 2010 года рождения. */
+export const CHILD_MIN_YEAR = 2010
+
+export function childBirthError(value: string): string {
+  const d = digitsOnly(value)
+  if (d.length !== DATE_DIGITS) return 'Заполните дату целиком'
+  if (!isDateComplete(value)) return 'Такой даты не бывает'
+  const year = Number(d.slice(4))
+  if (year < CHILD_MIN_YEAR) return `Не раньше ${CHILD_MIN_YEAR} года`
+  if (year > new Date().getFullYear()) return 'Дата в будущем'
+  return ''
+}

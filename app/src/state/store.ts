@@ -30,7 +30,7 @@ import {
   buildSeed,
   tariffDuration,
 } from '../domain/seed'
-import { NOW, SHIFT_DATE, orderTotals } from '../domain/rules'
+import { NOW, SHIFT_DATE, now, orderTotals, setNowSource, wallClock } from '../domain/rules'
 import { shortName } from '../lib/format'
 
 export interface CurrentShift {
@@ -168,6 +168,10 @@ function save(s: AppState): void {
 }
 
 let state: AppState = load()
+
+// Пустая касса живёт по настоящим часам: смена открывается и закрывается по
+// факту. Демо-смена стоит на 15:00 — иначе её данные разъедутся.
+setNowSource(() => (state.mode === 'clean' ? wallClock() : NOW))
 const listeners = new Set<() => void>()
 
 function set(next: Partial<AppState> | ((s: AppState) => Partial<AppState>)): void {
@@ -241,8 +245,14 @@ export function clientOf(s: AppState, clientId: string): Client | undefined {
   return s.clients.find((c) => c.id === clientId)
 }
 
+/** Длительность тарифа берётся из справочника в состоянии: его правят, и
+ *  правка должна сразу отражаться в заказах. */
+export function tariffDurationOf(s: AppState, itemId: string): number {
+  return tariffDuration(itemId, s.catalog)
+}
+
 export function totalsOf(s: AppState, order: Order) {
-  return orderTotals(order, clientOf(s, order.clientId), tariffDuration(order.tariffItemId))
+  return orderTotals(order, clientOf(s, order.clientId), tariffDurationOf(s, order.tariffItemId))
 }
 
 /** The cash journal: house operations plus everything the orders generated. */
@@ -438,11 +448,19 @@ export const actions = {
     set({ session: { userId: null, locked: false } })
   },
 
-  openShift(input: { opening: number; admin: string; cashier: string; comment: string }): void {
+  openShift(input: {
+    opening: number
+    admin: string
+    cashier: string
+    comment: string
+    /** Момент открытия — фактический, а не плановый. */
+    openedAt: Minutes
+  }): void {
     set({
       shiftStarted: true,
       shift: {
         ...state.shift,
+        openedAt: input.openedAt,
         opening: input.opening,
         admin: input.admin,
         cashier: input.cashier,
@@ -469,7 +487,7 @@ export const actions = {
     const order: Order = {
       id: nextId('o'),
       no,
-      createdAt: NOW,
+      createdAt: now(),
       clientId: input.clientId,
       childIds: input.childIds,
       tariffItemId: input.tariffItemId,
@@ -494,12 +512,12 @@ export const actions = {
   payOrder(orderId: string, input: { amount: number; method: PaymentMethod; comment: string }): void {
     const order = state.orders.find((o) => o.id === orderId)
     if (!order) return
-    const endedAt = order.endedAt ?? NOW
+    const endedAt = order.endedAt ?? now()
     const withEnd: Order = { ...order, endedAt }
     const totals = totalsOf({ ...state, orders: [withEnd] }, withEnd)
     const payment = {
       id: nextId('p'),
-      at: NOW,
+      at: now(),
       amount: Math.min(input.amount, totals.remainder),
       method: input.method,
       title: order.payments.length > 0 ? 'Доплата' : 'Оплата заказа',
@@ -516,7 +534,7 @@ export const actions = {
               payments,
               comment: input.comment,
               status: settled ? 'closed' : o.status,
-              closedAt: settled ? NOW : o.closedAt,
+              closedAt: settled ? now() : o.closedAt,
             }
           : o,
       ),
@@ -529,7 +547,7 @@ export const actions = {
     if (!order || totalsOf(state, order).remainder > 0) return
     set({
       orders: state.orders.map((o) =>
-        o.id === orderId ? { ...o, status: 'closed', closedAt: o.closedAt ?? NOW } : o,
+        o.id === orderId ? { ...o, status: 'closed', closedAt: o.closedAt ?? now() } : o,
       ),
     })
   },
@@ -543,7 +561,7 @@ export const actions = {
     const user = currentUser(state)
     const refund: Refund = {
       id: nextId('r'),
-      at: NOW,
+      at: now(),
       lines: input.lines,
       amount: input.amount,
       reason: input.reason,
@@ -560,7 +578,7 @@ export const actions = {
   deposit(input: { amount: number; ground: string; from: string; to: string; comment: string }): void {
     const op: CashOp = {
       id: nextId('op'),
-      at: NOW,
+      at: now(),
       subject: input.ground,
       kind: 'Внесение',
       method: 'Наличные',
@@ -573,7 +591,7 @@ export const actions = {
   collect(input: { amount: number; ground: string; from: string; to: string; comment: string }): void {
     const op: CashOp = {
       id: nextId('op'),
-      at: NOW,
+      at: now(),
       subject: 'Инкассация',
       kind: 'Выемка',
       method: 'Наличные',
@@ -590,7 +608,7 @@ export const actions = {
       no: state.shift.no,
       date: state.shift.date,
       openedAt: state.shift.openedAt,
-      closedAt: NOW,
+      closedAt: now(),
       admin: state.shift.admin,
       cashier: state.shift.cashier,
       ops: summary.ops,
@@ -606,7 +624,7 @@ export const actions = {
       no: state.shift.no,
       date: state.shift.date,
       openedAt: state.shift.openedAt,
-      closedAt: NOW,
+      closedAt: now(),
       admin: state.shift.admin,
       cashier: state.shift.cashier,
       opening: state.shift.opening,
@@ -623,7 +641,7 @@ export const actions = {
     set({
       shift: {
         ...state.shift,
-        closedAt: NOW,
+        closedAt: now(),
         counted: input.counted,
         discrepancyReason: input.reason,
         closeComment: input.comment,

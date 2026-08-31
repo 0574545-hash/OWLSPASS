@@ -104,7 +104,7 @@ export function CollectionModal() {
 
   return (
     <Modal
-      title="Инкассация"
+      title="Изъятие из кассы"
       onClose={close}
       hint="Операция появится в журнале кассы сразу после подтверждения"
       actions={

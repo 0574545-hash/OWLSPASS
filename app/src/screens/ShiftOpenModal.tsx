@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Modal } from '../components/Modal'
 import { Card, CardKicker, CardRow, CardTotal, MoneyField, SelectField, TextArea, TextField } from '../components/ui'
 import { clock, money } from '../lib/format'
+import { now } from '../domain/rules'
 import { actions, currentUser, openOrders, unpaidOrders, useStore } from '../state/store'
 
 /** Screen 02 — «Открытие смены».
@@ -21,8 +22,8 @@ export function ShiftOpenModal() {
   // Администратор выбирается, кассир подставлен входом по PIN.
   const [admin, setAdmin] = useState('')
   const cashier = me ? shortForm(me.fullName) : shift.cashier
-  const [openedAt] = useState(clock(shift.openedAt))
-  const [plannedClose, setPlannedClose] = useState('21:00')
+  // Смена открывается сейчас; закрытие запишется по факту закрытия.
+  const [openedAt] = useState(now())
   const [opening, setOpening] = useState(shift.opening)
   const [comment, setComment] = useState(shift.openComment)
 
@@ -51,7 +52,7 @@ export function ShiftOpenModal() {
             disabled={admin === ''}
             title={admin === '' ? 'Выберите администратора смены' : 'Открыть смену'}
             onClick={() => {
-              actions.openShift({ opening, admin, cashier, comment })
+              actions.openShift({ opening, admin, cashier, comment, openedAt })
               // Смена открыта — администратор идёт к заказам.
               navigate('/orders')
             }}
@@ -118,10 +119,7 @@ export function ShiftOpenModal() {
         />
         <TextField label="Кассир (по PIN)" value={cashier} />
       </div>
-      <div className="form-grid">
-        <TextField label="Открытие" value={openedAt} />
-        <TextField label="Плановое закрытие" value={plannedClose} onChange={setPlannedClose} />
-      </div>
+      <TextField label="Открытие смены" value={clock(openedAt)} />
       <MoneyField label="Остаток на начало дня" value={opening} onChange={setOpening} />
       <TextArea label="Комментарий" value={comment} onChange={setComment} />
     </Modal>

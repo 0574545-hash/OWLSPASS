@@ -27,8 +27,10 @@ const shot = async (name) => {
   console.log(`  ${String(step).padStart(2, '0')}  ${name}`)
 }
 
+// Роутер хэшевый (файл открывают с диска) — адреса тоже через «#».
 const go = async (path) => {
-  await page.goto(`http://localhost:4173${path}`, { waitUntil: 'networkidle' })
+  await page.goto(`http://localhost:4173/#${path}`, { waitUntil: 'networkidle' })
+  await page.waitForTimeout(250)
 }
 
 const text = async (sel) => (await page.locator(sel).first().textContent())?.trim()
@@ -48,10 +50,15 @@ await page.waitForTimeout(400)
 await shot('02-otkrytie-smeny')
 if (!(await page.getByText('Открыть смену').first().isVisible())) throw new Error('нет окна открытия смены')
 const startCash = await text('.card-total > span:last-child')
-await page.getByRole('button', { name: 'Открыть смену' }).click()
+// Администратора выбирает кассир — без него смену не открыть (замечание 7).
+await page.locator('.field-col', { hasText: 'Администратор' }).locator('select').selectOption('Смирнова Е. В.')
+await page.locator('.modal-foot').getByRole('button', { name: 'Открыть смену' }).click()
 await page.waitForTimeout(400)
 
-// 03 — home
+// 03 — home. После открытия смены попадаем на «Заказы» (замечание 8) —
+// на главную заходим отдельно.
+await page.getByRole('link', { name: /Главное/ }).click()
+await page.waitForTimeout(400)
 await shot('03-glavnaya')
 const revenue = await text('.stat-value')
 

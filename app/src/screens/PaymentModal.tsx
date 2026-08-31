@@ -4,8 +4,8 @@ import { Banknote, CreditCard, QrCode } from 'lucide-react'
 import { Modal } from '../components/Modal'
 import { Card, CardRow, CardTotal, MoneyField, Segmented, TextArea } from '../components/ui'
 import { DASH, clock, money } from '../lib/format'
-import { NOW, OVERTIME_RATE, orderTotals } from '../domain/rules'
-import { actions, clientOf, tariffDuration, totalsOf, useStore } from '../state/store'
+import { OVERTIME_RATE, now, orderTotals } from '../domain/rules'
+import { actions, clientOf, tariffDurationOf, totalsOf, useStore } from '../state/store'
 import type { PaymentMethod } from '../domain/types'
 
 /** Screen 07 — «Оплата заказа»: where «Принять оплату» leads.
@@ -20,6 +20,7 @@ export function PaymentModal() {
   const order = useStore((s) => s.orders.find((o) => o.no === orderNo))
   const client = useStore((s) => (order ? clientOf(s, order.clientId) : undefined))
   const stored = useStore((s) => (order ? totalsOf(s, order) : undefined))
+  const state = useStore((s) => s)
 
   const [method, setMethod] = useState<PaymentMethod>('Наличные')
   const [comment, setComment] = useState('')
@@ -28,7 +29,7 @@ export function PaymentModal() {
   // card did not show while the order was still running.
   const dueTotals =
     order && stored
-      ? orderTotals(order, client, tariffDuration(order.tariffItemId), order.endedAt ?? NOW)
+      ? orderTotals(order, client, tariffDurationOf(state, order.tariffItemId), order.endedAt ?? now())
       : undefined
   const due = dueTotals?.remainder ?? 0
   const [given, setGiven] = useState<number | null>(null)

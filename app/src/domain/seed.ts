@@ -13,7 +13,7 @@ import type {
   Shift,
   User,
 } from './types'
-import { orderTotals } from './rules'
+import { UNLIMITED, orderTotals } from './rules'
 
 const t = (h: number, m: number) => h * 60 + m
 
@@ -49,7 +49,7 @@ export const CATALOG: CatalogItem[] = [
     id: 'tariff-overtime',
     name: 'Доплата за час сверх тарифа',
     category: 'Тариф',
-    unit: 'час',
+    unit: 'мин',
     price: 350,
     durationMin: 60,
     status: 'active',
@@ -112,7 +112,7 @@ export const CATALOG: CatalogItem[] = [
     id: 'svc-photo',
     name: 'Фотосъёмка праздника',
     category: 'Услуга',
-    unit: 'час',
+    unit: 'мин',
     price: 3200,
     durationMin: 60,
     status: 'hidden',
@@ -125,7 +125,7 @@ export const CATALOG: CatalogItem[] = [
     id: 'svc-hall',
     name: 'Аренда зала под праздник',
     category: 'Услуга',
-    unit: 'час',
+    unit: 'мин',
     price: 4000,
     durationMin: 60,
     status: 'active',
@@ -211,8 +211,11 @@ export const CATALOG: CatalogItem[] = [
 const price = (id: string) => CATALOG.find((c) => c.id === id)!.price
 
 /** Duration of the tariff/service that governs an order's окончание. */
-export function tariffDuration(itemId: string): number {
-  return CATALOG.find((c) => c.id === itemId)?.durationMin ?? 120
+export function tariffDuration(itemId: string, catalog: CatalogItem[] = CATALOG): number {
+  const item = catalog.find((c) => c.id === itemId)
+  if (!item) return 120
+  // Единица «мин» без длительности — безлимитный тариф.
+  return item.durationMin ?? (item.unit === 'мин' ? UNLIMITED : 120)
 }
 
 export const DISCOUNT_GROUNDS: DiscountGround[] = [

@@ -5,7 +5,7 @@ import { Page } from '../components/AppShell'
 import { ListFoot, PageHead, Pill, SearchBar, SortableTh, SubTabs } from '../components/ui'
 import { DASH, MIN_SEARCH, clock, digitsOnly, duration, money, percent, plural, searchQuery } from '../lib/format'
 import { OVERTIME_RATE, elapsed, endTime, paymentLabel, statusLabel, statusTone } from '../domain/rules'
-import { clientOf, tariffDuration, totalsOf, useStore, type AppState } from '../state/store'
+import { clientOf, tariffDurationOf, totalsOf, useStore, type AppState } from '../state/store'
 import type { Order } from '../domain/types'
 
 const PAGE = 18
@@ -134,7 +134,7 @@ export function OrdersPage() {
                 <tr key={r.id} className="row-click" onClick={() => navigate(`/orders/${r.no}`)}>
                   <td className="mono">№ {r.no}</td>
                   <td className="mono">{clock(r.createdAt)}</td>
-                  <td className="mono">{clock(r.endAt)}</td>
+                  <td className="mono">{r.endAt === undefined ? DASH : clock(r.endAt)}</td>
                   <td className="mono">{duration(r.elapsed)}</td>
                   <td
                     className="mono"
@@ -199,7 +199,8 @@ export interface OrderRow {
   id: string
   no: number
   createdAt: number
-  endAt: number
+  /** Безлимитный тариф — окончания нет. */
+  endAt: number | undefined
   elapsed: number
   overtime: number
   client: string
@@ -217,7 +218,7 @@ export interface OrderRow {
 
 export function buildRow(s: AppState, order: Order): OrderRow {
   const client = clientOf(s, order.clientId)
-  const dur = tariffDuration(order.tariffItemId)
+  const dur = tariffDurationOf(s, order.tariffItemId)
   const totals = totalsOf(s, order)
   const childNames = order.childIds
     .map((id) => client?.children.find((c) => c.id === id))

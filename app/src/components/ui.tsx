@@ -16,15 +16,19 @@ export function Field({
   label,
   children,
   className = '',
+  error,
 }: {
   label: string
   children: ReactNode
   className?: string
+  /** Подсказка об ошибке под полем — пустая строка означает «всё в порядке». */
+  error?: string
 }) {
   return (
     <label className={`field-col ${className}`}>
       {label}
       {children}
+      {error ? <span className="field-error">{error}</span> : null}
     </label>
   )
 }
@@ -36,6 +40,7 @@ export function TextField({
   disabled,
   placeholder,
   className = '',
+  error,
 }: {
   label: string
   value: string
@@ -43,11 +48,12 @@ export function TextField({
   disabled?: boolean
   placeholder?: string
   className?: string
+  error?: string
 }) {
   return (
-    <Field label={label} className={className}>
+    <Field label={label} className={className} error={error}>
       <input
-        className="input"
+        className={error ? 'input invalid' : 'input'}
         type="text"
         value={value}
         placeholder={placeholder}
@@ -145,6 +151,8 @@ export function FieldWithPlus({
   onPlus,
   plusLabel,
   options,
+  error,
+  plusDisabled = false,
 }: {
   label: string
   value: string
@@ -152,9 +160,12 @@ export function FieldWithPlus({
   onPlus: () => void
   plusLabel: string
   options?: string[]
+  error?: string
+  /** «+» гаснет, пока текущую строку не заполнили правильно. */
+  plusDisabled?: boolean
 }) {
   return (
-    <Field label={label}>
+    <Field label={label} error={error}>
       <span className="field-plus">
         {options ? (
           <select className="input has-caret" value={value} onChange={(e) => onChange?.(e.target.value)}>
@@ -167,14 +178,20 @@ export function FieldWithPlus({
           </select>
         ) : (
           <input
-            className="input"
+            className={error ? 'input invalid' : 'input'}
             type="text"
             value={value}
             disabled={!onChange}
             onChange={(e) => onChange?.(e.target.value)}
           />
         )}
-        <button type="button" aria-label={plusLabel} title={plusLabel} onClick={onPlus}>
+        <button
+          type="button"
+          aria-label={plusLabel}
+          title={plusLabel}
+          disabled={plusDisabled}
+          onClick={onPlus}
+        >
           +
         </button>
       </span>
@@ -320,16 +337,18 @@ export function DateField({
   value,
   onChange,
   className = '',
+  error,
 }: {
   label: string
   value: string
   onChange?: (v: string) => void
   className?: string
+  error?: string
 }) {
   return (
-    <Field label={label} className={className}>
+    <Field label={label} className={className} error={error}>
       <input
-        className="input"
+        className={error ? 'input invalid' : 'input'}
         type="text"
         inputMode="numeric"
         placeholder="дд.мм.гггг"

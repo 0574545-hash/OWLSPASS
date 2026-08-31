@@ -204,19 +204,28 @@ export function toItems(
     })
 }
 
-/** The chosen line with the longest duration sets the end of the visit. */
+/** Единица «мин» без длительности — безлимитный тариф. */
+function isUnlimitedItem(c: CatalogItem): boolean {
+  return c.unit === 'мин' && !c.durationMin
+}
+
+/** The chosen line with the longest duration sets the end of the visit.
+ *  Безлимитный тариф длиннее любого другого — он и выигрывает. */
 export function pickTariff(catalog: CatalogItem[], qty: Record<string, number>): CatalogItem | undefined {
   const chosen = Object.entries(qty)
     .filter(([id, n]) => n > 0 && id !== 'tariff-overtime')
     .map(([id]) => catalog.find((c) => c.id === id))
-    .filter((c): c is CatalogItem => !!c && !!c.durationMin)
+    .filter((c): c is CatalogItem => !!c && (!!c.durationMin || isUnlimitedItem(c)))
   if (chosen.length === 0) return catalog.find((c) => c.id === 'tariff-2h')
+  const unlimited = chosen.find(isUnlimitedItem)
+  if (unlimited) return unlimited
   return chosen.reduce((a, b) => ((a.durationMin ?? 0) >= (b.durationMin ?? 0) ? a : b))
 }
 
 export function labelFor(item: CatalogItem | undefined): string {
   if (!item) return 'Разовый, 2 ч'
   if (item.category === 'Услуга') return 'Праздничная программа'
+  if (isUnlimitedItem(item)) return 'Безлимит'
   const hours = (item.durationMin ?? 120) / 60
   return `Разовый, ${hours} ч`
 }

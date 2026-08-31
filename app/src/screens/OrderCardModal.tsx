@@ -16,7 +16,7 @@ import {
 } from '../components/ui'
 import { DASH, clock, duration, money } from '../lib/format'
 import { elapsed, endTime, statusLabel, statusTone } from '../domain/rules'
-import { actions, clientOf, tariffDuration, totalsOf, useStore } from '../state/store'
+import { actions, clientOf, tariffDurationOf, totalsOf, useStore } from '../state/store'
 import { ageOf } from './OrdersPage'
 
 /** Screen 06 — «Карточка заказа»: where «Открыть» in the list leads.
@@ -33,6 +33,7 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
   const order = useStore((s) => s.orders.find((o) => o.no === orderNo))
   const client = useStore((s) => (order ? clientOf(s, order.clientId) : undefined))
   const catalog = useStore((s) => s.catalog)
+  const state = useStore((s) => s)
   const totals = useStore((s) => (order ? totalsOf(s, order) : undefined))
 
   const [tab, setTab] = useState<'services' | 'goods'>('services')
@@ -50,7 +51,7 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
     )
   }
 
-  const dur = tariffDuration(order.tariffItemId)
+  const dur = tariffDurationOf(state, order.tariffItemId)
   const tone = statusTone(order, client, dur)
   const services = catalog.filter((c) => c.status !== 'hidden' && (c.category === 'Тариф' || c.category === 'Услуга'))
   const goods = catalog.filter((c) => c.status !== 'hidden' && c.category === 'Товар')
@@ -177,7 +178,11 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
             <CardRow label="Создан" value={<span className="mono">{clock(order.createdAt)}</span>} />
             <CardRow
               label="Окончание по тарифу"
-              value={<span className="mono">{clock(endTime(order, dur))}</span>}
+              value={
+                <span className="mono">
+                  {endTime(order, dur) === undefined ? 'без ограничения' : clock(endTime(order, dur)!)}
+                </span>
+              }
             />
             <CardRow
               label="Прошло"

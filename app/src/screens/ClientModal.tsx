@@ -13,7 +13,7 @@ import {
   TextArea,
   TextField,
 } from '../components/ui'
-import { DASH, money } from '../lib/format'
+import { CHILD_MIN_YEAR, DASH, childBirthError, isChildNameValid, money } from '../lib/format'
 import { actions, clientBalance, useStore } from '../state/store'
 import type { Child, Client } from '../domain/types'
 
@@ -58,18 +58,36 @@ export function ClientModal() {
     })
   }
 
+  // Строку ребёнка либо не трогали вовсе, либо она должна быть заполнена целиком.
+  const childNameError = (c: Child) => {
+    if (c.name.trim() === '') return c.birthDate.trim() === '' ? '' : 'Укажите имя ребёнка'
+    return isChildNameValid(c.name) ? '' : 'Только буквы кириллицы'
+  }
+  const childBirthErrorOf = (c: Child) => {
+    if (c.birthDate.trim() === '') return c.name.trim() === '' ? '' : 'Укажите дату рождения'
+    return childBirthError(c.birthDate)
+  }
+  const childFilled = (c: Child) => c.name.trim() !== '' && c.birthDate.trim() !== ''
+  const childValid = (c: Child) => childFilled(c) && childNameError(c) === '' && childBirthErrorOf(c) === ''
+  const childBlank = (c: Child) => c.name.trim() === '' && c.birthDate.trim() === ''
+
+  const lastChild = children[children.length - 1]
+  // Следующего ребёнка не добавляем, пока текущий не заполнен правильно.
+  const canAddChild = children.length < 10 && lastChild !== undefined && childValid(lastChild)
+
   const addChild = () => {
-    if (children.length >= 10) return
+    if (!canAddChild) return
     setChildren((prev) => [...prev, { id: `ch-${Date.now()}-${prev.length}`, name: '', birthDate: '' }])
   }
 
   const save = () => {
-    const kept = children.filter((c) => c.name.trim() !== '')
+    const kept = children.filter(childValid)
     actions.saveClient({ ...draft, children: kept })
     close()
   }
 
-  const canSave = draft.fullName.trim() !== '' && draft.phone.trim() !== ''
+  const childrenOk = children.every((c) => childBlank(c) || childValid(c))
+  const canSave = draft.fullName.trim() !== '' && draft.phone.trim() !== '' && childrenOk
 
   return (
     <Modal
@@ -102,11 +120,12 @@ export function ClientModal() {
           <>
             <Card>
               <CardRow label="Скидка по карточке" value={draft.discountPct > 0 ? `${draft.discountPct} %` : DASH} />
-              <CardRow label="Детей в карточке" value={children.filter((c) => c.name.trim()).length} />
+              <CardRow label="Детей в карточке" value={children.filter(childValid).length} />
               <CardTotal label="Действует до" value={draft.discountUntil || DASH} small />
             </Card>
             <div className="card-note">
               Дата рождения ребёнка нужна для расчёта детского тарифа и подарка в день рождения.
+              Не раньше {CHILD_MIN_YEAR} года.
             </div>
           </>
         ) : (
@@ -125,6 +144,7 @@ export function ClientModal() {
             </div>
             <div className="card-note">
               Дата рождения ребёнка нужна для расчёта детского тарифа и подарка в день рождения.
+              Не раньше {CHILD_MIN_YEAR} года.
             </div>
           </>
         )
@@ -198,15 +218,27 @@ export function ClientModal() {
                 value={child.name}
                 onChange={(v) => setChild({ name: v })}
                 onPlus={addChild}
-                plusLabel="Добавить ребёнка"
+                plusLabel={
+                  canAddChild
+                    ? 'Добавить ребёнка'
+                    : 'Сначала заполните имя и дату рождения этого ребёнка'
+                }
+                plusDisabled={!canAddChild}
+                error={childNameError(child)}
               />
             ) : (
-              <TextField label="Ребёнок · имя" value={child.name} onChange={(v) => setChild({ name: v })} />
+              <TextField
+                label="Ребёнок · имя"
+                value={child.name}
+                onChange={(v) => setChild({ name: v })}
+                error={childNameError(child)}
+              />
             )}
             <DateField
               label="Дата рождения"
               value={child.birthDate}
               onChange={(v) => setChild({ birthDate: v })}
+              error={childBirthErrorOf(child)}
             />
           </div>
         )
