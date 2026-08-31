@@ -1,14 +1,12 @@
 import { Page } from '../components/AppShell'
 import { Stat } from '../components/ui'
 import { counted, money, plural } from '../lib/format'
-import { cashSummary, openOrders, unpaidOrders, useStore } from '../state/store'
+import { cashSummary, openOrders, useStore } from '../state/store'
 
 /** Screen 03 — «Главная»: state of the shift and the day's figures. */
 export function HomePage() {
   const shift = useStore((s) => s.shift)
   const summary = useStore(cashSummary)
-  const open = useStore(openOrders)
-  const unpaid = useStore((s) => unpaidOrders(s).length)
 
   // «Детей в зале» — дети, отмеченные в заказах, чей визит ещё не закончился.
   const inHall = useStore((s) =>
@@ -30,7 +28,7 @@ export function HomePage() {
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 20 }}>
         <Stat
           label="Выручка за смену"
           value={money(summary.revenue)}
@@ -40,11 +38,6 @@ export function HomePage() {
           label="Детей в зале"
           value={`${inHall} из ${capacity}`}
           note={`свободно ${capacity - inHall} ${plural(capacity - inHall, 'место', 'места', 'мест')}`}
-        />
-        <Stat
-          label="Открытых заказов"
-          value={open.length}
-          note={`${unpaid} не ${plural(unpaid, 'оплачен', 'оплачено', 'оплачено')}`}
         />
       </div>
     </Page>

@@ -47,7 +47,12 @@ ok(
   (await p.locator('.page button').count()) === 0,
   `кнопок на странице: ${await p.locator('.page button').count()}`,
 )
-ok('24. KPI «Открытых заказов» осталась', /Открытых заказов/i.test(homeText))
+ok('24. Плитки «Открытых заказов» тоже нет', !/Открытых заказов/i.test(homeText))
+ok(
+  '24. На главной осталось две плитки',
+  (await p.locator('.stat').count()) === 2,
+  `плиток: ${await p.locator('.stat').count()}`,
+)
 
 /* ---------- 26: изъятие ---------- */
 await p.goto(FILE + '#/cash')
@@ -110,7 +115,7 @@ const box = await p.locator('.stepper > button').first().boundingBox()
 ok('20. Кнопки ± увеличены', box.width >= 36 && box.height >= 36, `${Math.round(box.width)}×${Math.round(box.height)}`)
 
 /* ---------- 21/22: тарифы в минутах ---------- */
-await p.goto(FILE + '#/directories/item/tariff-overtime')
+await p.goto(FILE + '#/directories/item/tariff-2h')
 await p.waitForTimeout(600)
 const unitOptions = await p
   .locator('.modal-main .field-col', { hasText: 'Единица' })
@@ -119,8 +124,10 @@ const unitOptions = await p
 ok('21. В единицах есть «мин»', unitOptions.includes('мин'), unitOptions.join(' | '))
 ok('21. Единицы «час» больше нет', !unitOptions.includes('час'), unitOptions.join(' | '))
 
+const unitSel = p.locator('.modal-main .field-col', { hasText: 'Единица' }).locator('select')
 const durField = p.locator('.modal-main .field-col', { hasText: 'Длительность' }).locator('input')
-ok('21. Длительность в минутах', (await durField.inputValue()) === '60', await durField.inputValue())
+ok('21. Тариф измеряется в минутах', (await unitSel.inputValue()) === 'мин', await unitSel.inputValue())
+ok('21. Длительность в минутах', (await durField.inputValue()) === '120', await durField.inputValue())
 ok('21. Длительность активна при единице «мин»', !(await durField.isDisabled()))
 
 await p.locator('.modal-main .field-col', { hasText: 'Единица' }).locator('select').selectOption('шт.')
