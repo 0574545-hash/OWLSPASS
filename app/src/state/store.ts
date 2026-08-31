@@ -18,6 +18,7 @@ import type {
 } from '../domain/types'
 import {
   CATALOG,
+  CATALOG_UNITS,
   COLLECTION_AMOUNT,
   CURRENT_SHIFT_NO,
   DISCOUNT_GROUNDS,
@@ -118,8 +119,12 @@ function initialState(mode: DataMode = 'demo'): AppState {
     houseOps: seed.cashOps,
     users: seed.users,
     shifts: seed.shifts,
-    // Тарифы заказчик заводит сам — в пустой сборке их нет.
-    catalog: mode === 'clean' ? CATALOG.filter((c) => c.category !== 'Тариф') : CATALOG,
+    // Тарифы заказчик заводит сам, а позиции со снятыми единицами
+    // («чел.», «пара», «набор») в рабочую сборку не берём.
+    catalog:
+      mode === 'clean'
+        ? CATALOG.filter((c) => c.category !== 'Тариф' && CATALOG_UNITS.includes(c.unit))
+        : CATALOG,
     discountGrounds: DISCOUNT_GROUNDS,
     roles: ROLES,
     notifications: NOTIFICATIONS,

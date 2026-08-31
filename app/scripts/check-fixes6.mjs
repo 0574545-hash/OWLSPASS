@@ -51,6 +51,20 @@ ok(
 )
 ok('Справочники открываются на «Тарифах»', (await p.locator('.subtabs .on, .subtabs [aria-selected=true]').count()) >= 0)
 
+for (const [tabId, label] of [
+  ['services', 'Услуги'],
+  ['goods', 'Товары'],
+]) {
+  await p.goto(FILE + `#/directories/${tabId}`)
+  await p.waitForTimeout(500)
+  const units = (await p.locator('.tbl tbody tr').allInnerTexts()).map((r) => r.split('\t')[2])
+  ok(
+    `${label}: остались только шт., мин, %`,
+    units.every((u) => ['шт.', 'мин', '%'].includes(u)),
+    [...new Set(units)].join(' | '),
+  )
+}
+
 /* ---------- Единицы ---------- */
 await p.goto(FILE + '#/directories/tariffs/new/Тариф')
 await p.waitForTimeout(600)

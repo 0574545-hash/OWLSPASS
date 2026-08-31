@@ -4,10 +4,11 @@ import { Trash2 } from 'lucide-react'
 import { Modal } from '../components/Modal'
 import { Card, CardRow, CardTotal, MoneyField, Segmented, SelectField, TextField } from '../components/ui'
 import { money } from '../lib/format'
+import { CATALOG_UNITS } from '../domain/seed'
 import { actions, useStore } from '../state/store'
 import type { CatalogCategory, CatalogItem } from '../domain/types'
 
-const UNITS = ['шт.', 'мин', '%']
+const UNITS = CATALOG_UNITS
 /** Длительность имеет смысл только у позиций, измеряемых в минутах. */
 const DURATION_UNIT = 'мин'
 const CATEGORIES: CatalogCategory[] = ['Тариф', 'Услуга', 'Товар', 'Скидка']
