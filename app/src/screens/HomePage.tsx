@@ -1,12 +1,13 @@
 import { Page } from '../components/AppShell'
 import { Stat } from '../components/ui'
 import { counted, money, plural } from '../lib/format'
-import { cashSummary, openOrders, useStore } from '../state/store'
+import { cashSummary, openOrders, useCan, useStore } from '../state/store'
 
 /** Screen 03 — «Главная»: state of the shift and the day's figures. */
 export function HomePage() {
   const shift = useStore((s) => s.shift)
   const summary = useStore(cashSummary)
+  const mayRevenue = useCan('home.revenue')
 
   // «Детей в зале» — дети, отмеченные в заказах, чей визит ещё не закончился.
   const inHall = useStore((s) =>
@@ -28,12 +29,21 @@ export function HomePage() {
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 20 }}>
-        <Stat
-          label="Выручка за смену"
-          value={money(summary.revenue)}
-          note={counted(summary.ops, 'операция', 'операции', 'операций')}
-        />
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: mayRevenue ? 'repeat(2, 1fr)' : '1fr',
+          gap: 12,
+          marginBottom: 20,
+        }}
+      >
+        {mayRevenue && (
+          <Stat
+            label="Выручка за смену"
+            value={money(summary.revenue)}
+            note={counted(summary.ops, 'операция', 'операции', 'операций')}
+          />
+        )}
         <Stat
           label="Детей в зале"
           value={`${inHall} из ${capacity}`}

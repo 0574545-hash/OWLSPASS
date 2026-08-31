@@ -4,7 +4,7 @@ import { Modal } from '../components/Modal'
 import { Card, CardKicker, CardRow, CardTotal, MoneyField, SelectField, TextArea, TextField } from '../components/ui'
 import { clock, money } from '../lib/format'
 import { now } from '../domain/rules'
-import { actions, currentUser, openOrders, unpaidOrders, useStore } from '../state/store'
+import { actions, currentUser, openOrders, unpaidOrders, useCan, useStore } from '../state/store'
 
 /** Screen 02 — «Открытие смены».
  *  Runs straight after the PIN: who is on, and how much cash the drawer
@@ -18,6 +18,7 @@ export function ShiftOpenModal() {
   const previous = useStore((s) => s.shifts[0])
   const openCount = useStore((s) => openOrders(s).length)
   const unpaidCount = useStore((s) => unpaidOrders(s).length)
+  const mayOpen = useCan('shift.open')
 
   // Администратор выбирается, кассир подставлен входом по PIN.
   const [admin, setAdmin] = useState('')
@@ -31,6 +32,27 @@ export function ShiftOpenModal() {
 
   // What the previous shift left in the drawer; the cashier confirms it.
   const carried = previous?.closingCash ?? 0
+
+  // Смену открывает тот, кому это право дано; остальные ждут старшего.
+  if (!mayOpen) {
+    return (
+      <Modal
+        title="Смена не открыта"
+        onClose={() => actions.logout()}
+        aside={null}
+        actions={
+          <button className="btn btn-primary" type="button" onClick={() => actions.logout()}>
+            Выйти
+          </button>
+        }
+      >
+        <div className="empty">
+          У должности «{me?.role ?? '—'}» нет права «Открытие смены». Смену открывает старший смены,
+          после этого войдите снова.
+        </div>
+      </Modal>
+    )
+  }
 
   return (
     <Modal

@@ -4,12 +4,15 @@ import { Download, Plus } from 'lucide-react'
 import { Page } from '../components/AppShell'
 import { ListFoot, PageHead, Pill, SearchBar, SortableTh, SubTabs } from '../components/ui'
 import { DASH, durationWords, money, plural } from '../lib/format'
-import { useStore } from '../state/store'
+import { useCan, useStore } from '../state/store'
+import { PERMISSIONS, PERMISSION_SECTIONS } from '../domain/permissions'
+import type { Permission } from '../domain/permissions'
 import type { CatalogCategory, CatalogItem } from '../domain/types'
 
-type TabId = 'tariffs' | 'services' | 'goods' | 'discounts'
+type TabId = 'tariffs' | 'services' | 'goods' | 'discounts' | 'permissions'
 
-const TAB_CATEGORY: Record<TabId, CatalogCategory> = {
+/** «Права доступа» — не позиции каталога, а справочник самой программы. */
+const TAB_CATEGORY: Record<Exclude<TabId, 'permissions'>, CatalogCategory> = {
   tariffs: 'Тариф',
   services: 'Услуга',
   goods: 'Товар',
@@ -21,6 +24,7 @@ const ADD_LABEL: Record<TabId, string> = {
   services: 'Добавить услугу',
   goods: 'Добавить товар',
   discounts: 'Добавить скидку',
+  permissions: '',
 }
 
 /** Screens 19–22 — «Справочники», «Услуги», «Товары», «Скидки».
@@ -28,12 +32,14 @@ const ADD_LABEL: Record<TabId, string> = {
 export function DirectoriesPage() {
   const { tab: routeTab } = useParams()
   const navigate = useNavigate()
-  const known: TabId[] = ['tariffs', 'services', 'goods', 'discounts']
+  const known: TabId[] = ['tariffs', 'services', 'goods', 'discounts', 'permissions']
   const tab: TabId = known.includes(routeTab as TabId) ? (routeTab as TabId) : 'tariffs'
   const [query, setQuery] = useState('')
   const [limit, setLimit] = useState(12)
 
   const catalog = useStore((s) => s.catalog)
+  const mayEdit = useCan('catalog.edit')
+  const mayExport = useCan('catalog.export')
   const grounds = useStore((s) => s.discountGrounds)
 
   const counts = {
@@ -41,11 +47,20 @@ export function DirectoriesPage() {
     services: catalog.filter((c) => c.category === 'Услуга').length,
     goods: catalog.filter((c) => c.category === 'Товар').length,
     discounts: grounds.length,
+    permissions: PERMISSIONS.length,
   }
 
-  const items = catalog
-    .filter((c) => c.category === TAB_CATEGORY[tab])
-    .filter((c) => c.name.toLowerCase().includes(query.trim().toLowerCase()))
+  const items =
+    tab === 'permissions'
+      ? []
+      : catalog
+          .filter((c) => c.category === TAB_CATEGORY[tab])
+          .filter((c) => c.name.toLowerCase().includes(query.trim().toLowerCase()))
+
+  const rights = PERMISSIONS.filter((p) => {
+    const q = query.trim().toLowerCase()
+    return q === '' || p.label.toLowerCase().includes(q) || p.section.toLowerCase().includes(q)
+  })
 
   const lastChanged = catalog
     .map((c) => c.changedAt ?? '')
@@ -53,7 +68,9 @@ export function DirectoriesPage() {
     .sort((a, b) => toDate(b) - toDate(a))[0]
 
   const subtitle =
-    tab === 'services'
+    tab === 'permissions'
+      ? `Права доступа · ${counts.permissions} ${plural(counts.permissions, 'право', 'права', 'прав')} в ${PERMISSION_SECTIONS.length} разделах`
+      : tab === 'services'
       ? `Услуги · ${counts.services} ${plural(counts.services, 'позиция', 'позиции', 'позиций')}`
       : tab === 'goods'
         ? `Товары · ${counts.goods} ${plural(counts.goods, 'позиция', 'позиции', 'позиций')}`
@@ -73,14 +90,18 @@ export function DirectoriesPage() {
           onChange={setQuery}
           placeholder={tab === 'discounts' ? 'Поиск по основанию' : 'Поиск по наименованию'}
         />
-        <button
-          className="btn btn-primary"
-          type="button"
-          onClick={() => navigate(`/directories/${tab}/new/${TAB_CATEGORY[tab]}`)}
-        >
-          <Plus />
-          {ADD_LABEL[tab]}
-        </button>
+        {tab !== 'permissions' && mayEdit && (
+          <button
+            className="btn btn-primary"
+            type="button"
+            onClick={() =>
+              navigate(`/directories/${tab}/new/${TAB_CATEGORY[tab as Exclude<TabId, 'permissions'>]}`)
+            }
+          >
+            <Plus />
+            {ADD_LABEL[tab]}
+          </button>
+        )}
       </div>
 
       <SubTabs
@@ -95,24 +116,37 @@ export function DirectoriesPage() {
           { id: 'services', label: 'Услуги', badge: counts.services },
           { id: 'goods', label: 'Товары', badge: counts.goods },
           { id: 'discounts', label: 'Скидки', badge: counts.discounts },
+          { id: 'permissions', label: 'Права доступа', badge: counts.permissions },
         ]}
       />
 
       <div className="surface" data-compact="" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
-          {tab === 'discounts' ? <DiscountsTable /> : <CatalogTable items={shown} tab={tab} />}
+          {tab === 'permissions' ? (
+            <PermissionsTable rights={rights} />
+          ) : tab === 'discounts' ? (
+            <DiscountsTable />
+          ) : (
+            <CatalogTable items={shown} tab={tab} />
+          )}
         </div>
         <ListFoot
           note={
-            tab === 'discounts'
+            tab === 'permissions'
+              ? 'Перечень задан программой: права набираются в должность, а должность назначается сотруднику'
+              : tab === 'discounts'
               ? 'Скидки не суммируются — применяется наибольшая'
               : limit >= items.length
                 ? `Показаны все ${items.length} ${plural(items.length, 'позиция', 'позиции', 'позиций')}`
                 : `Показаны ${Math.min(limit, items.length)} из ${items.length} · остальные подгружаются при прокрутке`
           }
-          onMore={tab !== 'discounts' && limit < items.length ? () => setLimit(limit + 12) : undefined}
+          onMore={
+            tab !== 'discounts' && tab !== 'permissions' && limit < items.length
+              ? () => setLimit(limit + 12)
+              : undefined
+          }
         >
-          {(tab === 'services' || tab === 'goods' || tab === 'discounts') && (
+          {mayExport && (tab === 'services' || tab === 'goods' || tab === 'discounts') && (
             <button className="btn btn-ghost btn-sm" type="button" onClick={() => exportCsv(items)}>
               <Download />
               Выгрузить
@@ -121,6 +155,48 @@ export function DirectoriesPage() {
         </ListFoot>
       </div>
     </Page>
+  )
+}
+
+/** Справочник «Права доступа»: что за право и что оно открывает. */
+function PermissionsTable({ rights }: { rights: Permission[] }) {
+  const roles = useStore((s) => s.roles)
+  return (
+    <table className="tbl">
+      <thead>
+        <tr>
+          <th style={{ width: 140 }}>Раздел</th>
+          <th style={{ width: 260 }}>Право</th>
+          <th>Что открывает</th>
+          <th style={{ width: 200 }}>Есть у должностей</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rights.map((p) => {
+          const holders = roles.filter((r) => r.permissions.includes(p.id)).map((r) => r.name)
+          return (
+            <tr key={p.id}>
+              <td>{p.section}</td>
+              <td>
+                <div style={{ fontWeight: 600 }}>
+                  {p.label}
+                  {p.risky && <span title="Опасное право"> ⚠</span>}
+                </div>
+              </td>
+              <td>{p.opens}</td>
+              <td>{holders.length > 0 ? holders.join(', ') : DASH}</td>
+            </tr>
+          )
+        })}
+        {rights.length === 0 && (
+          <tr>
+            <td colSpan={4} className="empty">
+              Ничего не найдено — измените запрос
+            </td>
+          </tr>
+        )}
+      </tbody>
+    </table>
   )
 }
 

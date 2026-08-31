@@ -11,7 +11,7 @@ const ok = (n, c, x = '') => console.log(`  ${c ? 'ok  ' : 'ПЛОХО'} ${n}${x
 
 await p.goto(FILE, { waitUntil: 'load' })
 await p.waitForTimeout(700)
-for (const d of '1111') await p.getByRole('button', { name: d, exact: true }).click()
+for (const d of '4444') await p.getByRole('button', { name: d, exact: true }).click()
 await p.waitForTimeout(600)
 await p.locator('.field-col', { hasText: 'Администратор' }).locator('select').selectOption('Смирнова Е. В.')
 await p.locator('.modal-foot').getByRole('button', { name: 'Открыть смену' }).click()
@@ -101,13 +101,17 @@ ok(
   (await p.locator('.modal-title').textContent()) === 'Новая должность',
   await p.locator('.modal-title').textContent(),
 )
-const roleFields = await p.locator('.modal-main .field-col').allInnerTexts()
 ok(
-  'В окне есть название и пять прав',
-  ['Название должности', 'Заказы', 'Клиенты', 'Касса', 'Скидки', 'Справочники'].every((l) =>
-    roleFields.some((f) => f.startsWith(l)),
+  'В окне есть название должности',
+  (await p.locator('.modal-main .field-col', { hasText: 'Название должности' }).count()) === 1,
+)
+const sections = await p.locator('.modal-main .card-kicker').allInnerTexts()
+ok(
+  'Права сгруппированы по разделам',
+  ['Смена', 'Заказы', 'Клиенты', 'Касса', 'Справочники', 'Настройки'].every((l) =>
+    sections.some((x) => x.trim().toUpperCase() === l.toUpperCase()),
   ),
-  roleFields.map((f) => f.split('\n')[0]).join(' | '),
+  sections.map((x) => x.trim()).join(' | '),
 )
 ok(
   'Сохранить выключено, пока нет названия',
@@ -115,13 +119,17 @@ ok(
 )
 
 await p.locator('.modal-main .field-col', { hasText: 'Название должности' }).locator('input').fill('Аниматор')
-await p.locator('.modal-main .field-col', { hasText: 'Скидки' }).locator('select').selectOption('До 10 %')
+await p.locator('.modal-main [role=checkbox]', { hasText: 'Просмотр заказов' }).first().click()
+await p.locator('.modal-main [role=checkbox]', { hasText: 'Просмотр клиентов' }).first().click()
 await p.waitForTimeout(200)
 await p.locator('.modal-foot').getByRole('button', { name: 'Сохранить' }).click()
 await p.waitForTimeout(700)
 const rows = await p.locator('.tbl tbody').innerText()
-ok('Должность сохранилась со своими правами', rows.includes('Аниматор') && rows.includes('До 10 %'),
-   rows.split('\n').filter((l) => l.includes('Аниматор')).join(' '))
+ok(
+  'Должность сохранилась с отмеченными правами',
+  rows.includes('Аниматор') && rows.includes('2 из'),
+  rows.split('\n').filter((l) => l.includes('Аниматор')).join(' ').replace(/\t/g, ' '),
+)
 
 await p.locator('.tbl tbody tr', { hasText: 'Аниматор' }).getByRole('button', { name: 'Изменить' }).click()
 await p.waitForTimeout(700)

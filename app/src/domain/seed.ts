@@ -1,3 +1,4 @@
+import { ALL_PERMISSION_IDS } from './permissions'
 import type {
   CashOp,
   CatalogItem,
@@ -328,10 +329,30 @@ export const USERS: User[] = [
   },
 ]
 
+/** Стартовые наборы прав. Управляющий может всё; администратор ведёт зал
+ *  и кассу, но не трогает настройки, справочники и деньги из ящика;
+ *  кассир только принимает оплату. Всё это правится в приложении. */
+/** Стартовые наборы прав. Управляющий может всё, администратор — всё,
+ *  кроме настроек центра, кассир только принимает оплату. Это лишь
+ *  отправная точка: наборы правятся в «Настройки → Должности». */
 export const ROLES: Role[] = [
-  { name: 'Управляющий', people: 1, orders: 'Полный доступ', clients: 'Полный доступ', cash: 'Полный доступ', discounts: 'Любые', catalog: 'Изменение' },
-  { name: 'Администратор', people: 2, orders: 'Создание, оплата', clients: 'Создание, правка', cash: 'Приём оплаты', discounts: 'До 15 %', catalog: 'Просмотр' },
-  { name: 'Кассир', people: 1, orders: 'Оплата', clients: 'Просмотр', cash: 'Приём оплаты', discounts: 'Нет', catalog: 'Просмотр' },
+  { name: 'Управляющий', people: 1, permissions: [...ALL_PERMISSION_IDS] },
+  {
+    name: 'Администратор',
+    people: 2,
+    permissions: ALL_PERMISSION_IDS.filter((id) => !id.startsWith('settings.')),
+  },
+  {
+    name: 'Кассир',
+    people: 1,
+    permissions: [
+      'shift.open',
+      'orders.view', 'orders.pay', 'orders.print',
+      'clients.view',
+      'cash.view', 'cash.receipt',
+      'catalog.view',
+    ],
+  },
 ]
 
 export const REQUISITES: Requisites = {

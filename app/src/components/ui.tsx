@@ -698,7 +698,9 @@ export function CatalogRow({
   name: string
   meta: string
   qty: number
-  onChange: (qty: number) => void
+  /** Без обработчика строка только показывает количество — так выглядит
+   *  заказ у того, кому не дано право менять состав. */
+  onChange?: (qty: number) => void
 }) {
   return (
     <div className="cat-row">
@@ -711,7 +713,8 @@ export function CatalogRow({
           className="btn btn-secondary btn-sm"
           type="button"
           aria-label="Уменьшить"
-          onClick={() => onChange(Math.max(0, qty - 1))}
+          disabled={!onChange}
+          onClick={() => onChange?.(Math.max(0, qty - 1))}
         >
           −
         </button>
@@ -720,7 +723,8 @@ export function CatalogRow({
           className="btn btn-secondary btn-sm"
           type="button"
           aria-label="Увеличить"
-          onClick={() => onChange(qty + 1)}
+          disabled={!onChange}
+          onClick={() => onChange?.(qty + 1)}
         >
           +
         </button>

@@ -16,7 +16,7 @@ import {
 } from '../components/ui'
 import { DASH, clock, duration, money } from '../lib/format'
 import { elapsed, endTime, statusLabel, statusTone } from '../domain/rules'
-import { actions, clientOf, tariffDurationOf, tariffTermsOf, totalsOf, useStore } from '../state/store'
+import { actions, clientOf, tariffDurationOf, tariffTermsOf, totalsOf, useCan, useStore } from '../state/store'
 import { ageOf } from './OrdersPage'
 
 /** Screen 06 — «Карточка заказа»: where «Открыть» in the list leads.
@@ -36,6 +36,12 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
   const state = useStore((s) => s)
   const totals = useStore((s) => (order ? totalsOf(s, order) : undefined))
 
+  const mayEdit = useCan('orders.edit')
+  const mayClose = useCan('orders.close')
+  const mayPay = useCan('orders.pay')
+  const mayRefund = useCan('orders.refund')
+  const mayComment = useCan('orders.comment')
+  const mayPrint = useCan('orders.print')
   const [tab, setTab] = useState<'services' | 'goods'>('services')
   const [comment, setComment] = useState(order?.comment ?? '')
 
@@ -108,19 +114,23 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
             <button className="btn btn-secondary" type="button" onClick={close}>
               Закрыть
             </button>
-            <button className="btn btn-primary" type="button" onClick={() => window.print()}>
-              <Printer />
-              Печать
-            </button>
+            {mayPrint && (
+              <button className="btn btn-primary" type="button" onClick={() => window.print()}>
+                <Printer />
+                Печать
+              </button>
+            )}
           </>
         ) : (
         <>
           <button
             className="btn btn-secondary"
             type="button"
-            disabled={totals.remainder > 0 || order.status === 'closed'}
+            disabled={!mayClose || totals.remainder > 0 || order.status === 'closed'}
             title={
-              order.status === 'closed'
+              !mayClose
+                ? 'Нет права «Закрытие заказа»'
+                : order.status === 'closed'
                 ? 'Заказ уже закрыт'
                 : totals.remainder > 0
                   ? `Сначала примите оплату: остаток ${money(totals.remainder)}`
@@ -136,8 +146,14 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
           <button
             className="btn btn-primary"
             type="button"
-            disabled={totals.remainder <= 0}
-            title={totals.remainder <= 0 ? 'По заказу нет остатка к оплате' : 'Принять оплату'}
+            disabled={!mayPay || totals.remainder <= 0}
+            title={
+              !mayPay
+                ? 'Нет права «Приём оплаты»'
+                : totals.remainder <= 0
+                  ? 'По заказу нет остатка к оплате'
+                  : 'Принять оплату'
+            }
             onClick={() => navigate(`/orders/${order.no}/pay`)}
           >
             Принять оплату
@@ -268,7 +284,7 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
                 name={c.name}
                 meta={`${c.unit} · ${money(c.price)}`}
                 qty={qtyOf(c.id)}
-                onChange={(next) => setQty(c.id, next)}
+                onChange={mayEdit ? (next) => setQty(c.id, next) : undefined}
               />
             ))}
           </div>
@@ -292,7 +308,7 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
       <TextArea
         label="Комментарий к заказу"
         value={comment}
-        onChange={readOnly ? undefined : saveComment}
+        onChange={readOnly || !mayComment ? undefined : saveComment}
       />
 
       {!readOnly && (
@@ -300,9 +316,11 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
         <button
           className="btn btn-secondary btn-sm"
           type="button"
-          disabled={totals.paid - totals.refunded <= 0}
+          disabled={!mayRefund || totals.paid - totals.refunded <= 0}
           title={
-            totals.paid === 0
+            !mayRefund
+              ? 'Нет права «Возврат»'
+              : totals.paid === 0
               ? 'Возвращать нечего: по заказу не было оплат'
               : totals.paid - totals.refunded <= 0
                 ? 'Всё оплаченное уже возвращено'

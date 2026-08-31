@@ -205,11 +205,8 @@ export interface User {
 export interface Role {
   name: string
   people: number
-  orders: string
-  clients: string
-  cash: string
-  discounts: string
-  catalog: string
+  /** Идентификаторы прав из справочника «Права доступа». */
+  permissions: string[]
 }
 
 export interface NotificationRule {

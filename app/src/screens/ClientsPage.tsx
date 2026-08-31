@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Page } from '../components/AppShell'
 import { ListFoot, PageHead, SearchBar, SortableTh, SubTabs } from '../components/ui'
 import { DASH, MIN_SEARCH, digitsOnly, money, percent, plural, searchQuery } from '../lib/format'
-import { clientBalance, debtSummary, useStore } from '../state/store'
+import { clientBalance, debtSummary, useCan, useStore } from '../state/store'
 import { ageOf } from './OrdersPage'
 
 const PAGE = 18
@@ -57,6 +57,7 @@ export function ClientsPage() {
       return d.length > 0 && digitsOnly(r.phone).includes(d)
     })
 
+  const mayCreate = useCan('clients.create')
   const shown = filtered.slice(0, limit)
 
   return (
@@ -71,7 +72,7 @@ export function ClientsPage() {
           value={query}
           onChange={setQuery}
           placeholder="Поиск по ФИО родителя, имени ребёнка или телефону"
-          onPlus={() => navigate('/clients/new')}
+          onPlus={mayCreate ? () => navigate('/clients/new') : undefined}
           plusLabel="Добавить клиента"
         />
       </div>

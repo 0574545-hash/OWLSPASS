@@ -5,7 +5,7 @@ import { Modal } from '../components/Modal'
 import { Card, CardRow, CardTotal, MoneyField, Segmented, SelectField, TextField } from '../components/ui'
 import { money } from '../lib/format'
 import { CATALOG_UNITS } from '../domain/seed'
-import { actions, useStore } from '../state/store'
+import { actions, useCan, useStore } from '../state/store'
 import type { CatalogCategory, CatalogItem } from '../domain/types'
 
 const UNITS = CATALOG_UNITS
@@ -21,6 +21,8 @@ export function CatalogItemModal() {
   const back = () => navigate(-1)
 
   const existing = useStore((s) => s.catalog.find((c) => c.id === id))
+  const mayEdit = useCan('catalog.edit')
+  const mayDelete = useCan('catalog.delete')
   const [draft, setDraft] = useState<CatalogItem>(
     () => existing ?? actions.newCatalogDraft((category as CatalogCategory) ?? 'Тариф'),
   )
@@ -44,7 +46,7 @@ export function CatalogItemModal() {
       title={draft.name || 'Новая позиция'}
       onClose={back}
       footerLeft={
-        existing ? (
+        existing && mayDelete ? (
           <button
             className="btn btn-ghost btn-sm"
             type="button"
@@ -65,7 +67,8 @@ export function CatalogItemModal() {
           <button
             className="btn btn-primary"
             type="button"
-            disabled={draft.name.trim() === ''}
+            disabled={!mayEdit || draft.name.trim() === ''}
+            title={mayEdit ? 'Сохранить' : 'Нет права «Правка позиций»'}
             onClick={() => {
               actions.saveCatalogItem(draft)
               back()

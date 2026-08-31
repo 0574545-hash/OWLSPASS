@@ -33,6 +33,7 @@ import {
   tariffDuration,
 } from '../domain/seed'
 import { NOW, SHIFT_DATE, now, orderTotals, setNowSource, wallClock } from '../domain/rules'
+import { ALL_PERMISSION_IDS } from '../domain/permissions'
 import type { TariffTerms } from '../domain/rules'
 import { shortName } from '../lib/format'
 
@@ -440,6 +441,24 @@ export function currentUser(s: AppState): User | undefined {
   return s.users.find((u) => u.id === s.session.userId)
 }
 
+/** Права вошедшего сотрудника — набор его должности. Пока никто не вошёл
+ *  (первый экран, скрипты), не запрещаем ничего: запрет начинается со входа. */
+export function permissionsOf(s: AppState): string[] {
+  const user = currentUser(s)
+  if (!user) return ALL_PERMISSION_IDS
+  return s.roles.find((r) => r.name === user.role)?.permissions ?? []
+}
+
+/** Главная проверка: можно ли вошедшему сотруднику это действие. */
+export function can(s: AppState, permissionId: string): boolean {
+  return permissionsOf(s).includes(permissionId)
+}
+
+/** Хук для экранов: `const mayPay = useCan('orders.pay')`. */
+export function useCan(permissionId: string): boolean {
+  return useStore((s) => can(s, permissionId))
+}
+
 /* ============================================================
    Actions
    ============================================================ */
@@ -751,15 +770,7 @@ export const actions = {
   },
 
   newRoleDraft(): Role {
-    return {
-      name: '',
-      people: 0,
-      orders: 'Просмотр',
-      clients: 'Просмотр',
-      cash: 'Нет',
-      discounts: 'Нет',
-      catalog: 'Просмотр',
-    }
+    return { name: '', people: 0, permissions: [] }
   },
 
   newUserDraft(): User {

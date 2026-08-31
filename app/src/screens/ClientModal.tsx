@@ -14,7 +14,7 @@ import {
   TextField,
 } from '../components/ui'
 import { CHILD_MIN_YEAR, DASH, childBirthError, isChildNameValid, money } from '../lib/format'
-import { actions, clientBalance, useStore } from '../state/store'
+import { actions, clientBalance, useCan, useStore } from '../state/store'
 import type { Child, Client } from '../domain/types'
 
 /** Screens 10 and 11 — «Добавить клиента» and «Карточка клиента».
@@ -30,6 +30,11 @@ export function ClientModal() {
   const existing = useStore((s) => s.clients.find((c) => c.id === id))
   const grounds = useStore((s) => s.discountGrounds)
   const balance = useStore((s) => (id ? clientBalance(s, id) : 0))
+
+  const mayEdit = useCan('clients.edit')
+  const mayCreate = useCan('clients.create')
+  const mayDiscount = useCan('clients.discount')
+  const mayFile = useCan('clients.file')
 
   const [draft, setDraft] = useState<Client>(() => existing ?? actions.newClientDraft())
   const fileInput = useRef<HTMLInputElement>(null)
@@ -87,7 +92,8 @@ export function ClientModal() {
   }
 
   const childrenOk = children.every((c) => childBlank(c) || childValid(c))
-  const canSave = draft.fullName.trim() !== '' && draft.phone.trim() !== '' && childrenOk
+  const mayWrite = isNew ? mayCreate : mayEdit
+  const canSave = mayWrite && draft.fullName.trim() !== '' && draft.phone.trim() !== '' && childrenOk
 
   return (
     <Modal
@@ -162,12 +168,14 @@ export function ClientModal() {
           label="Основание скидки"
           value={draft.discountGround}
           options={grounds.map((g) => g.name)}
-          onChange={applyGround}
+          onChange={mayDiscount ? applyGround : () => undefined}
         />
         <TextField
           label="Скидка"
           value={draft.discountPct > 0 ? `${draft.discountPct} %` : ''}
-          onChange={(v) => patch({ discountPct: Number(v.replace(/\D/g, '')) || 0 })}
+          onChange={
+            mayDiscount ? (v) => patch({ discountPct: Number(v.replace(/\D/g, '')) || 0 }) : undefined
+          }
         />
       </div>
 
@@ -190,7 +198,13 @@ export function ClientModal() {
               e.target.value = ''
             }}
           />
-          <button className="btn btn-ghost btn-sm" type="button" onClick={() => fileInput.current?.click()}>
+          <button
+            className="btn btn-ghost btn-sm"
+            type="button"
+            disabled={!mayFile}
+            title={mayFile ? '' : 'Нет права «Загрузка файла»'}
+            onClick={() => fileInput.current?.click()}
+          >
             {draft.file ? 'Заменить' : 'Загрузить'}
           </button>
           {draft.file && (

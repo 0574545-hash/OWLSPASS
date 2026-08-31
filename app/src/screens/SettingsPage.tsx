@@ -4,7 +4,8 @@ import { Plus, ShieldCheck, ShieldPlus, UserPlus } from 'lucide-react'
 import { Page } from '../components/AppShell'
 import { Checkbox, ListFoot, PageHead, PhoneField, Pill, SubTabs, TextField } from '../components/ui'
 import { clock, plural } from '../lib/format'
-import { actions, cashJournal, useStore, type DataMode } from '../state/store'
+import { actions, cashJournal, useCan, useStore, type DataMode } from '../state/store'
+import { ALL_PERMISSION_IDS, PERMISSION_SECTIONS, permissionsOfSection } from '../domain/permissions'
 import type { AccessRights, PaymentSettings, Requisites } from '../domain/types'
 
 type TabId = 'users' | 'roles' | 'requisites' | 'payments' | 'notifications'
@@ -29,6 +30,15 @@ export function SettingsPage({ tab: forcedTab }: { tab?: TabId } = {}) {
   const notifications = useStore((s) => s.notifications)
   const shift = useStore((s) => s.shift)
 
+  // Вкладка, на которую нет права, не показывается и не открывается.
+  const allowed: Record<TabId, boolean> = {
+    users: useCan('settings.usersView'),
+    roles: useCan('settings.roles'),
+    requisites: useCan('settings.requisites'),
+    payments: useCan('settings.payments'),
+    notifications: useCan('settings.notifications'),
+  }
+
   const subtitle: Record<TabId, string> = {
     users: `Центр «Аква пати» · ${users.length} ${plural(users.length, 'пользователь', 'пользователя', 'пользователей')} · ${roles.length} ${plural(roles.length, 'должность', 'должности', 'должностей')}`,
     roles: `Должности · ${roles.length} ${plural(roles.length, 'роль', 'роли', 'ролей')} · ${users.length} ${plural(users.length, 'пользователь', 'пользователя', 'пользователей')}`,
@@ -45,7 +55,7 @@ export function SettingsPage({ tab: forcedTab }: { tab?: TabId } = {}) {
         active={tab}
         onChange={(id) => navigate(id === 'users' ? '/settings' : `/settings/${id}`)}
         style={{ marginBottom: 20 }}
-        tabs={TABS.map((t) => ({
+        tabs={TABS.filter((t) => allowed[t.id]).map((t) => ({
           id: t.id,
           label: t.label,
           badge:
@@ -53,11 +63,16 @@ export function SettingsPage({ tab: forcedTab }: { tab?: TabId } = {}) {
         }))}
       />
 
-      {tab === 'users' && <UsersTab />}
-      {tab === 'roles' && <RolesTab />}
-      {tab === 'requisites' && <RequisitesTab />}
-      {tab === 'payments' && <PaymentsTab />}
-      {tab === 'notifications' && <NotificationsTab />}
+      {!allowed[tab] && (
+        <div className="surface">
+          <div className="empty">На этот раздел настроек у вашей должности нет прав.</div>
+        </div>
+      )}
+      {allowed[tab] && tab === 'users' && <UsersTab />}
+      {allowed[tab] && tab === 'roles' && <RolesTab />}
+      {allowed[tab] && tab === 'requisites' && <RequisitesTab />}
+      {allowed[tab] && tab === 'payments' && <PaymentsTab />}
+      {allowed[tab] && tab === 'notifications' && <NotificationsTab />}
     </Page>
   )
 }
@@ -65,6 +80,7 @@ export function SettingsPage({ tab: forcedTab }: { tab?: TabId } = {}) {
 function UsersTab() {
   const navigate = useNavigate()
   const users = useStore((s) => s.users)
+  const mayEditUsers = useCan('settings.usersEdit')
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20, flex: 1, minHeight: 0 }}>
@@ -80,10 +96,12 @@ function UsersTab() {
           }}
         >
           <div className="card-kicker">Пользователи</div>
-          <button className="btn btn-primary btn-sm" type="button" onClick={() => navigate('/settings/users/new')}>
-            <UserPlus />
-            Добавить
-          </button>
+          {mayEditUsers && (
+            <button className="btn btn-primary btn-sm" type="button" onClick={() => navigate('/settings/users/new')}>
+              <UserPlus />
+              Добавить
+            </button>
+          )}
         </div>
         <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
           <table className="tbl">
@@ -174,12 +192,13 @@ function RolesTab() {
           <thead>
             <tr>
               <th style={{ width: 180 }}>Должность</th>
-              <th style={{ width: 100 }}>Людей</th>
-              <th style={{ width: 130 }}>Заказы</th>
-              <th style={{ width: 130 }}>Клиенты</th>
-              <th style={{ width: 130 }}>Касса</th>
-              <th style={{ width: 150 }}>Скидки</th>
-              <th style={{ width: 150 }}>Справочники</th>
+              <th style={{ width: 90 }}>Людей</th>
+              <th style={{ width: 100 }}>Прав</th>
+              {PERMISSION_SECTIONS.map((section) => (
+                <th key={section} style={{ width: 110 }}>
+                  {section}
+                </th>
+              ))}
               <th style={{ width: 88 }} />
             </tr>
           </thead>
@@ -194,11 +213,18 @@ function RolesTab() {
                   <div style={{ fontWeight: 600 }}>{r.name}</div>
                 </td>
                 <td>{r.people}</td>
-                <td>{r.orders}</td>
-                <td>{r.clients}</td>
-                <td>{r.cash}</td>
-                <td>{r.discounts}</td>
-                <td>{r.catalog}</td>
+                <td style={{ fontWeight: 700 }}>
+                  {r.permissions.length} из {ALL_PERMISSION_IDS.length}
+                </td>
+                {PERMISSION_SECTIONS.map((section) => {
+                  const ids = permissionsOfSection(section).map((p) => p.id)
+                  const on = ids.filter((id) => r.permissions.includes(id)).length
+                  return (
+                    <td key={section} className={on === 0 ? 'muted' : ''}>
+                      {on} из {ids.length}
+                    </td>
+                  )
+                })}
                 <td>
                   <div className="cell-actions">
                     <button
@@ -406,6 +432,7 @@ function PaymentsTab() {
 /** Switches the whole dataset. Useful while the product is being checked by
  *  hand: walk a shift through on an empty till, then put the demo back. */
 function DataModeCard() {
+  const mayReset = useCan('settings.reset')
   const mode = useStore((s) => s.mode)
   const orders = useStore((s) => s.orders.length)
   const ops = useStore((s) => cashJournal(s).length)
@@ -436,11 +463,19 @@ function DataModeCard() {
         <button
           className={`btn ${mode === 'clean' ? 'btn-secondary' : 'btn-primary'}`}
           type="button"
+          disabled={!mayReset}
+          title={mayReset ? '' : 'Нет права «Обнуление кассы и заказов»'}
           onClick={() => switchTo('clean')}
         >
           Обнулить кассу и заказы
         </button>
-        <button className="btn btn-secondary" type="button" onClick={() => switchTo('demo')}>
+        <button
+          className="btn btn-secondary"
+          type="button"
+          disabled={!mayReset}
+          title={mayReset ? '' : 'Нет права «Обнуление кассы и заказов»'}
+          onClick={() => switchTo('demo')}
+        >
           Вернуть демо-смену
         </button>
       </div>

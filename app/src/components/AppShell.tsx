@@ -11,7 +11,7 @@ import {
   Users,
 } from 'lucide-react'
 import { clock, initials, topbarName } from '../lib/format'
-import { currentUser, openOrders, useStore } from '../state/store'
+import { currentUser, openOrders, useCan, useStore } from '../state/store'
 
 function SideItem({
   to,
@@ -39,6 +39,12 @@ export function AppShell({ children }: { children: ReactNode }) {
   const shift = useStore((s) => s.shift)
   const user = useStore(currentUser)
   const unreadNotifications = useStore((s) => s.notifications.filter((n) => n.enabled).length)
+  const mayOrders = useCan('orders.view')
+  const mayClients = useCan('clients.view')
+  const mayCash = useCan('cash.view')
+  const mayCatalog = useCan('catalog.view')
+  const maySettings = useCan('settings.view')
+  const mayNotifications = useCan('settings.notifications')
 
   const name = user?.fullName ?? 'Смирнова Елена Викторовна'
   const role = user?.role ?? 'Администратор'
@@ -79,36 +85,48 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
 
+        {/* Раздел, на который у должности нет права, в меню не показываем. */}
         <SideItem to="/" icon={<LayoutDashboard />} label="Главное" />
-        <SideItem to="/orders" icon={<ReceiptText />} label="Заказы" badge={orders} />
-        <SideItem to="/clients" icon={<Users />} label="Клиенты" />
+        {mayOrders && <SideItem to="/orders" icon={<ReceiptText />} label="Заказы" badge={orders} />}
+        {mayClients && <SideItem to="/clients" icon={<Users />} label="Клиенты" />}
 
-        <div className="sb-divider">О П Е Р А Ц И И</div>
-        <SideItem to="/cash" icon={<Banknote />} label="Касса" />
+        {mayCash && (
+          <>
+            <div className="sb-divider">О П Е Р А Ц И И</div>
+            <SideItem to="/cash" icon={<Banknote />} label="Касса" />
+          </>
+        )}
 
-        <div className="sb-divider">С И С Т Е М А</div>
-        <SideItem to="/directories" icon={<BookMarked />} label="Справочники" />
-        <SideItem to="/settings" icon={<Settings />} label="Настройки" />
+        {(mayCatalog || maySettings) && <div className="sb-divider">С И С Т Е М А</div>}
+        {mayCatalog && <SideItem to="/directories" icon={<BookMarked />} label="Справочники" />}
+        {maySettings && <SideItem to="/settings" icon={<Settings />} label="Настройки" />}
       </nav>
 
       <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0, height: '100%' }}>
         <div className="topbar" style={{ gap: 12 }}>
           <div className="spacer" />
-          <button className="pill-btn" type="button" onClick={() => navigate('/cash')}>
+          <button
+            className="pill-btn"
+            type="button"
+            disabled={!mayCash}
+            onClick={() => mayCash && navigate('/cash')}
+          >
             <Clock />
             {shift.closedAt === undefined
               ? `Смена открыта · ${clock(shift.openedAt)}`
               : `Смена закрыта · ${clock(shift.closedAt)}`}
           </button>
-          <button
-            className="icon-btn"
-            type="button"
-            aria-label="Уведомления"
-            onClick={() => navigate('/settings/notifications')}
-          >
-            <Bell />
-            {unreadNotifications > 0 && <span className="bubble">{unreadNotifications}</span>}
-          </button>
+          {mayNotifications && (
+            <button
+              className="icon-btn"
+              type="button"
+              aria-label="Уведомления"
+              onClick={() => navigate('/settings/notifications')}
+            >
+              <Bell />
+              {unreadNotifications > 0 && <span className="bubble">{unreadNotifications}</span>}
+            </button>
+          )}
           <button
             type="button"
             onClick={() => navigate('/logout')}

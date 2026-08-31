@@ -5,7 +5,7 @@ import { Page } from '../components/AppShell'
 import { ListFoot, PageHead, Pill, SearchBar, SortableTh, SubTabs } from '../components/ui'
 import { DASH, MIN_SEARCH, clock, digitsOnly, duration, money, percent, plural, searchQuery } from '../lib/format'
 import { elapsed, endTime, paymentLabel, statusLabel, statusTone } from '../domain/rules'
-import { clientOf, tariffDurationOf, tariffTermsOf, totalsOf, useStore, type AppState } from '../state/store'
+import { clientOf, tariffDurationOf, tariffTermsOf, totalsOf, useCan, useStore, type AppState } from '../state/store'
 import type { Order } from '../domain/types'
 
 const PAGE = 18
@@ -16,6 +16,8 @@ const PAGE = 18
 export function OrdersPage() {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
+  const mayCreate = useCan('orders.create')
+  const mayAddClient = useCan('clients.create')
   const [tab, setTab] = useState('all')
   const [limit, setLimit] = useState(PAGE)
 
@@ -81,15 +83,17 @@ export function OrdersPage() {
           value={query}
           onChange={setQuery}
           placeholder="Поиск по номеру заказа, ФИО родителя, имени ребёнка или телефону"
-          onPlus={() => navigate('/clients/new')}
+          onPlus={mayAddClient ? () => navigate('/clients/new') : undefined}
           plusLabel="Добавить клиента"
           suggestions={clientHits}
           onPick={(id) => navigate(`/orders/new?client=${id}`)}
         />
-        <button className="btn btn-primary" type="button" onClick={() => navigate('/orders/new')}>
-          <Plus />
-          Создать заказ
-        </button>
+        {mayCreate && (
+          <button className="btn btn-primary" type="button" onClick={() => navigate('/orders/new')}>
+            <Plus />
+            Создать заказ
+          </button>
+        )}
       </div>
 
       <SubTabs

@@ -42,8 +42,8 @@ await go('/')
 await shot('01-vhod')
 if (!(await page.getByText('Введите PIN').isVisible())) throw new Error('нет экрана входа')
 
-// PIN 1111 = Смирнова Е. В., администратор
-for (const d of '1111') await page.getByRole('button', { name: d, exact: true }).click()
+// PIN 4444 = Тарасов Д. О., управляющий: сценарий заходит в настройки
+for (const d of '4444') await page.getByRole('button', { name: d, exact: true }).click()
 await page.waitForTimeout(400)
 
 // 02 — opening the shift

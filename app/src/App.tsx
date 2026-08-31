@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from './components/AppShell'
 import { LoginScreen } from './screens/LoginScreen'
@@ -20,7 +21,31 @@ import { SettingsPage } from './screens/SettingsPage'
 import { RoleModal } from './screens/RoleModal'
 import { UserModal } from './screens/UserModal'
 import { ConfirmDeleteModal } from './screens/ConfirmDeleteModal'
-import { useStore } from './state/store'
+import { can, getState, useCan, useStore } from './state/store'
+
+/** Экран, на который у должности нет права, не открывается: вместо него —
+ *  первый доступный раздел. Ссылки на него из меню и так убраны, но адрес
+ *  можно набрать руками или прийти по старой закладке. */
+function Guard({ need, children }: { need: string; children: ReactNode }) {
+  const allowed = useCan(need)
+  if (allowed) return <>{children}</>
+  return <Navigate to={firstAllowedPath()} replace />
+}
+
+/** Куда отправить того, кому текущий адрес закрыт. */
+function firstAllowedPath(): string {
+  const s = getState()
+  const order: [string, string][] = [
+    ['orders.view', '/orders'],
+    ['cash.view', '/cash'],
+    ['clients.view', '/clients'],
+    ['catalog.view', '/directories'],
+    ['settings.view', '/settings'],
+  ]
+  const found = order.find(([permission]) => can(s, permission))
+  // Главная открыта всем — она и есть последний рубеж.
+  return found ? found[1] : '/'
+}
 
 /**
  * Modals render over the page they were opened from, exactly as the canvas
@@ -41,34 +66,34 @@ export function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
 
-          <Route path="/orders" element={<OrdersPage />} />
-          <Route path="/orders/new" element={<OrdersPage />} />
-          <Route path="/orders/:no" element={<OrdersPage />} />
-          <Route path="/orders/:no/view" element={<OrdersPage />} />
-          <Route path="/orders/:no/pay" element={<OrdersPage />} />
-          <Route path="/orders/:no/refund" element={<OrdersPage />} />
+          <Route path="/orders" element={<Guard need="orders.view"><OrdersPage /></Guard>} />
+          <Route path="/orders/new" element={<Guard need="orders.view"><OrdersPage /></Guard>} />
+          <Route path="/orders/:no" element={<Guard need="orders.view"><OrdersPage /></Guard>} />
+          <Route path="/orders/:no/view" element={<Guard need="orders.view"><OrdersPage /></Guard>} />
+          <Route path="/orders/:no/pay" element={<Guard need="orders.view"><OrdersPage /></Guard>} />
+          <Route path="/orders/:no/refund" element={<Guard need="orders.view"><OrdersPage /></Guard>} />
 
-          <Route path="/clients" element={<ClientsPage />} />
-          <Route path="/clients/new" element={<ClientsPage />} />
-          <Route path="/clients/:id" element={<ClientsPage />} />
+          <Route path="/clients" element={<Guard need="clients.view"><ClientsPage /></Guard>} />
+          <Route path="/clients/new" element={<Guard need="clients.view"><ClientsPage /></Guard>} />
+          <Route path="/clients/:id" element={<Guard need="clients.view"><ClientsPage /></Guard>} />
 
-          <Route path="/cash" element={<CashPage />} />
-          <Route path="/cash/:tab" element={<CashPage />} />
-          <Route path="/cash/deposit" element={<CashPage />} />
-          <Route path="/cash/collect" element={<CashPage />} />
-          <Route path="/cash/close" element={<CashPage />} />
-          <Route path="/cash/report" element={<CashPage />} />
+          <Route path="/cash" element={<Guard need="cash.view"><CashPage /></Guard>} />
+          <Route path="/cash/:tab" element={<Guard need="cash.view"><CashPage /></Guard>} />
+          <Route path="/cash/deposit" element={<Guard need="cash.view"><CashPage /></Guard>} />
+          <Route path="/cash/collect" element={<Guard need="cash.view"><CashPage /></Guard>} />
+          <Route path="/cash/close" element={<Guard need="cash.view"><CashPage /></Guard>} />
+          <Route path="/cash/report" element={<Guard need="cash.view"><CashPage /></Guard>} />
 
-          <Route path="/directories" element={<DirectoriesPage />} />
-          <Route path="/directories/item/:id" element={<DirectoriesPage />} />
-          <Route path="/directories/item/:id/delete" element={<DirectoriesPage />} />
-          <Route path="/directories/:tab" element={<DirectoriesPage />} />
-          <Route path="/directories/:tab/new/:category" element={<DirectoriesPage />} />
+          <Route path="/directories" element={<Guard need="catalog.view"><DirectoriesPage /></Guard>} />
+          <Route path="/directories/item/:id" element={<Guard need="catalog.view"><DirectoriesPage /></Guard>} />
+          <Route path="/directories/item/:id/delete" element={<Guard need="catalog.view"><DirectoriesPage /></Guard>} />
+          <Route path="/directories/:tab" element={<Guard need="catalog.view"><DirectoriesPage /></Guard>} />
+          <Route path="/directories/:tab/new/:category" element={<Guard need="catalog.view"><DirectoriesPage /></Guard>} />
 
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/settings/users/:id" element={<SettingsPage />} />
-          <Route path="/settings/roles/:name" element={<SettingsPage tab="roles" />} />
-          <Route path="/settings/:tab" element={<SettingsPage />} />
+          <Route path="/settings" element={<Guard need="settings.view"><SettingsPage /></Guard>} />
+          <Route path="/settings/users/:id" element={<Guard need="settings.view"><SettingsPage /></Guard>} />
+          <Route path="/settings/roles/:name" element={<Guard need="settings.view"><SettingsPage tab="roles" /></Guard>} />
+          <Route path="/settings/:tab" element={<Guard need="settings.view"><SettingsPage /></Guard>} />
 
           <Route path="/logout" element={<HomePage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
@@ -77,26 +102,26 @@ export function App() {
 
       {/* The overlay layer — every «формат А» window. */}
       <Routes>
-        <Route path="/orders/new" element={<OrderCreateModal />} />
-        <Route path="/orders/:no" element={<OrderCardModal />} />
-        <Route path="/orders/:no/view" element={<OrderCardModal readOnly />} />
-        <Route path="/orders/:no/pay" element={<PaymentModal />} />
-        <Route path="/orders/:no/refund" element={<RefundModal />} />
+        <Route path="/orders/new" element={<Guard need="orders.create"><OrderCreateModal /></Guard>} />
+        <Route path="/orders/:no" element={<Guard need="orders.view"><OrderCardModal /></Guard>} />
+        <Route path="/orders/:no/view" element={<Guard need="cash.receipt"><OrderCardModal readOnly /></Guard>} />
+        <Route path="/orders/:no/pay" element={<Guard need="orders.pay"><PaymentModal /></Guard>} />
+        <Route path="/orders/:no/refund" element={<Guard need="orders.refund"><RefundModal /></Guard>} />
 
-        <Route path="/clients/new" element={<ClientModal />} />
-        <Route path="/clients/:id" element={<ClientModal />} />
+        <Route path="/clients/new" element={<Guard need="clients.create"><ClientModal /></Guard>} />
+        <Route path="/clients/:id" element={<Guard need="clients.view"><ClientModal /></Guard>} />
 
-        <Route path="/cash/deposit" element={<DepositModal />} />
-        <Route path="/cash/collect" element={<CollectionModal />} />
-        <Route path="/cash/close" element={<ShiftCloseModal />} />
-        <Route path="/cash/report" element={<ShiftReportModal />} />
+        <Route path="/cash/deposit" element={<Guard need="cash.deposit"><DepositModal /></Guard>} />
+        <Route path="/cash/collect" element={<Guard need="cash.collect"><CollectionModal /></Guard>} />
+        <Route path="/cash/close" element={<Guard need="shift.close"><ShiftCloseModal /></Guard>} />
+        <Route path="/cash/report" element={<Guard need="shift.report"><ShiftReportModal /></Guard>} />
 
-        <Route path="/directories/item/:id" element={<CatalogItemModal />} />
-        <Route path="/directories/item/:id/delete" element={<ConfirmDeleteModal />} />
-        <Route path="/directories/:tab/new/:category" element={<CatalogItemModal />} />
+        <Route path="/directories/item/:id" element={<Guard need="catalog.view"><CatalogItemModal /></Guard>} />
+        <Route path="/directories/item/:id/delete" element={<Guard need="catalog.delete"><ConfirmDeleteModal /></Guard>} />
+        <Route path="/directories/:tab/new/:category" element={<Guard need="catalog.edit"><CatalogItemModal /></Guard>} />
 
-        <Route path="/settings/users/:id" element={<UserModal />} />
-        <Route path="/settings/roles/:name" element={<RoleModal />} />
+        <Route path="/settings/users/:id" element={<Guard need="settings.usersView"><UserModal /></Guard>} />
+        <Route path="/settings/roles/:name" element={<Guard need="settings.roles"><RoleModal /></Guard>} />
 
         <Route path="/logout" element={<LogoutModal />} />
         <Route path="*" element={null} />

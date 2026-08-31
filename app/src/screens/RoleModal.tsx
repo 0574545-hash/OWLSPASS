@@ -1,22 +1,18 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Modal } from '../components/Modal'
-import { Card, CardRow, CardTotal, SelectField, TextField } from '../components/ui'
+import { Card, CardRow, CardTotal, Checkbox, TextField } from '../components/ui'
 import { actions, useStore } from '../state/store'
+import {
+  ALL_PERMISSION_IDS,
+  PERMISSION_SECTIONS,
+  permissionsOfSection,
+} from '../domain/permissions'
 import type { Role } from '../domain/types'
 
-/** Права должности — те же пять направлений, что показывает таблица
- *  «Должности». Список значений один на всё приложение. */
-const RIGHTS: { key: keyof Role; label: string; options: string[] }[] = [
-  { key: 'orders', label: 'Заказы', options: ['Полный доступ', 'Создание, оплата', 'Оплата', 'Просмотр', 'Нет'] },
-  { key: 'clients', label: 'Клиенты', options: ['Полный доступ', 'Создание, правка', 'Просмотр', 'Нет'] },
-  { key: 'cash', label: 'Касса', options: ['Полный доступ', 'Приём оплаты', 'Просмотр', 'Нет'] },
-  { key: 'discounts', label: 'Скидки', options: ['Любые', 'До 15 %', 'До 10 %', 'Нет'] },
-  { key: 'catalog', label: 'Справочники', options: ['Изменение', 'Просмотр', 'Нет'] },
-]
-
-/** «Добавить должность» и «Изменить» на вкладке «Должности» —
- *  то же окно формата А, что и карточка сотрудника. */
+/** «Добавить должность» и «Изменить» на вкладке «Должности» — то же окно
+ *  формата А, что и карточка сотрудника. Права набираются из справочника
+ *  «Права доступа»: галочка = разрешено. */
 export function RoleModal() {
   const { name } = useParams()
   const navigate = useNavigate()
@@ -39,7 +35,18 @@ export function RoleModal() {
   }
 
   const patch = (p: Partial<Role>) => setDraft((d) => ({ ...d, ...p }))
-  const granted = RIGHTS.filter((r) => draft[r.key] !== 'Нет').length
+  const has = (id: string) => draft.permissions.includes(id)
+  const toggle = (id: string) =>
+    patch({
+      permissions: has(id) ? draft.permissions.filter((x) => x !== id) : [...draft.permissions, id],
+    })
+  const toggleSection = (ids: string[], on: boolean) =>
+    patch({
+      permissions: on
+        ? [...new Set([...draft.permissions, ...ids])]
+        : draft.permissions.filter((x) => !ids.includes(x)),
+    })
+
   const taken = roleNames.some((n) => n !== decoded && n === draft.name.trim())
   const canSave = draft.name.trim() !== '' && !taken
 
@@ -77,14 +84,24 @@ export function RoleModal() {
         <>
           <Card>
             <CardRow label="Людей на должности" value={isNew ? 0 : holders} />
-            {RIGHTS.map((r) => (
-              <CardRow key={r.key} label={r.label} value={String(draft[r.key])} />
-            ))}
-            <CardTotal label="Направлений открыто" value={`${granted} из ${RIGHTS.length}`} />
+            {PERMISSION_SECTIONS.map((section) => {
+              const ids = permissionsOfSection(section).map((p) => p.id)
+              return (
+                <CardRow
+                  key={section}
+                  label={section}
+                  value={`${ids.filter(has).length} из ${ids.length}`}
+                />
+              )
+            })}
+            <CardTotal
+              label="Прав открыто"
+              value={`${draft.permissions.length} из ${ALL_PERMISSION_IDS.length}`}
+            />
           </Card>
           <div className="card-note">
-            Должность назначается сотруднику в его карточке. Переименование переносит всех, кто на
-            ней числится.
+            Перечень прав — справочник «Права доступа». Должность назначается сотруднику в его
+            карточке; переименование переносит всех, кто на ней числится.
           </div>
         </>
       }
@@ -96,17 +113,31 @@ export function RoleModal() {
         error={taken ? 'Такая должность уже есть' : ''}
       />
 
-      <div className="form-grid">
-        {RIGHTS.map((r) => (
-          <SelectField
-            key={r.key}
-            label={r.label}
-            value={String(draft[r.key])}
-            options={r.options}
-            onChange={(v) => patch({ [r.key]: v } as Partial<Role>)}
-          />
-        ))}
-      </div>
+      {PERMISSION_SECTIONS.map((section) => {
+        const items = permissionsOfSection(section)
+        const ids = items.map((p) => p.id)
+        const allOn = ids.every(has)
+        return (
+          <div key={section} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span className="card-kicker">{section}</span>
+              <button
+                className="btn btn-ghost btn-sm"
+                type="button"
+                onClick={() => toggleSection(ids, !allOn)}
+              >
+                {allOn ? 'Снять все' : 'Отметить все'}
+              </button>
+            </div>
+            {items.map((p) => (
+              <Checkbox key={p.id} checked={has(p.id)} onChange={() => toggle(p.id)}>
+                {p.label}
+                {p.risky ? ' ⚠' : ''}
+              </Checkbox>
+            ))}
+          </div>
+        )
+      })}
     </Modal>
   )
 }

@@ -1,17 +1,14 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Modal } from '../components/Modal'
-import { Card, CardRow, CardTotal, Checkbox, PhoneField, Segmented, SelectField, TextField } from '../components/ui'
+import { Card, CardRow, CardTotal, PhoneField, Segmented, SelectField, TextField } from '../components/ui'
 import { actions, useStore } from '../state/store'
-import type { AccessRights, User } from '../domain/types'
-
-const ACCESS_LABELS: { key: keyof AccessRights; label: string }[] = [
-  { key: 'ordersPayment', label: 'Заказы: оплата' },
-  { key: 'cashPayment', label: 'Касса: приём оплаты' },
-  { key: 'clientsEdit', label: 'Клиенты: правка карточек и скидок' },
-  { key: 'catalogEdit', label: 'Справочники: изменение позиций' },
-  { key: 'settings', label: 'Настройки центра' },
-]
+import {
+  ALL_PERMISSION_IDS,
+  PERMISSION_SECTIONS,
+  permissionsOfSection,
+} from '../domain/permissions'
+import type { User } from '../domain/types'
 
 /** Screen 25 — «Пользователь и права»: where «Добавить» and «Права» lead.
  *  Disabling is a status here, not a separate action — it saves with the
@@ -24,6 +21,8 @@ export function UserModal() {
   const existing = useStore((s) => s.users.find((u) => u.id === id))
   const roles = useStore((s) => s.roles.map((r) => r.name))
   const [draft, setDraft] = useState<User>(() => existing ?? actions.newUserDraft())
+  // Права сотрудник получает от должности — здесь их только показываем.
+  const granted = useStore((s) => s.roles.find((r) => r.name === draft.role)?.permissions ?? [])
 
   if (id && id !== 'new' && !existing) {
     return (
@@ -34,7 +33,6 @@ export function UserModal() {
   }
 
   const patch = (p: Partial<User>) => setDraft((d) => ({ ...d, ...p }))
-  const enabled = ACCESS_LABELS.filter((a) => draft.access[a.key]).length
 
   return (
     <Modal
@@ -53,9 +51,7 @@ export function UserModal() {
             onClick={() => {
               actions.saveUser({
                 ...draft,
-                accessSummary: ACCESS_LABELS.filter((a) => draft.access[a.key])
-                  .map((a) => a.label.split(':')[0]!)
-                  .join(', '),
+                accessSummary: `${granted.length} из ${ALL_PERMISSION_IDS.length}`,
               })
               back()
             }}
@@ -74,10 +70,14 @@ export function UserModal() {
               value={draft.discrepancies}
               tone={draft.discrepancies > 0 ? 'neg' : undefined}
             />
-            <CardTotal label="Прав включено" value={`${enabled} из ${ACCESS_LABELS.length}`} />
+            <CardTotal
+              label="Прав по должности"
+              value={`${granted.length} из ${ALL_PERMISSION_IDS.length}`}
+            />
           </Card>
           <div className="card-note">
-            Отключённый сотрудник не войдёт по PIN, история его операций сохраняется.
+            Права даёт должность — их набирают в «Настройки → Должности». Отключённый сотрудник не
+            войдёт по PIN, история его операций сохраняется.
           </div>
         </>
       }
@@ -110,17 +110,24 @@ export function UserModal() {
         />
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <span style={{ fontSize: 12, color: 'var(--fg-3)' }}>Доступ</span>
-        {ACCESS_LABELS.map((a) => (
-          <Checkbox
-            key={a.key}
-            checked={draft.access[a.key]}
-            onChange={() => patch({ access: { ...draft.access, [a.key]: !draft.access[a.key] } })}
-          >
-            {a.label}
-          </Checkbox>
-        ))}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <span style={{ fontSize: 12, color: 'var(--fg-3)' }}>
+          Доступ по должности «{draft.role}»
+        </span>
+        {PERMISSION_SECTIONS.map((section) => {
+          const items = permissionsOfSection(section).filter((p) => granted.includes(p.id))
+          if (items.length === 0) return null
+          return (
+            <div className="ref-row" key={section}>
+              <span>
+                <b>{section}:</b> {items.map((p) => p.label).join(', ')}
+              </span>
+            </div>
+          )
+        })}
+        {granted.length === 0 && (
+          <div className="card-note">У этой должности пока нет ни одного права.</div>
+        )}
       </div>
     </Modal>
   )

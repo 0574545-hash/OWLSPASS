@@ -4,7 +4,7 @@ import { ArrowDownToLine, ArrowUpFromLine, Lock } from 'lucide-react'
 import { Page } from '../components/AppShell'
 import { ListFoot, PageHead, Pill, SortableTh, Stat, SubTabs } from '../components/ui'
 import { DASH, clock, counted, money, plural } from '../lib/format'
-import { cashJournal, cashSummary, useStore } from '../state/store'
+import { cashJournal, cashSummary, useCan, useStore } from '../state/store'
 
 const PAGE = 12
 
@@ -22,6 +22,11 @@ function OpsTab() {
   const summary = useStore(cashSummary)
   const shift = useStore((s) => s.shift)
   const shiftsCount = useStore((s) => s.shifts.length + (s.shift.closedAt ? 0 : 1))
+  const mayDeposit = useCan('cash.deposit')
+  const mayCollect = useCan('cash.collect')
+  const mayCloseShift = useCan('shift.close')
+  const mayShifts = useCan('cash.shifts')
+  const mayReceipt = useCan('cash.receipt')
 
   const shown = ops.slice(0, limit)
 
@@ -32,18 +37,24 @@ function OpsTab() {
         subtitle={`Смена № ${shift.no} · открыта ${shift.date} в ${clock(shift.openedAt)} · кассир ${shift.cashier}`}
         actions={
           <>
-            <button className="btn btn-secondary" type="button" onClick={() => navigate('/cash/deposit')}>
-              <ArrowDownToLine />
-              Внести
-            </button>
-            <button className="btn btn-secondary" type="button" onClick={() => navigate('/cash/collect')}>
-              <ArrowUpFromLine />
-              Изъятие
-            </button>
-            <button className="btn btn-primary" type="button" onClick={() => navigate('/cash/close')}>
-              <Lock />
-              Закрыть смену
-            </button>
+            {mayDeposit && (
+              <button className="btn btn-secondary" type="button" onClick={() => navigate('/cash/deposit')}>
+                <ArrowDownToLine />
+                Внести
+              </button>
+            )}
+            {mayCollect && (
+              <button className="btn btn-secondary" type="button" onClick={() => navigate('/cash/collect')}>
+                <ArrowUpFromLine />
+                Изъятие
+              </button>
+            )}
+            {mayCloseShift && (
+              <button className="btn btn-primary" type="button" onClick={() => navigate('/cash/close')}>
+                <Lock />
+                Закрыть смену
+              </button>
+            )}
           </>
         }
       />
@@ -62,10 +73,14 @@ function OpsTab() {
         active="ops"
         onChange={(id) => navigate(id === 'shifts' ? '/cash/shifts' : '/cash')}
         style={{ marginBottom: 20 }}
-        tabs={[
-          { id: 'ops', label: 'Операции', badge: summary.ops },
-          { id: 'shifts', label: 'Смены', badge: shiftsCount },
-        ]}
+        tabs={
+          mayShifts
+            ? [
+                { id: 'ops', label: 'Операции', badge: summary.ops },
+                { id: 'shifts', label: 'Смены', badge: shiftsCount },
+              ]
+            : [{ id: 'ops', label: 'Операции', badge: summary.ops }]
+        }
       />
 
       <div className="surface" data-compact="" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -116,11 +131,13 @@ function OpsTab() {
                           <button
                             className="btn btn-secondary btn-sm"
                             type="button"
-                            disabled={op.orderNo === undefined}
+                            disabled={op.orderNo === undefined || !mayReceipt}
                             title={
-                              op.orderNo === undefined
-                                ? 'Операция не привязана к заказу'
-                                : 'Посмотреть параметры заказа'
+                              !mayReceipt
+                                ? 'Нет права «Чек и акт по операции»'
+                                : op.orderNo === undefined
+                                  ? 'Операция не привязана к заказу'
+                                  : 'Посмотреть параметры заказа'
                             }
                             onClick={() => op.orderNo && navigate(`/orders/${op.orderNo}/view`)}
                           >
@@ -158,6 +175,7 @@ function ShiftsTab() {
   const shift = useStore((s) => s.shift)
   const summary = useStore(cashSummary)
   const opsCount = useStore((s) => cashSummary(s).ops)
+  const mayCloseShift = useCan('shift.close')
 
   const current =
     shift.closedAt === undefined
@@ -191,10 +209,12 @@ function ShiftsTab() {
         title="Касса"
         subtitle={`Смены · август 2026 · ${rows.length} ${plural(rows.length, 'смена', 'смены', 'смен')}, ${discrepancies.length} с расхождением`}
         actions={
-          <button className="btn btn-primary" type="button" onClick={() => navigate('/cash/close')}>
-            <Lock />
-            Закрыть смену
-          </button>
+          mayCloseShift ? (
+            <button className="btn btn-primary" type="button" onClick={() => navigate('/cash/close')}>
+              <Lock />
+              Закрыть смену
+            </button>
+          ) : null
         }
       />
 

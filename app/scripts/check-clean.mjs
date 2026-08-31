@@ -13,7 +13,7 @@ const step = (n, v) => console.log(`  ${n.padEnd(38)} ${String(v).padStart(10)}`
 
 await p.goto(FILE, { waitUntil: 'load' })
 await p.waitForTimeout(700)
-for (const d of '1111') await p.getByRole('button', { name: d, exact: true }).click()
+for (const d of '4444') await p.getByRole('button', { name: d, exact: true }).click()
 await p.waitForTimeout(500)
 await p.locator('.field-col', { hasText: 'Администратор' }).locator('select').selectOption('Смирнова Е. В.'); await p.waitForTimeout(150)
 await p.getByRole('button', { name: 'Открыть смену' }).click()
@@ -25,7 +25,7 @@ await p.getByRole('button', { name: 'Обнулить кассу и заказы
 await p.waitForTimeout(600)
 
 console.log('\n=== Пустая смена ===')
-for (const d of '1111') await p.getByRole('button', { name: d, exact: true }).click()
+for (const d of '4444') await p.getByRole('button', { name: d, exact: true }).click()
 await p.waitForTimeout(500)
 step('В кассе на старте', await txt('.modal-aside .card-total > span:last-child'))
 await p.locator('.field-col', { hasText: 'Администратор' }).locator('select').selectOption('Смирнова Е. В.'); await p.waitForTimeout(150)

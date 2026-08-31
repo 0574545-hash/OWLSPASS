@@ -16,7 +16,7 @@ import {
 } from '../components/ui'
 import { DASH, money } from '../lib/format'
 import { NOW, SHIFT_DATE } from '../domain/rules'
-import { actions, clientBalance, nextOrderNo, tariffDuration, useStore } from '../state/store'
+import { actions, clientBalance, nextOrderNo, tariffDuration, useCan, useStore } from '../state/store'
 import type { CatalogItem, OrderItem } from '../domain/types'
 import { ageOf } from './OrdersPage'
 
@@ -38,6 +38,7 @@ export function OrderCreateModal() {
   const [qty, setQty] = useState<Record<string, number>>({})
   const [comment, setComment] = useState('')
   const [manualDiscount, setManualDiscount] = useState(0)
+  const mayDiscount = useCan('orders.discount')
 
   const client = clients.find((c) => c.id === clientId)
   const balance = useStore((s) => (clientId ? clientBalance(s, clientId) : 0))
@@ -184,7 +185,9 @@ export function OrderCreateModal() {
       </div>
 
       <TextArea label="Комментарий к заказу" value={comment} onChange={setComment} />
-      <MoneyField label="Разовая скидка" value={manualDiscount} onChange={setManualDiscount} />
+      {mayDiscount && (
+        <MoneyField label="Разовая скидка" value={manualDiscount} onChange={setManualDiscount} />
+      )}
     </Modal>
   )
 }
