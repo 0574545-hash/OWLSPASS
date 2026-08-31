@@ -232,6 +232,8 @@ export interface Requisites {
   phone: string
   email: string
   site: string
+  /** «Режим работы центра» — что видят клиенты и что печатается в договоре. */
+  schedule: string
 }
 
 export interface PaymentSettings {

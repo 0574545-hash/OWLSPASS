@@ -12,6 +12,7 @@ import type {
   Refund,
   RefundLine,
   Requisites,
+  Role,
   Shift,
   User,
 } from '../domain/types'
@@ -728,6 +729,32 @@ export const actions = {
     set({
       users: exists ? state.users.map((u) => (u.id === user.id ? user : u)) : [...state.users, user],
     })
+  },
+
+  /** Должность опознаётся по названию: на него ссылаются карточки
+   *  сотрудников, поэтому при переименовании ссылки переносим. */
+  saveRole(role: Role, originalName?: string): void {
+    const key = originalName ?? role.name
+    const exists = state.roles.some((r) => r.name === key)
+    set({
+      roles: exists ? state.roles.map((r) => (r.name === key ? role : r)) : [...state.roles, role],
+      users:
+        exists && role.name !== key
+          ? state.users.map((u) => (u.role === key ? { ...u, role: role.name } : u))
+          : state.users,
+    })
+  },
+
+  newRoleDraft(): Role {
+    return {
+      name: '',
+      people: 0,
+      orders: 'Просмотр',
+      clients: 'Просмотр',
+      cash: 'Нет',
+      discounts: 'Нет',
+      catalog: 'Просмотр',
+    }
   },
 
   newUserDraft(): User {

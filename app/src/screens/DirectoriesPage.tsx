@@ -7,9 +7,9 @@ import { DASH, durationWords, money, plural } from '../lib/format'
 import { useStore } from '../state/store'
 import type { CatalogCategory, CatalogItem } from '../domain/types'
 
-type TabId = 'all' | 'tariffs' | 'services' | 'goods' | 'discounts'
+type TabId = 'tariffs' | 'services' | 'goods' | 'discounts'
 
-const TAB_CATEGORY: Record<Exclude<TabId, 'all'>, CatalogCategory> = {
+const TAB_CATEGORY: Record<TabId, CatalogCategory> = {
   tariffs: 'Тариф',
   services: 'Услуга',
   goods: 'Товар',
@@ -17,7 +17,6 @@ const TAB_CATEGORY: Record<Exclude<TabId, 'all'>, CatalogCategory> = {
 }
 
 const ADD_LABEL: Record<TabId, string> = {
-  all: 'Добавить тариф',
   tariffs: 'Добавить тариф',
   services: 'Добавить услугу',
   goods: 'Добавить товар',
@@ -29,8 +28,8 @@ const ADD_LABEL: Record<TabId, string> = {
 export function DirectoriesPage() {
   const { tab: routeTab } = useParams()
   const navigate = useNavigate()
-  const known: TabId[] = ['all', 'tariffs', 'services', 'goods', 'discounts']
-  const tab: TabId = known.includes(routeTab as TabId) ? (routeTab as TabId) : 'all'
+  const known: TabId[] = ['tariffs', 'services', 'goods', 'discounts']
+  const tab: TabId = known.includes(routeTab as TabId) ? (routeTab as TabId) : 'tariffs'
   const [query, setQuery] = useState('')
   const [limit, setLimit] = useState(12)
 
@@ -38,14 +37,14 @@ export function DirectoriesPage() {
   const grounds = useStore((s) => s.discountGrounds)
 
   const counts = {
-    all: catalog.length,
     tariffs: catalog.filter((c) => c.category === 'Тариф').length,
     services: catalog.filter((c) => c.category === 'Услуга').length,
     goods: catalog.filter((c) => c.category === 'Товар').length,
     discounts: grounds.length,
   }
 
-  const items = (tab === 'all' ? catalog : catalog.filter((c) => c.category === TAB_CATEGORY[tab]))
+  const items = catalog
+    .filter((c) => c.category === TAB_CATEGORY[tab])
     .filter((c) => c.name.toLowerCase().includes(query.trim().toLowerCase()))
 
   const lastChanged = catalog
@@ -54,15 +53,13 @@ export function DirectoriesPage() {
     .sort((a, b) => toDate(b) - toDate(a))[0]
 
   const subtitle =
-    tab === 'all'
-      ? `${counts.all} ${plural(counts.all, 'позиция', 'позиции', 'позиций')} · последнее изменение ${lastChanged}`
-      : tab === 'services'
-        ? `Услуги · ${counts.services} ${plural(counts.services, 'позиция', 'позиции', 'позиций')}`
-        : tab === 'goods'
-          ? `Товары · ${counts.goods} ${plural(counts.goods, 'позиция', 'позиции', 'позиций')}`
-          : tab === 'discounts'
-            ? `Скидки · ${counts.discounts} ${plural(counts.discounts, 'основание', 'основания', 'оснований')}`
-            : `Тарифы · ${counts.tariffs} ${plural(counts.tariffs, 'позиция', 'позиции', 'позиций')}`
+    tab === 'services'
+      ? `Услуги · ${counts.services} ${plural(counts.services, 'позиция', 'позиции', 'позиций')}`
+      : tab === 'goods'
+        ? `Товары · ${counts.goods} ${plural(counts.goods, 'позиция', 'позиции', 'позиций')}`
+        : tab === 'discounts'
+          ? `Скидки · ${counts.discounts} ${plural(counts.discounts, 'основание', 'основания', 'оснований')}`
+          : `Тарифы · ${counts.tariffs} ${plural(counts.tariffs, 'позиция', 'позиции', 'позиций')} · последнее изменение ${lastChanged}`
 
   const shown = items.slice(0, limit)
 
@@ -79,9 +76,7 @@ export function DirectoriesPage() {
         <button
           className="btn btn-primary"
           type="button"
-          onClick={() =>
-            navigate(`/directories/${tab}/new/${tab === 'all' ? 'Тариф' : TAB_CATEGORY[tab as Exclude<TabId, 'all'>]}`)
-          }
+          onClick={() => navigate(`/directories/${tab}/new/${TAB_CATEGORY[tab]}`)}
         >
           <Plus />
           {ADD_LABEL[tab]}
@@ -91,12 +86,11 @@ export function DirectoriesPage() {
       <SubTabs
         active={tab}
         onChange={(id) => {
-          navigate(id === 'all' ? '/directories' : `/directories/${id}`)
+          navigate(id === 'tariffs' ? '/directories' : `/directories/${id}`)
           setLimit(12)
         }}
         style={{ marginBottom: 20 }}
         tabs={[
-          { id: 'all', label: 'Все позиции', badge: counts.all },
           { id: 'tariffs', label: 'Тарифы', badge: counts.tariffs },
           { id: 'services', label: 'Услуги', badge: counts.services },
           { id: 'goods', label: 'Товары', badge: counts.goods },
@@ -132,7 +126,7 @@ export function DirectoriesPage() {
 
 function CatalogTable({ items, tab }: { items: CatalogItem[]; tab: TabId }) {
   const navigate = useNavigate()
-  const showDuration = tab === 'all' || tab === 'tariffs'
+  const showDuration = tab === 'tariffs'
   const showPerformer = tab === 'services'
 
   return (

@@ -7,7 +7,7 @@ import { money } from '../lib/format'
 import { actions, useStore } from '../state/store'
 import type { CatalogCategory, CatalogItem } from '../domain/types'
 
-const UNITS = ['чел.', 'шт.', 'пара', 'мин', 'набор', '%']
+const UNITS = ['шт.', 'мин', '%']
 /** Длительность имеет смысл только у позиций, измеряемых в минутах. */
 const DURATION_UNIT = 'мин'
 const CATEGORIES: CatalogCategory[] = ['Тариф', 'Услуга', 'Товар', 'Скидка']

@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Plus, ShieldCheck, UserPlus } from 'lucide-react'
+import { Plus, ShieldCheck, ShieldPlus, UserPlus } from 'lucide-react'
 import { Page } from '../components/AppShell'
-import { Checkbox, ListFoot, PageHead, PhoneField, Pill, SearchBar, SubTabs, TextField } from '../components/ui'
+import { Checkbox, ListFoot, PageHead, PhoneField, Pill, SubTabs, TextField } from '../components/ui'
 import { clock, plural } from '../lib/format'
 import { actions, cashJournal, useStore, type DataMode } from '../state/store'
 import type { AccessRights, PaymentSettings, Requisites } from '../domain/types'
@@ -17,11 +17,12 @@ const TABS: { id: TabId; label: string }[] = [
   { id: 'notifications', label: 'Уведомления' },
 ]
 
-/** Screens 24 and 26–29 — «Настройки» with its five tabs. */
-export function SettingsPage() {
+/** Screens 24 and 26–29 — «Настройки» with its five tabs.
+ *  `tab` задаётся явно там, где адрес занят карточкой (окно должности). */
+export function SettingsPage({ tab: forcedTab }: { tab?: TabId } = {}) {
   const { tab: routeTab } = useParams()
   const navigate = useNavigate()
-  const tab = (routeTab ?? 'users') as TabId
+  const tab = (forcedTab ?? routeTab ?? 'users') as TabId
 
   const users = useStore((s) => s.users)
   const roles = useStore((s) => s.roles)
@@ -39,8 +40,6 @@ export function SettingsPage() {
   return (
     <Page>
       <PageHead title="Настройки" subtitle={subtitle[tab]} />
-
-      {(tab === 'roles' || tab === 'users') && <TopControls tab={tab} />}
 
       <SubTabs
         active={tab}
@@ -60,21 +59,6 @@ export function SettingsPage() {
       {tab === 'payments' && <PaymentsTab />}
       {tab === 'notifications' && <NotificationsTab />}
     </Page>
-  )
-}
-
-function TopControls({ tab }: { tab: TabId }) {
-  const navigate = useNavigate()
-  const [query, setQuery] = useState('')
-  if (tab !== 'roles') return null
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
-      <SearchBar value={query} onChange={setQuery} placeholder="Поиск по названию должности" />
-      <button className="btn btn-primary" type="button" onClick={() => navigate('/settings/users/new')}>
-        <Plus />
-        Новая должность
-      </button>
-    </div>
   )
 }
 
@@ -165,9 +149,26 @@ function summarise(access: AccessRights): string {
 }
 
 function RolesTab() {
+  const navigate = useNavigate()
   const roles = useStore((s) => s.roles)
   return (
     <div className="surface" data-compact="" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 16,
+          padding: '14px 18px',
+          borderBottom: '1px solid var(--border-1)',
+        }}
+      >
+        <div className="card-kicker">Должности</div>
+        <button className="btn btn-primary btn-sm" type="button" onClick={() => navigate('/settings/roles/new')}>
+          <ShieldPlus />
+          Добавить
+        </button>
+      </div>
       <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
         <table className="tbl">
           <thead>
@@ -184,7 +185,11 @@ function RolesTab() {
           </thead>
           <tbody>
             {roles.map((r) => (
-              <tr key={r.name}>
+              <tr
+                key={r.name}
+                className="row-click"
+                onClick={() => navigate(`/settings/roles/${encodeURIComponent(r.name)}`)}
+              >
                 <td>
                   <div style={{ fontWeight: 600 }}>{r.name}</div>
                 </td>
@@ -196,7 +201,14 @@ function RolesTab() {
                 <td>{r.catalog}</td>
                 <td>
                   <div className="cell-actions">
-                    <button className="btn btn-secondary btn-sm" type="button">
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        navigate(`/settings/roles/${encodeURIComponent(r.name)}`)
+                      }}
+                    >
                       Изменить
                     </button>
                   </div>
@@ -269,6 +281,11 @@ function RequisitesTab() {
             <TextField label="Почта" value={draft.email} onChange={(v) => patch({ email: v })} />
           </div>
           <TextField label="Сайт" value={draft.site} onChange={(v) => patch({ site: v })} />
+          <TextField
+            label="Режим работы центра"
+            value={draft.schedule}
+            onChange={(v) => patch({ schedule: v })}
+          />
         </div>
       </div>
 

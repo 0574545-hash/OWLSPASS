@@ -17,6 +17,7 @@ import { LogoutModal } from './screens/LogoutModal'
 import { DirectoriesPage } from './screens/DirectoriesPage'
 import { CatalogItemModal } from './screens/CatalogItemModal'
 import { SettingsPage } from './screens/SettingsPage'
+import { RoleModal } from './screens/RoleModal'
 import { UserModal } from './screens/UserModal'
 import { ConfirmDeleteModal } from './screens/ConfirmDeleteModal'
 import { useStore } from './state/store'
@@ -66,6 +67,7 @@ export function App() {
 
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/settings/users/:id" element={<SettingsPage />} />
+          <Route path="/settings/roles/:name" element={<SettingsPage tab="roles" />} />
           <Route path="/settings/:tab" element={<SettingsPage />} />
 
           <Route path="/logout" element={<HomePage />} />
@@ -94,6 +96,7 @@ export function App() {
         <Route path="/directories/:tab/new/:category" element={<CatalogItemModal />} />
 
         <Route path="/settings/users/:id" element={<UserModal />} />
+        <Route path="/settings/roles/:name" element={<RoleModal />} />
 
         <Route path="/logout" element={<LogoutModal />} />
         <Route path="*" element={null} />
