@@ -312,7 +312,7 @@ export const USERS: User[] = [
   {
     id: 'u-romanova', fullName: 'Романова Ксения Павловна', role: 'Администратор',
     phone: '9035520819', schedule: 'Выходной', accessSummary: 'Заказы, клиенты, касса',
-    presence: 'off', pin: '2222', status: 'working', shiftsThisMonth: 11, discrepancies: 1,
+    presence: 'invited', pin: '2222', status: 'working', shiftsThisMonth: 11, discrepancies: 1,
     access: { ordersPayment: true, cashPayment: true, clientsEdit: true, catalogEdit: false, settings: false },
   },
   {
@@ -324,7 +324,7 @@ export const USERS: User[] = [
   {
     id: 'u-tarasov', fullName: 'Тарасов Дмитрий Олегович', role: 'Управляющий',
     phone: '9118435277', schedule: 'По запросу', accessSummary: 'Все разделы',
-    presence: 'invited', pin: '4444', status: 'working', shiftsThisMonth: 2, discrepancies: 0,
+    presence: 'off', pin: '4444', status: 'working', shiftsThisMonth: 2, discrepancies: 0,
     access: { ordersPayment: true, cashPayment: true, clientsEdit: true, catalogEdit: true, settings: true },
   },
 ]
@@ -414,27 +414,29 @@ const ADMIN = 'Смирнова Е. В.'
 const CASHIER = 'Бекетов И. С.'
 
 export const PAST_SHIFTS: Shift[] = [
-  { no: 217, date: '29.08.2026', openedAt: t(9, 0), closedAt: t(21, 12), admin: ADMIN, cashier: 'Романова К. П.', opening: 5000, ops: 51, cash: 44180, cashless: 118640, closingCash: 8060, discrepancy: 0, status: 'closed' },
-  { no: 216, date: '28.08.2026', openedAt: t(9, 0), closedAt: t(21, 4), admin: ADMIN, cashier: CASHIER, opening: 5000, ops: 39, cash: 31250, cashless: 88300, closingCash: 7500, discrepancy: -560, status: 'discrepancy' },
-  { no: 215, date: '27.08.2026', openedAt: t(9, 0), closedAt: t(20, 58), admin: ADMIN, cashier: 'Романова К. П.', opening: 5000, ops: 34, cash: 28900, cashless: 76420, closingCash: 6900, discrepancy: 0, status: 'closed' },
-  { no: 214, date: '26.08.2026', openedAt: t(9, 0), closedAt: t(21, 20), admin: ADMIN, cashier: CASHIER, opening: 5000, ops: 43, cash: 36740, cashless: 95180, closingCash: 8240, discrepancy: 0, status: 'closed' },
-  { no: 213, date: '25.08.2026', openedAt: t(9, 0), closedAt: t(21, 6), admin: ADMIN, cashier: 'Романова К. П.', opening: 5000, ops: 29, cash: 24100, cashless: 61850, closingCash: 6100, discrepancy: 0, status: 'closed' },
-  { no: 212, date: '24.08.2026', openedAt: t(9, 0), closedAt: t(21, 44), admin: ADMIN, cashier: CASHIER, opening: 5000, ops: 62, cash: 52300, cashless: 141900, closingCash: 9450, discrepancy: 0, status: 'closed' },
-  { no: 211, date: '23.08.2026', openedAt: t(9, 0), closedAt: t(21, 38), admin: ADMIN, cashier: 'Романова К. П.', opening: 5000, ops: 58, cash: 49620, cashless: 133470, closingCash: 8820, discrepancy: -780, status: 'discrepancy' },
-  { no: 210, date: '22.08.2026', openedAt: t(9, 0), closedAt: t(21, 2), admin: ADMIN, cashier: CASHIER, opening: 5000, ops: 41, cash: 34950, cashless: 92300, closingCash: 7310, discrepancy: 0, status: 'closed' },
-  { no: 209, date: '21.08.2026', openedAt: t(9, 0), closedAt: t(20, 54), admin: ADMIN, cashier: 'Романова К. П.', opening: 5000, ops: 37, cash: 30480, cashless: 81200, closingCash: 6640, discrepancy: 0, status: 'closed' },
-  { no: 208, date: '20.08.2026', openedAt: t(9, 0), closedAt: t(21, 10), admin: ADMIN, cashier: CASHIER, opening: 5000, ops: 44, cash: 37610, cashless: 98740, closingCash: 7980, discrepancy: 0, status: 'closed' },
-  { no: 207, date: '19.08.2026', openedAt: t(9, 0), closedAt: t(21, 16), admin: ADMIN, cashier: 'Смирнова Е. В.', opening: 5000, ops: 42, cash: 38900, cashless: 109720, closingCash: 8150, discrepancy: 0, status: 'closed' },
-  { no: 206, date: '18.08.2026', openedAt: t(9, 0), closedAt: t(20, 50), admin: ADMIN, cashier: 'Романова К. П.', opening: 5000, ops: 31, cash: 26340, cashless: 68900, closingCash: 6420, discrepancy: 0, status: 'closed' },
-  { no: 205, date: '17.08.2026', openedAt: t(9, 0), closedAt: t(21, 32), admin: ADMIN, cashier: CASHIER, opening: 5000, ops: 55, cash: 46800, cashless: 126300, closingCash: 9100, discrepancy: 0, status: 'closed' },
-  { no: 204, date: '16.08.2026', openedAt: t(9, 0), closedAt: t(21, 26), admin: ADMIN, cashier: 'Смирнова Е. В.', opening: 5000, ops: 49, cash: 41200, cashless: 112480, closingCash: 8360, discrepancy: 0, status: 'closed' },
-  { no: 203, date: '15.08.2026', openedAt: t(9, 0), closedAt: t(21, 8), admin: ADMIN, cashier: 'Романова К. П.', opening: 5000, ops: 36, cash: 29750, cashless: 79640, closingCash: 6750, discrepancy: 0, status: 'closed' },
-  { no: 202, date: '14.08.2026', openedAt: t(9, 0), closedAt: t(21, 0), admin: ADMIN, cashier: CASHIER, opening: 5000, ops: 33, cash: 27400, cashless: 72150, closingCash: 6280, discrepancy: 0, status: 'closed' },
+  { no: 217, date: '29.08.2026', openedAt: t(9, 0), closedAt: t(21, 12), admin: ADMIN, cashier: 'Романова К. П.', opening: 5000, ops: 51, cash: 44180, cashless: 118640, closingCash: 8060, revenue: 157820, discrepancy: 0, status: 'closed' },
+  { no: 216, date: '28.08.2026', openedAt: t(9, 0), closedAt: t(21, 4), admin: ADMIN, cashier: CASHIER, opening: 5000, ops: 39, cash: 31250, cashless: 88300, closingCash: 7500, revenue: 114550, discrepancy: -560, status: 'discrepancy' },
+  { no: 215, date: '27.08.2026', openedAt: t(9, 0), closedAt: t(20, 58), admin: ADMIN, cashier: 'Романова К. П.', opening: 5000, ops: 34, cash: 28900, cashless: 76420, closingCash: 6900, revenue: 100320, discrepancy: 0, status: 'closed' },
+  { no: 214, date: '26.08.2026', openedAt: t(9, 0), closedAt: t(21, 20), admin: ADMIN, cashier: CASHIER, opening: 5000, ops: 43, cash: 36740, cashless: 95180, closingCash: 8240, revenue: 126920, discrepancy: 0, status: 'closed' },
+  { no: 213, date: '25.08.2026', openedAt: t(9, 0), closedAt: t(21, 6), admin: ADMIN, cashier: 'Романова К. П.', opening: 5000, ops: 29, cash: 24100, cashless: 61850, closingCash: 6100, revenue: 80950, discrepancy: 0, status: 'closed' },
+  { no: 212, date: '24.08.2026', openedAt: t(9, 0), closedAt: t(21, 44), admin: ADMIN, cashier: CASHIER, opening: 5000, ops: 62, cash: 52300, cashless: 141900, closingCash: 9450, revenue: 189200, discrepancy: 0, status: 'closed' },
+  { no: 211, date: '23.08.2026', openedAt: t(9, 0), closedAt: t(21, 38), admin: ADMIN, cashier: 'Романова К. П.', opening: 5000, ops: 58, cash: 49620, cashless: 133470, closingCash: 8820, revenue: 178090, discrepancy: -780, status: 'discrepancy' },
+  { no: 210, date: '22.08.2026', openedAt: t(9, 0), closedAt: t(21, 2), admin: ADMIN, cashier: CASHIER, opening: 5000, ops: 41, cash: 34950, cashless: 92300, closingCash: 7310, revenue: 122250, discrepancy: 0, status: 'closed' },
+  { no: 209, date: '21.08.2026', openedAt: t(9, 0), closedAt: t(20, 54), admin: ADMIN, cashier: 'Романова К. П.', opening: 5000, ops: 37, cash: 30480, cashless: 81200, closingCash: 6640, revenue: 106680, discrepancy: 0, status: 'closed' },
+  { no: 208, date: '20.08.2026', openedAt: t(9, 0), closedAt: t(21, 10), admin: ADMIN, cashier: CASHIER, opening: 5000, ops: 44, cash: 37610, cashless: 98740, closingCash: 7980, revenue: 131350, discrepancy: 0, status: 'closed' },
+  { no: 207, date: '19.08.2026', openedAt: t(9, 0), closedAt: t(21, 16), admin: ADMIN, cashier: 'Смирнова Е. В.', opening: 5000, ops: 42, cash: 38900, cashless: 109720, closingCash: 8150, revenue: 143620, discrepancy: 0, status: 'closed' },
+  { no: 206, date: '18.08.2026', openedAt: t(9, 0), closedAt: t(20, 50), admin: ADMIN, cashier: 'Романова К. П.', opening: 5000, ops: 31, cash: 26340, cashless: 68900, closingCash: 6420, revenue: 90240, discrepancy: 0, status: 'closed' },
+  { no: 205, date: '17.08.2026', openedAt: t(9, 0), closedAt: t(21, 32), admin: ADMIN, cashier: CASHIER, opening: 5000, ops: 55, cash: 46800, cashless: 126300, closingCash: 9100, revenue: 168100, discrepancy: 0, status: 'closed' },
+  { no: 204, date: '16.08.2026', openedAt: t(9, 0), closedAt: t(21, 26), admin: ADMIN, cashier: 'Смирнова Е. В.', opening: 5000, ops: 49, cash: 41200, cashless: 112480, closingCash: 8360, revenue: 148680, discrepancy: 0, status: 'closed' },
+  { no: 203, date: '15.08.2026', openedAt: t(9, 0), closedAt: t(21, 8), admin: ADMIN, cashier: 'Романова К. П.', opening: 5000, ops: 36, cash: 29750, cashless: 79640, closingCash: 6750, revenue: 104390, discrepancy: 0, status: 'closed' },
+  { no: 202, date: '14.08.2026', openedAt: t(9, 0), closedAt: t(21, 0), admin: ADMIN, cashier: CASHIER, opening: 5000, ops: 33, cash: 27400, cashless: 72150, closingCash: 6280, revenue: 94550, discrepancy: 0, status: 'closed' },
   // The rest of the month, so «31 смена» is a real count.
   ...Array.from({ length: 14 }, (_, i): Shift => {
     const no = 201 - i
     const day = 13 - i
     const ops = 30 + ((i * 7) % 25)
+    const cash = 24000 + ((i * 2130) % 26000)
+    const cashless = 62000 + ((i * 5470) % 72000)
     return {
       no,
       date: `${String(day).padStart(2, '0')}.08.2026`,
@@ -444,9 +446,11 @@ export const PAST_SHIFTS: Shift[] = [
       cashier: i % 2 === 0 ? CASHIER : 'Романова К. П.',
       opening: 5000,
       ops,
-      cash: 24000 + ((i * 2130) % 26000),
-      cashless: 62000 + ((i * 5470) % 72000),
+      cash,
+      cashless,
       closingCash: 6000 + ((i * 430) % 3500),
+      // Выручка — деньги клиентов, без размена на старте.
+      revenue: cash - 5000 + cashless,
       discrepancy: 0,
       status: 'closed',
     }

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { Modal } from '../components/Modal'
 import { Card, CardRow, CardTotal, Checkbox, SelectField, SubTabs } from '../components/ui'
 import { DASH, money } from '../lib/format'
-import { actions, cashSummary, clientOf, currentUser, totalsOf, useStore } from '../state/store'
+import { actions, cashSummary, clientOf, currentUser, shiftClosed, totalsOf, useStore } from '../state/store'
 import type { PaymentMethod } from '../domain/types'
 
 /** Screen 08 — «Возврат»: the whole order or single lines, with the
@@ -29,6 +29,7 @@ export function RefundModal() {
   const paidBy = order?.payments[order.payments.length - 1]?.method
   const [method, setMethod] = useState<PaymentMethod>(paidBy ?? 'Наличные')
   const [otherWayOk, setOtherWayOk] = useState(false)
+  const closed = useStore(shiftClosed)
 
   /** Already-refunded quantities cap what can still go back. */
   const returnable = useMemo(() => {
@@ -79,9 +80,11 @@ export function RefundModal() {
           <button
             className="btn btn-primary"
             type="button"
-            disabled={capped <= 0 || methodBlocked}
+            disabled={closed || capped <= 0 || methodBlocked}
             title={
-              methodBlocked
+              closed
+                ? 'Смена закрыта — откройте новую'
+                : methodBlocked
                 ? `Заказ оплачен «${paidBy}» — подтвердите возврат другим способом`
                 : capped <= 0
                   ? 'Выберите, что возвращать'

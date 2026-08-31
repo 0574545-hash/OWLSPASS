@@ -13,7 +13,7 @@ import {
   TextField,
 } from '../components/ui'
 import { clock, money } from '../lib/format'
-import { actions, cashSummary, openOrders, unpaidOrders, useStore } from '../state/store'
+import { actions, cashSummary, openOrders, shiftClosed, unpaidOrders, useStore } from '../state/store'
 
 /** Screen 16 — «Закрытие смены»: the counted cash in one line, the
  *  discrepancy worked out from it. */
@@ -25,6 +25,7 @@ export function ShiftCloseModal() {
   const reasons = useStore((s) => s.paymentSettings.discrepancyReasons)
   const unpaid = useStore((s) => unpaidOrders(s).length)
   const inHall = useStore((s) => openOrders(s).filter((o) => o.endedAt === undefined).length)
+  const closed = useStore(shiftClosed)
 
   const [counted, setCounted] = useState(summary.cashOnHand)
   const [reason, setReason] = useState(reasons[0] ?? '')
@@ -45,9 +46,10 @@ export function ShiftCloseModal() {
           <button
             className="btn btn-primary"
             type="button"
+            disabled={closed}
+            title={closed ? 'Смена уже закрыта — откройте новую' : 'Закрыть смену'}
             onClick={() => {
-              actions.closeShift({ counted, reason, comment })
-              navigate('/cash/report')
+              if (actions.closeShift({ counted, reason, comment })) navigate('/cash/report')
             }}
           >
             Закрыть смену

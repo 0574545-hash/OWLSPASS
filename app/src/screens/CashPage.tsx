@@ -3,8 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowDownToLine, ArrowUpFromLine, Lock } from 'lucide-react'
 import { Page } from '../components/AppShell'
 import { ListFoot, PageHead, Pill, SortableTh, Stat, SubTabs } from '../components/ui'
-import { DASH, clock, counted, money, plural, shortName } from '../lib/format'
-import { cashJournal, cashSummary, useCan, useStore } from '../state/store'
+import { DASH, clock, counted, money, plural, shortName, signedMoney } from '../lib/format'
+import { cashJournal, cashSummary, currentShiftRecord, shiftClosed, useCan, useStore } from '../state/store'
 
 const PAGE = 12
 
@@ -22,9 +22,10 @@ function OpsTab() {
   const summary = useStore(cashSummary)
   const shift = useStore((s) => s.shift)
   const shiftsCount = useStore((s) => s.shifts.length + (s.shift.closedAt ? 0 : 1))
-  const mayDeposit = useCan('cash.deposit')
-  const mayCollect = useCan('cash.collect')
-  const mayCloseShift = useCan('shift.close')
+  const closed = useStore(shiftClosed)
+  const mayDeposit = useCan('cash.deposit') && !closed
+  const mayCollect = useCan('cash.collect') && !closed
+  const mayCloseShift = useCan('shift.close') && !closed
   const mayShifts = useCan('cash.shifts')
   const mayReceipt = useCan('cash.receipt')
 
@@ -34,7 +35,11 @@ function OpsTab() {
     <Page>
       <PageHead
         title="Касса"
-        subtitle={`Смена № ${shift.no} · открыта ${shift.date} в ${clock(shift.openedAt)} · кассир ${shift.cashier}`}
+        subtitle={
+          closed
+            ? `Смена № ${shift.no} закрыта ${shift.date} в ${clock(shift.closedAt!)} · кассир ${shift.cashier} · операции заблокированы`
+            : `Смена № ${shift.no} · открыта ${shift.date} в ${clock(shift.openedAt)} · кассир ${shift.cashier}`
+        }
         actions={
           <>
             {mayDeposit && (
@@ -131,6 +136,8 @@ function OpsTab() {
                           <button
                             className="btn btn-secondary btn-sm"
                             type="button"
+                            disabled={closed}
+                            title={closed ? 'Смена закрыта — откройте новую' : 'Принять оплату'}
                             onClick={() => navigate(`/orders/${op.orderNo}/pay`)}
                           >
                             Оплатить
@@ -181,32 +188,19 @@ function ShiftsTab() {
   const [limit, setLimit] = useState(17)
   const past = useStore((s) => s.shifts)
   const shift = useStore((s) => s.shift)
-  const summary = useStore(cashSummary)
   const opsCount = useStore((s) => cashSummary(s).ops)
-  const mayCloseShift = useCan('shift.close')
+  const live = useStore(currentShiftRecord)
+  const mayCloseShift = useCan('shift.close') && !useStore(shiftClosed)
 
-  const current =
-    shift.closedAt === undefined
-      ? [
-          {
-            no: shift.no,
-            date: shift.date,
-            openedAt: shift.openedAt,
-            closedAt: undefined as number | undefined,
-            cashier: shift.cashier,
-            ops: opsCount,
-            cash: summary.cashOnHand,
-            cashless: summary.cashless,
-            discrepancy: 0,
-            status: 'open' as const,
-          },
-        ]
-      : []
+  // Открытая смена берётся из того же источника, что и закрытые.
+  const current = shift.closedAt === undefined ? [live] : []
 
   const rows = [...current, ...past]
   const shown = rows.slice(0, limit)
 
-  const monthRevenue = rows.reduce((s, r) => s + r.cash + r.cashless, 0)
+  // Выручка — только оплаты за вычетом возвратов: размен и изъятия
+  // двигают деньги, но ничего не зарабатывают.
+  const monthRevenue = rows.reduce((s, r) => s + r.revenue, 0)
   const discrepancies = rows.filter((r) => r.discrepancy !== 0)
   const discrepancyTotal = discrepancies.reduce((s, r) => s + r.discrepancy, 0)
   const avgOps = Math.round(rows.reduce((s, r) => s + r.ops, 0) / Math.max(1, rows.length))
@@ -288,6 +282,11 @@ function ShiftsTab() {
                   <td style={{ fontWeight: 700 }}>{money(r.cashless)}</td>
                   <td className={r.discrepancy < 0 ? 'neg' : ''}>
                     {r.status === 'open' ? DASH : r.discrepancy === 0 ? '0' : money(r.discrepancy)}
+                    {!!r.openingDiscrepancy && (
+                      <div className="neg" style={{ fontSize: 11 }}>
+                        на старте {signedMoney(r.openingDiscrepancy)}
+                      </div>
+                    )}
                   </td>
                   <td>
                     {r.status === 'open' ? (

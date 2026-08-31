@@ -9,6 +9,7 @@ import { X } from 'lucide-react'
 export function Modal({
   title,
   onClose,
+  dismissible = true,
   hint,
   actions,
   footerLeft,
@@ -17,6 +18,9 @@ export function Modal({
 }: {
   title: string
   onClose: () => void
+  /** Окно, из которого нельзя просто выйти: клик по фону и Escape не
+   *  закрывают его — так работает открытие смены. */
+  dismissible?: boolean
   /** Small grey line on the left of the footer. */
   hint?: ReactNode
   /** Buttons on the right of the footer. */
@@ -28,25 +32,27 @@ export function Modal({
 }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape' && dismissible) onClose()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
+  }, [onClose, dismissible])
 
   return (
     <div
       className="modal-backdrop"
       onMouseDown={(e) => {
-        if (e.target === e.currentTarget) onClose()
+        if (dismissible && e.target === e.currentTarget) onClose()
       }}
     >
       <div className="modal" role="dialog" aria-modal="true" aria-label={title}>
         <div className="modal-head">
           <div className="modal-title">{title}</div>
-          <button className="icon-btn" type="button" aria-label="Закрыть" onClick={onClose}>
-            <X />
-          </button>
+          {dismissible && (
+            <button className="icon-btn" type="button" aria-label="Закрыть" onClick={onClose}>
+              <X />
+            </button>
+          )}
         </div>
 
         <div className="modal-body">

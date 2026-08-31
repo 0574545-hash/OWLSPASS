@@ -12,7 +12,7 @@ import {
   TextArea,
   TextField,
 } from '../components/ui'
-import { clock, money } from '../lib/format'
+import { clock, money, signedMoney } from '../lib/format'
 import { now } from '../domain/rules'
 import { actions, currentUser, openOrders, unpaidOrders, useCan, useStore } from '../state/store'
 
@@ -35,6 +35,7 @@ export function ShiftOpenModal() {
   const cashier = me ? shortForm(me.fullName) : shift.cashier
   // Смена открывается сейчас; закрытие запишется по факту закрытия.
   const [openedAt] = useState(now())
+  // «Остаток на начало» подставляется тем, что оставила прошлая смена.
   const [opening, setOpening] = useState(shift.opening)
   const [comment, setComment] = useState(shift.openComment)
 
@@ -58,6 +59,7 @@ export function ShiftOpenModal() {
     return (
       <Modal
         title="Смена не открыта"
+        dismissible={false}
         onClose={() => actions.logout()}
         aside={null}
         actions={
@@ -77,6 +79,9 @@ export function ShiftOpenModal() {
   return (
     <Modal
       title="Открыть смену"
+      // Без открытой смены работать нельзя: окно не закрывается кликом
+      // мимо, выйти можно только кнопкой.
+      dismissible={false}
       onClose={() => actions.logout()}
       hint={
         admin === ''
@@ -125,11 +130,14 @@ export function ShiftOpenModal() {
                 в ящике. Кассир пересчитывает и подтверждает эту сумму. */}
             <CardRow label="Осталось с прошлой смены" value={money(carried)} />
             {opening !== carried && (
-              <CardRow
-                label="Пересчитано кассиром"
-                value={money(opening)}
-                tone={opening < carried ? 'neg' : undefined}
-              />
+              <>
+                <CardRow label="Пересчитано кассиром" value={money(opening)} />
+                <CardRow
+                  label="Расхождение на начало"
+                  value={signedMoney(opening - carried)}
+                  tone="neg"
+                />
+              </>
             )}
             <CardTotal label="В кассе на старте" value={money(opening)} />
           </Card>

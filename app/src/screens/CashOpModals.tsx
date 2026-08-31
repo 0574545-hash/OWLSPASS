@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Modal } from '../components/Modal'
 import { Card, CardKicker, CardRow, CardTotal, MoneyField, SelectField, TextArea } from '../components/ui'
 import { DASH, MAX_AMOUNT, clock, money } from '../lib/format'
-import { actions, cashJournal, cashSummary, useStore } from '../state/store'
+import { actions, cashJournal, cashSummary, shiftClosed, useStore } from '../state/store'
 
 /** Screen 13 — «Внесение»: cash into the drawer.
  *  Not revenue: it only changes what is in the till. */
@@ -23,6 +23,7 @@ export function DepositModal() {
   const [from, setFrom] = useState(`${shift.admin}, администратор`)
   const [to, setTo] = useState(`${shift.cashier}, кассир`)
   const [comment, setComment] = useState('')
+  const closed = useStore(shiftClosed)
 
   return (
     <Modal
@@ -37,8 +38,14 @@ export function DepositModal() {
           <button
             className="btn btn-primary"
             type="button"
-            disabled={amount <= 0}
-            title={amount <= 0 ? 'Укажите сумму внесения' : 'Внести'}
+            disabled={closed || amount <= 0}
+            title={
+              closed
+                ? 'Смена закрыта — откройте новую'
+                : amount <= 0
+                  ? 'Укажите сумму внесения'
+                  : 'Внести'
+            }
             onClick={() => {
               actions.deposit({ amount, ground, from, to, comment })
               close()
@@ -106,6 +113,7 @@ export function CollectionModal() {
   const [to, setTo] = useState(`${shift.admin}, администратор`)
   const [comment, setComment] = useState('')
 
+  const closed = useStore(shiftClosed)
   const tooMuch = amount > summary.cashOnHand
 
   return (
@@ -121,9 +129,11 @@ export function CollectionModal() {
           <button
             className="btn btn-primary"
             type="button"
-            disabled={amount <= 0 || tooMuch}
+            disabled={closed || amount <= 0 || tooMuch}
             title={
-              tooMuch
+              closed
+                ? 'Смена закрыта — откройте новую'
+                : tooMuch
                 ? `В кассе только ${money(summary.cashOnHand)} — изъять больше нельзя`
                 : amount <= 0
                   ? 'Укажите сумму выемки'

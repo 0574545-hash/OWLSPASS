@@ -6,12 +6,13 @@ import {
   BookMarked,
   Clock,
   LayoutDashboard,
+  Play,
   ReceiptText,
   Settings,
   Users,
 } from 'lucide-react'
 import { clock, initials, topbarName } from '../lib/format'
-import { currentUser, openOrders, useCan, useStore } from '../state/store'
+import { actions, currentUser, openOrders, shiftClosed, useCan, useStore } from '../state/store'
 
 function SideItem({
   to,
@@ -45,6 +46,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const mayCatalog = useCan('catalog.view')
   const maySettings = useCan('settings.view')
   const mayNotifications = useCan('settings.notifications')
+  const closed = useStore(shiftClosed)
+  const mayOpenShift = useCan('shift.open')
 
   const name = user?.fullName ?? 'Смирнова Елена Викторовна'
   const role = user?.role ?? 'Администратор'
@@ -114,8 +117,15 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Clock />
             {shift.closedAt === undefined
               ? `Смена открыта · ${clock(shift.openedAt)}`
-              : `Смена закрыта · ${clock(shift.closedAt)}`}
+              : `Смена № ${shift.no} закрыта · ${clock(shift.closedAt)}`}
           </button>
+          {/* Смена закрыта — работать с кассой нельзя, пока не открыта новая. */}
+          {closed && mayOpenShift && (
+            <button className="btn btn-primary btn-sm" type="button" onClick={() => actions.startNewShift()}>
+              <Play />
+              Открыть новую смену
+            </button>
+          )}
           {mayNotifications && (
             <button
               className="icon-btn"

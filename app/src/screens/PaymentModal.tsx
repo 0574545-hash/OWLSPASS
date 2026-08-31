@@ -5,7 +5,7 @@ import { Modal } from '../components/Modal'
 import { Card, CardRow, CardTotal, MoneyField, Segmented, TextArea } from '../components/ui'
 import { DASH, clock, money } from '../lib/format'
 import { now, orderTotals } from '../domain/rules'
-import { actions, clientOf, tariffTermsOf, totalsOf, useStore } from '../state/store'
+import { actions, clientOf, shiftClosed, tariffTermsOf, totalsOf, useStore } from '../state/store'
 import type { PaymentMethod } from '../domain/types'
 
 /** Screen 07 — «Оплата заказа»: where «Принять оплату» leads.
@@ -22,6 +22,7 @@ export function PaymentModal() {
   const stored = useStore((s) => (order ? totalsOf(s, order) : undefined))
   const state = useStore((s) => s)
 
+  const closed = useStore(shiftClosed)
   const [method, setMethod] = useState<PaymentMethod>('Наличные')
   const [comment, setComment] = useState('')
 
@@ -52,7 +53,7 @@ export function PaymentModal() {
     <Modal
       title={`Оплата заказа № ${order.no}`}
       onClose={back}
-      hint="После оплаты заказ перейдёт в «Закрыт»"
+      hint={closed ? 'Смена закрыта — оплату примет новая смена' : 'После оплаты заказ перейдёт в «Закрыт»'}
       actions={
         <>
           <button className="btn btn-secondary" type="button" onClick={back}>
@@ -61,9 +62,11 @@ export function PaymentModal() {
           <button
             className="btn btn-primary"
             type="button"
-            disabled={tendered < due || due <= 0}
+            disabled={closed || tendered < due || due <= 0}
             title={
-              due <= 0
+              closed
+                ? 'Смена закрыта — откройте новую'
+                : due <= 0
                 ? 'По заказу нет остатка к оплате'
                 : tendered < due
                   ? `Постоплата отключена: принимается вся сумма, не меньше ${money(due)}`

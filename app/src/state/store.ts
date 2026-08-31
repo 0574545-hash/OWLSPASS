@@ -45,6 +45,8 @@ export interface CurrentShift {
   admin: string
   cashier: string
   opening: number
+  /** Разница с тем, что оставила прошлая смена. */
+  openingDiscrepancy?: number
   openComment: string
   /** Set when the shift is closed: the counted cash and why it differs. */
   counted?: number
@@ -415,6 +417,29 @@ function buildCashSummary(s: AppState): CashSummary {
   }
 }
 
+/** Текущая смена в том же виде, что и записи в истории: страница «Касса»
+ *  и вкладка «Смены» читают одно и то же. */
+export function currentShiftRecord(s: AppState): Shift {
+  const summary = cashSummary(s)
+  return {
+    no: s.shift.no,
+    date: s.shift.date,
+    openedAt: s.shift.openedAt,
+    closedAt: s.shift.closedAt,
+    admin: s.shift.admin,
+    cashier: s.shift.cashier,
+    opening: s.shift.opening,
+    openingDiscrepancy: s.shift.openingDiscrepancy,
+    ops: summary.ops,
+    cash: summary.cashOnHand,
+    cashless: summary.cashless,
+    closingCash: s.shift.counted ?? summary.cashOnHand,
+    revenue: summary.revenue,
+    discrepancy: s.shift.counted === undefined ? 0 : s.shift.counted - summary.cashOnHand,
+    status: s.shift.closedAt === undefined ? 'open' : 'closed',
+  }
+}
+
 /** Positive = prepaid, negative = owed. */
 export function clientBalance(s: AppState, clientId: string): number {
   const client = clientOf(s, clientId)
@@ -457,6 +482,12 @@ export function nextOrderNo(s: AppState): number {
   return Math.max(...s.orders.map((o) => o.no)) + 1
 }
 
+/** Смена закрыта — денег через кассу больше не проводят: ни оплат, ни
+ *  возвратов, ни внесений. Нужна новая смена. */
+export function shiftClosed(s: AppState): boolean {
+  return s.shift.closedAt !== undefined
+}
+
 export function currentUser(s: AppState): User | undefined {
   return s.users.find((u) => u.id === s.session.userId)
 }
@@ -492,6 +523,10 @@ export const actions = {
     const user = state.users.find((u) => u.pin === pin)
     if (!user) return { ok: false, error: 'Неверный PIN' }
     if (user.status === 'disabled') return { ok: false, error: 'Доступ сотрудника отключён' }
+    // Приглашение ещё не активировано — рабочего PIN у сотрудника нет.
+    if (user.presence === 'invited') {
+      return { ok: false, error: 'Сотрудник ещё не активирован — обратитесь к управляющему' }
+    }
     set({ session: { userId: user.id, locked: false } })
     return { ok: true }
   },
@@ -515,17 +550,45 @@ export const actions = {
     openedAt: Minutes
   }): void {
     const onShift = new Set([input.adminId, state.session.userId].filter(Boolean) as string[])
+    const carried = state.shifts[0]?.closingCash ?? 0
     set({
       shiftStarted: true,
       shift: {
         ...state.shift,
         openedAt: input.openedAt,
         opening: input.opening,
+        // Насчитали не то, что оставила прошлая смена — это расхождение,
+        // и оно должно быть видно, а не потеряться.
+        openingDiscrepancy: input.opening - carried,
         admin: input.admin,
         cashier: input.cashier,
         openComment: input.comment,
       },
       users: state.users.map((u) => (onShift.has(u.id) ? { ...u, presence: 'in-shift' } : u)),
+    })
+  },
+
+  /** Открыть следующую смену: номер на единицу больше, дата сегодняшняя,
+   *  в ящике то, что оставила закрытая смена. */
+  startNewShift(): void {
+    const previous = state.shifts[0]
+    set({
+      shiftStarted: false,
+      lastReport: null,
+      shift: {
+        no: state.shift.no + 1,
+        date: state.mode === 'clean' ? today() : state.shift.date,
+        openedAt: now(),
+        closedAt: undefined,
+        admin: state.shift.admin,
+        cashier: state.shift.cashier,
+        opening: previous?.closingCash ?? 0,
+        openingDiscrepancy: undefined,
+        openComment: '',
+        counted: undefined,
+        discrepancyReason: undefined,
+        closeComment: undefined,
+      },
     })
   },
 
@@ -576,6 +639,7 @@ export const actions = {
   /** Settling an order fixes the actual end of the visit, which is what
    *  turns elapsed time into an over-time charge. */
   payOrder(orderId: string, input: { amount: number; method: PaymentMethod; comment: string }): void {
+    if (shiftClosed(state)) return
     const order = state.orders.find((o) => o.id === orderId)
     if (!order) return
     const endedAt = order.endedAt ?? now()
@@ -587,7 +651,9 @@ export const actions = {
       amount: Math.min(input.amount, totals.remainder),
       method: input.method,
       title: order.payments.length > 0 ? 'Доплата' : 'Оплата заказа',
-      cashier: currentUser(state) ? shortName(currentUser(state)!.fullName) : state.shift.cashier,
+      // Операцию подписывает кассир смены — так в журнале и в отчёте
+      // стоит один и тот же человек, кто бы ни нажал кнопку.
+      cashier: state.shift.cashier,
     }
     const payments = [...order.payments, payment]
     const settled = totals.remainder - payment.amount <= 0
@@ -612,6 +678,7 @@ export const actions = {
    *  Фактическое окончание визита сохраняется: доплата за время уже
    *  посчитана и заново не набегает. */
   reopenOrder(orderId: string): void {
+    if (shiftClosed(state)) return
     set({
       orders: state.orders.map((o) =>
         o.id === orderId ? { ...o, status: 'open', closedAt: undefined } : o,
@@ -622,6 +689,7 @@ export const actions = {
   /** Закрытие заказа. Если денег по нему не прошло вовсе — обязательно
    *  основание: такой визит должен быть виден в журнале кассы. */
   closeOrder(orderId: string, freeReason?: string): void {
+    if (shiftClosed(state)) return
     const order = state.orders.find((o) => o.id === orderId)
     if (!order) return
     const totals = totalsOf(state, order)
@@ -647,6 +715,7 @@ export const actions = {
     orderId: string,
     input: { lines: RefundLine[]; amount: number; reason: string; method: PaymentMethod },
   ): void {
+    if (shiftClosed(state)) return
     const order = state.orders.find((o) => o.id === orderId)
     if (!order) return
     const user = currentUser(state)
@@ -667,6 +736,7 @@ export const actions = {
   },
 
   deposit(input: { amount: number; ground: string; from: string; to: string; comment: string }): void {
+    if (shiftClosed(state)) return
     const op: CashOp = {
       id: nextId('op'),
       at: now(),
@@ -683,6 +753,7 @@ export const actions = {
   },
 
   collect(input: { amount: number; ground: string; from: string; to: string; comment: string }): void {
+    if (shiftClosed(state)) return
     const op: CashOp = {
       id: nextId('op'),
       at: now(),
@@ -698,7 +769,9 @@ export const actions = {
     set({ houseOps: [...state.houseOps, op] })
   },
 
-  closeShift(input: { counted: number; reason: string; comment: string }): ShiftReport {
+  closeShift(input: { counted: number; reason: string; comment: string }): ShiftReport | undefined {
+    // Второй раз смену не закрывают: отчёт уже сформирован и неизменяем.
+    if (shiftClosed(state)) return undefined
     const summary = cashSummary(state)
     const discrepancy = input.counted - summary.cashOnHand
     const report: ShiftReport = {
@@ -732,6 +805,8 @@ export const actions = {
       // What was actually counted. Whether it opens the next shift or goes to
       // the safe is decided then, by the policy in force.
       closingCash: input.counted,
+      revenue: summary.revenue,
+      openingDiscrepancy: state.shift.openingDiscrepancy,
       discrepancy,
       status: discrepancy === 0 ? 'closed' : 'discrepancy',
       comment: input.comment,

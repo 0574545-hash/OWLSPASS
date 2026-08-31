@@ -175,7 +175,10 @@ export function orderTotals(
     payable,
     paid,
     refunded,
-    remainder: Math.max(0, payable - refunded - paid),
+    // Возврат уменьшает сразу две величины: заказ (товар вернули) и
+    // оплату (деньги отдали) — в остатке они сокращаются. Вычитать его
+    // ещё раз значило бы списать возврат дважды.
+    remainder: Math.max(0, payable - paid),
   }
 }
 

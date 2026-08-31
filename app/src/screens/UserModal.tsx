@@ -98,6 +98,22 @@ export function UserModal() {
         />
       </div>
 
+      {draft.presence === 'invited' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <span className="field-error">
+            Приглашение не активировано — PIN сотрудника пока не работает.
+          </span>
+          <button
+            className="btn btn-secondary btn-sm"
+            type="button"
+            style={{ alignSelf: 'flex-start' }}
+            onClick={() => patch({ presence: 'off' })}
+          >
+            Активировать сотрудника
+          </button>
+        </div>
+      )}
+
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         <span style={{ fontSize: 12, color: 'var(--fg-3)' }}>Статус</span>
         <Segmented

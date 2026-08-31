@@ -25,7 +25,16 @@ import {
   statusLabel,
   statusTone,
 } from '../domain/rules'
-import { actions, clientOf, tariffDurationOf, tariffTermsOf, totalsOf, useCan, useStore } from '../state/store'
+import {
+  actions,
+  clientOf,
+  shiftClosed,
+  tariffDurationOf,
+  tariffTermsOf,
+  totalsOf,
+  useCan,
+  useStore,
+} from '../state/store'
 import { ageOf } from './OrdersPage'
 
 /** Screen 06 — «Карточка заказа»: where «Открыть» in the list leads.
@@ -45,10 +54,11 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
   const state = useStore((s) => s)
   const totals = useStore((s) => (order ? totalsOf(s, order) : undefined))
 
-  const mayEdit = useCan('orders.edit')
-  const mayClose = useCan('orders.close')
-  const mayPay = useCan('orders.pay')
-  const mayRefund = useCan('orders.refund')
+  const shiftIsClosed = useStore(shiftClosed)
+  const mayEdit = useCan('orders.edit') && !shiftIsClosed
+  const mayClose = useCan('orders.close') && !shiftIsClosed
+  const mayPay = useCan('orders.pay') && !shiftIsClosed
+  const mayRefund = useCan('orders.refund') && !shiftIsClosed
   const mayComment = useCan('orders.comment')
   const mayPrint = useCan('orders.print')
   const [tab, setTab] = useState<'services' | 'goods'>('services')

@@ -5,7 +5,16 @@ import { Page } from '../components/AppShell'
 import { ListFoot, PageHead, Pill, SearchBar, SortableTh, SubTabs } from '../components/ui'
 import { DASH, MIN_SEARCH, clock, digitsOnly, duration, formatPhone, money, percent, plural, searchQuery } from '../lib/format'
 import { effectiveStatus, elapsed, endTime, paymentLabel, statusLabel, statusTone } from '../domain/rules'
-import { clientOf, tariffDurationOf, tariffTermsOf, totalsOf, useCan, useStore, type AppState } from '../state/store'
+import {
+  clientOf,
+  shiftClosed,
+  tariffDurationOf,
+  tariffTermsOf,
+  totalsOf,
+  useCan,
+  useStore,
+  type AppState,
+} from '../state/store'
 import type { Order } from '../domain/types'
 
 const PAGE = 18
@@ -16,7 +25,7 @@ const PAGE = 18
 export function OrdersPage() {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
-  const mayCreate = useCan('orders.create')
+  const mayCreate = useCan('orders.create') && !useStore(shiftClosed)
   const mayAddClient = useCan('clients.create')
   const [tab, setTab] = useState('all')
   const [limit, setLimit] = useState(PAGE)

@@ -172,6 +172,9 @@ export interface Shift {
    *  which is what yesterday's shift left in it. Counted by the cashier, so
    *  it can differ from the previous shift's closing figure. */
   opening: number
+  /** Разница между тем, что насчитал кассир на старте, и тем, что
+   *  оставила прошлая смена. */
+  openingDiscrepancy?: number
   ops: number
   /** Cash that went through the drawer during the shift. */
   cash: number
@@ -179,6 +182,9 @@ export interface Shift {
   /** What was counted in the drawer when the shift closed. It stays there and
    *  opens the next shift as «остаток на начало дня». */
   closingCash: number
+  /** Оплаты минус возвраты. Внесения и изъятия сюда не входят: они
+   *  двигают деньги, но ничего не зарабатывают. */
+  revenue: number
   discrepancy: number
   status: ShiftStatus
   comment?: string
