@@ -2,7 +2,7 @@
  *  вердикт по каждому. Ничего не правит — только проверяет. */
 import { chromium } from 'playwright'
 import { resolve } from 'node:path'
-import { addTariff } from './lib-tariff.mjs'
+import { addTariff, setPostpay } from './lib-tariff.mjs'
 
 const FILE = 'file://' + resolve('Аква пати — CRM (пустая касса).html')
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' })
@@ -127,6 +127,7 @@ const picked = await clientField.inputValue()
 say(1, pickerRows > 0 && picked.includes('Смирнов') ? 'ОК' : 'НЕ ИСПРАВЛЕНО', `подставлен: ${picked}`)
 
 await p.locator('.cat-row', { hasText: 'Час игры' }).getByRole('button', { name: 'Увеличить' }).click()
+await setPostpay(p)
 await p.locator('.modal-foot').getByRole('button', { name: 'Создать заказ' }).click()
 await p.waitForTimeout(800)
 say(3, (await p.locator('.modal').count()) === 0 ? 'ОК' : 'НЕ ИСПРАВЛЕНО', 'окно после «Создать заказ»')

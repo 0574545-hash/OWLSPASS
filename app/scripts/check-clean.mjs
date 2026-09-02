@@ -1,7 +1,7 @@
 /** Проходит ваш сценарий на пустой кассе: внесение → заказ → оплата → сверка. */
 import { chromium } from 'playwright'
 import { resolve } from 'node:path'
-import { addTariff } from './lib-tariff.mjs'
+import { addTariff, setPostpay } from './lib-tariff.mjs'
 const FILE = 'file://' + resolve('Аква пати — CRM.html')
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' })
 const p = await b.newPage({ viewport: { width: 1440, height: 900 } })
@@ -56,6 +56,7 @@ const plus = p.locator('.cat-row', { hasText: 'Разовое посещение
 await plus.click(); await plus.click()
 await p.waitForTimeout(200)
 step('К оплате в расчёте', await txt('.modal-aside .card-total > span:last-child'))
+await setPostpay(p)
 await p.locator('.modal-foot').getByRole('button', { name: 'Создать заказ' }).click()
 await p.waitForTimeout(600)
 step('Окно закрылось', (await p.locator('.modal').count()) === 0 ? 'да' : 'нет')

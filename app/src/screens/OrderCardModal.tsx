@@ -21,6 +21,8 @@ import {
   elapsed,
   endTime,
   livePositions,
+  now,
+  orderTotals,
   refundedQty,
   statusLabel,
   statusTone,
@@ -52,7 +54,18 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
   const client = useStore((s) => (order ? clientOf(s, order.clientId) : undefined))
   const catalog = useStore((s) => s.catalog)
   const state = useStore((s) => s)
-  const totals = useStore((s) => (order ? totalsOf(s, order) : undefined))
+  // У открытого заказа доплата за время считается на текущий момент —
+  // ровно как в окне оплаты, чтобы карточка и оплата не расходились.
+  const totals = useStore((s) => {
+    if (!order) return undefined
+    if (order.status === 'closed') return totalsOf(s, order)
+    return orderTotals(
+      order,
+      clientOf(s, order.clientId),
+      tariffTermsOf(s, order.tariffItemId),
+      order.endedAt ?? now(),
+    )
+  })
 
   const shiftIsClosed = useStore(shiftClosed)
   const mayEdit = useCan('orders.edit') && !shiftIsClosed
@@ -142,7 +155,7 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
           : locked
           ? 'Заказ закрыт: состав не меняется. Чтобы поправить — «Вернуть в работу»'
           : totals.remainder > 0
-            ? `Остаток ${money(totals.remainder)} — примите оплату, тогда заказ можно будет закрыть`
+            ? `${order.postpay ? 'Постоплата' : 'Доплата'}: остаток ${money(totals.remainder)} — примите оплату, тогда заказ можно будет закрыть`
             : 'Остатка нет — заказ можно закрыть'
       }
       actions={

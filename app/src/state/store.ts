@@ -542,14 +542,11 @@ export const actions = {
   openShift(input: {
     opening: number
     admin: string
-    /** Кого выбрали администратором — он и кассир встают «в смену». */
-    adminId?: string
     cashier: string
     comment: string
     /** Момент открытия — фактический, а не плановый. */
     openedAt: Minutes
   }): void {
-    const onShift = new Set([input.adminId, state.session.userId].filter(Boolean) as string[])
     const carried = state.shifts[0]?.closingCash ?? 0
     set({
       shiftStarted: true,
@@ -564,7 +561,6 @@ export const actions = {
         cashier: input.cashier,
         openComment: input.comment,
       },
-      users: state.users.map((u) => (onShift.has(u.id) ? { ...u, presence: 'in-shift' } : u)),
     })
   },
 
@@ -605,6 +601,7 @@ export const actions = {
     manualDiscount: number
     tariffItemId: string
     tariffLabel: string
+    postpay: boolean
   }): Order {
     const no = nextOrderNo(state)
     const order: Order = {
@@ -620,6 +617,7 @@ export const actions = {
       manualDiscount: input.manualDiscount,
       payments: [],
       status: 'open',
+      postpay: input.postpay,
       refunds: [],
     }
     set({
@@ -642,7 +640,11 @@ export const actions = {
     if (shiftClosed(state)) return
     const order = state.orders.find((o) => o.id === orderId)
     if (!order) return
-    const endedAt = order.endedAt ?? now()
+    // Предоплата берётся до визита: время окончания ею не фиксируется и
+    // заказ не закрывается — ребёнок ещё в зале. Постоплата, наоборот,
+    // принимается на выходе и закрывает заказ.
+    const visitRunning = !order.postpay && order.tariffItemId !== '' && order.endedAt === undefined
+    const endedAt = visitRunning ? undefined : (order.endedAt ?? now())
     const withEnd: Order = { ...order, endedAt }
     const totals = totalsOf({ ...state, orders: [withEnd] }, withEnd)
     const payment = {
@@ -656,7 +658,7 @@ export const actions = {
       cashier: state.shift.cashier,
     }
     const payments = [...order.payments, payment]
-    const settled = totals.remainder - payment.amount <= 0
+    const settled = totals.remainder - payment.amount <= 0 && !visitRunning
     set({
       orders: state.orders.map((o) =>
         o.id === orderId

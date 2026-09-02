@@ -306,7 +306,7 @@ export const USERS: User[] = [
   {
     id: 'u-smirnova', fullName: 'Смирнова Елена Викторовна', role: 'Администратор',
     phone: '9211004011', schedule: '09:00—21:00', accessSummary: 'Заказы, клиенты, касса',
-    presence: 'in-shift', pin: '1111', status: 'working', shiftsThisMonth: 12, discrepancies: 0,
+    presence: 'off', pin: '1111', status: 'working', shiftsThisMonth: 12, discrepancies: 0,
     access: { ordersPayment: true, cashPayment: true, clientsEdit: true, catalogEdit: false, settings: false },
   },
   {
@@ -318,7 +318,7 @@ export const USERS: User[] = [
   {
     id: 'u-beketov', fullName: 'Бекетов Илья Сергеевич', role: 'Кассир',
     phone: '9167412365', schedule: '09:00—17:00', accessSummary: 'Оплата заказов',
-    presence: 'in-shift', pin: '3333', status: 'working', shiftsThisMonth: 19, discrepancies: 1,
+    presence: 'off', pin: '3333', status: 'working', shiftsThisMonth: 19, discrepancies: 1,
     access: { ordersPayment: true, cashPayment: true, clientsEdit: false, catalogEdit: false, settings: false },
   },
   {
@@ -623,6 +623,8 @@ function buildExplicitOrders(clients: Client[]): Order[] {
       manualDiscount: s.manualDiscount ?? 0,
       payments: [],
       status: s.closedAt !== undefined ? 'closed' : 'open',
+      // Заказы демо-смены рассчитываются на выходе — это постоплата.
+      postpay: true,
       refunds: [],
     }
 
@@ -724,6 +726,8 @@ function buildFillerOrders(clients: Client[], explicit: Order[]): Order[] {
       manualDiscount: 0,
       payments: [],
       status: 'closed',
+      // Заказы демо-смены рассчитываются на выходе — это постоплата.
+      postpay: true,
       refunds: [],
     }
     const totals = orderTotals(order, client, 120)

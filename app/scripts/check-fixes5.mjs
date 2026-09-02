@@ -2,6 +2,7 @@
  *  безлимит, просрочка красным, главная, изъятие. */
 import { chromium } from 'playwright'
 import { resolve } from 'node:path'
+import { setPostpay } from './lib-tariff.mjs'
 const FILE = 'file://' + resolve('Аква пати — CRM (пустая касса).html')
 const DEMO = 'file://' + resolve('Аква пати — CRM.html')
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' })
@@ -175,6 +176,7 @@ await p.waitForTimeout(300)
 await p.locator('.picker-row').first().click()
 await p.waitForTimeout(250)
 await p.locator('.cat-row', { hasText: 'Час игры' }).getByRole('button', { name: 'Увеличить' }).click()
+await setPostpay(p)
 await p.locator('.modal-foot').getByRole('button', { name: 'Создать заказ' }).click()
 await p.waitForTimeout(700)
 const row = (await p.locator('.tbl tbody tr').first().innerText()).replace(/\n/g, ' ')

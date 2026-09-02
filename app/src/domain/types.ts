@@ -111,6 +111,9 @@ export interface Order {
   manualDiscount: number
   payments: Payment[]
   status: OrderStatus
+  /** По умолчанию заказ предоплатный: деньги берут сразу. Постоплата —
+   *  заказ висит открытым, оплату принимают при закрытии. */
+  postpay: boolean
   refunds: Refund[]
   /** Заказ закрыт без денег: почему именно. Пустой заказ без основания
    *  закрыть нельзя — иначе он теряется в учёте. */
@@ -208,7 +211,9 @@ export interface User {
   schedule: string
   accessSummary: string
   /** «В смене» / «Не в смене» / «Приглашён» */
-  presence: 'in-shift' | 'off' | 'invited'
+  /** Доступ к программе: «invited» — приглашение ещё не активировано,
+   *  PIN не работает. Рабочее время сотрудников программа не ведёт. */
+  presence: 'off' | 'invited'
   pin: string
   status: UserStatus
   access: AccessRights

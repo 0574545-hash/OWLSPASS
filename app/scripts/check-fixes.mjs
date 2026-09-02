@@ -1,7 +1,7 @@
 /** Проверяет шесть замечаний заказчика. */
 import { chromium } from 'playwright'
 import { resolve } from 'node:path'
-import { addTariff } from './lib-tariff.mjs'
+import { addTariff, setPostpay } from './lib-tariff.mjs'
 const FILE = 'file://' + resolve('Аква пати — CRM (пустая касса).html')
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' })
 const p = await b.newPage({ viewport: { width: 1440, height: 900 } })
@@ -48,6 +48,7 @@ ok('1. Выбор подставился в поле', (await field.inputValue()
 // 3–4 — после создания окно закрывается
 const plus = p.locator('.cat-row', { hasText: 'Разовое посещение, 2 ч' }).getByRole('button', { name: 'Увеличить' })
 await plus.click(); await p.waitForTimeout(200)
+await setPostpay(p)
 await createBtn.click(); await p.waitForTimeout(600)
 ok('3. Окно закрылось после создания', (await p.locator('.modal').count()) === 0)
 ok('4. Карточка заказа не открылась', !p.url().includes('/orders/48'))

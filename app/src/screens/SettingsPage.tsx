@@ -127,14 +127,13 @@ function UsersTab() {
                   <td>{u.schedule}</td>
                   <td>{u.accessSummary || summarise(u.access)}</td>
                   <td>
+                    {/* Рабочее время не ведём: только доступ к программе. */}
                     {u.status === 'disabled' ? (
                       <Pill tone="neutral">Отключён</Pill>
-                    ) : u.presence === 'in-shift' ? (
-                      <Pill tone="success">В смене</Pill>
                     ) : u.presence === 'invited' ? (
                       <Pill tone="warn">Приглашён</Pill>
                     ) : (
-                      <Pill tone="neutral">Не в смене</Pill>
+                      <Pill tone="success">Работает</Pill>
                     )}
                   </td>
                   <td>

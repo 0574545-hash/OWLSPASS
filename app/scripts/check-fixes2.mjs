@@ -1,7 +1,7 @@
 /** Проверяет замечания 7–12. */
 import { chromium } from 'playwright'
 import { resolve } from 'node:path'
-import { addTariff } from './lib-tariff.mjs'
+import { addTariff, setPostpay } from './lib-tariff.mjs'
 const FILE = 'file://' + resolve('Аква пати — CRM (пустая касса).html')
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' })
 const p = await b.newPage({ viewport: { width: 1440, height: 900 } })
@@ -55,6 +55,7 @@ await p.locator('.picker-row').first().click(); await p.waitForTimeout(200)
 // Дети попадают в заказ только когда их отметили — по ним и ищем (замечание 25).
 await p.locator('.modal-main [role=checkbox]', { hasText: 'Мия' }).first().click(); await p.waitForTimeout(150)
 await p.locator('.cat-row', { hasText: 'Разовое посещение, 2 ч' }).getByRole('button', { name: 'Увеличить' }).click()
+await setPostpay(p)
 await p.locator('.modal-foot').getByRole('button', { name: 'Создать заказ' }).click()
 await p.waitForTimeout(600)
 await p.locator('.tbl tbody tr').first().click(); await p.waitForTimeout(400)

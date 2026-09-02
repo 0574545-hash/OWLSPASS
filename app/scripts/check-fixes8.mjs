@@ -1,7 +1,7 @@
 /** Исправления по итогам тестирования: 30 пунктов. */
 import { chromium } from 'playwright'
 import { resolve } from 'node:path'
-import { addTariff } from './lib-tariff.mjs'
+import { addTariff, setPostpay } from './lib-tariff.mjs'
 const FILE = 'file://' + resolve('Аква пати — CRM (пустая касса).html')
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' })
 const p = await b.newPage({ viewport: { width: 1440, height: 900 } })
@@ -16,38 +16,28 @@ await p.waitForTimeout(700)
 for (const d of '4444') await p.getByRole('button', { name: d, exact: true }).click()
 await p.waitForTimeout(600)
 
-/* ---------- 13: список администраторов ---------- */
+/* ---------- 13, 14: учёта рабочего времени больше нет ---------- */
 const adminOptions = await F('Администратор').locator('select option').allTextContents()
 ok(
-  '13. Не в смене помечены в списке администраторов',
-  adminOptions.some((t) => t.includes('не в смене') || t.includes('приглашён')),
+  '13. Пометок о рабочем времени в списке администраторов нет',
+  !adminOptions.some((t) => /не в смене|приглашён/.test(t)),
   adminOptions.filter(Boolean).join(' | '),
 )
 await F('Администратор').locator('select').selectOption({ index: 1 })
 await p.waitForTimeout(300)
 const openBtn = p.locator('.modal-foot').getByRole('button', { name: 'Открыть смену' })
-const chosen = await F('Администратор').locator('select').inputValue()
-if (/не в смене|приглашён/.test(chosen)) {
-  ok('13. Выбор не работающего требует подтверждения', await openBtn.isDisabled(), chosen)
-  await p.locator('.modal-main [role=checkbox]').first().click()
-  await p.waitForTimeout(200)
-  ok('13. После подтверждения смену открыть можно', !(await openBtn.isDisabled()))
-} else {
-  ok('13. Работающий администратор выбирается без подтверждений', !(await openBtn.isDisabled()), chosen)
-}
+ok('13. Галочки-подтверждения нет', (await p.locator('.modal-main [role=checkbox]').count()) === 0)
+ok('13. Смена открывается сразу', !(await openBtn.isDisabled()))
 await openBtn.click()
 await p.waitForTimeout(800)
 
-/* ---------- 14: статус сотрудника ---------- */
 await p.goto(FILE + '#/settings')
 await p.waitForTimeout(600)
-const shiftAdmin = (await p.locator('.subtitle').first().innerText()).match(/администратор ([^,]+)/)
-await p.waitForTimeout(200)
 const usersTable = await p.locator('.tbl tbody').innerText()
 ok(
-  '14. Администратор смены переведён «В смене»',
-  (usersTable.match(/В смене/g) ?? []).length >= 2,
-  `строк «В смене»: ${(usersTable.match(/В смене/g) ?? []).length}${shiftAdmin ? ` · ${shiftAdmin[1]}` : ''}`,
+  '14. Рабочее время сотрудников не ведётся',
+  !/В смене|Не в смене/.test(usersTable),
+  usersTable.split('\n').slice(0, 2).join(' ').replace(/\t/g, ' '),
 )
 
 /* ---------- 18: день недели и дата ---------- */
@@ -155,6 +145,7 @@ await p.waitForTimeout(300)
 await p.locator('.picker-row').first().click()
 await p.waitForTimeout(250)
 await p.locator('.cat-row', { hasText: 'Час игры' }).getByRole('button', { name: 'Увеличить' }).click()
+await setPostpay(p)
 await p.locator('.modal-foot').getByRole('button', { name: 'Создать заказ' }).click()
 await p.waitForTimeout(800)
 await p.locator('.tbl tbody tr').first().click()

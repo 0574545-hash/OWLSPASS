@@ -38,6 +38,7 @@ export function OrderCreateModal() {
   const [qty, setQty] = useState<Record<string, number>>({})
   const [comment, setComment] = useState('')
   const [manualDiscount, setManualDiscount] = useState(0)
+  const [postpay, setPostpay] = useState(false)
   const mayDiscount = useCan('orders.discount')
 
   const client = clients.find((c) => c.id === clientId)
@@ -56,11 +57,11 @@ export function OrderCreateModal() {
 
   // The tariff line drives окончание; the longest-running chosen line wins.
   const tariffItem = pickTariff(catalog, qty)
-  // Только штучное, без временной услуги — продажа через прилавок: такой
-  // заказ незачем держать открытым, его сразу оплачивают и закрывают.
+  // Заказ по умолчанию предоплатный: деньги берут сразу после оформления.
+  // Постоплата — заказ остаётся открытым до оплаты при закрытии.
   const goodsOnly = items.length > 0 && tariffItem === undefined
   const mayPay = useCan('orders.pay')
-  const payNow = goodsOnly && mayPay
+  const payNow = !postpay && items.length > 0 && mayPay
 
   const create = () => {
     if (items.length === 0) return
@@ -72,6 +73,7 @@ export function OrderCreateModal() {
       manualDiscount,
       tariffItemId: tariffItem?.id ?? '',
       tariffLabel: labelFor(tariffItem),
+      postpay,
     })
     // Штучная продажа уходит прямо в оплату, остальные — в список.
     navigate(payNow ? `/orders/${order.no}/pay` : '/orders')
@@ -84,9 +86,11 @@ export function OrderCreateModal() {
       hint={
         items.length === 0
           ? 'Добавьте хотя бы одну позицию. Клиента можно не выбирать — для продажи с прилавка'
-          : payNow
-            ? 'Только штучные позиции — сразу примем оплату и закроем заказ'
-            : 'Заказ появится в списке со статусом «Открыт»'
+          : postpay
+            ? 'Постоплата: заказ останется открытым, оплату примете при закрытии'
+            : goodsOnly
+              ? 'Предоплата: сразу примем оплату и закроем заказ'
+              : 'Предоплата: сразу примем оплату, заказ останется открытым до конца визита'
       }
       actions={
         <>
@@ -187,6 +191,10 @@ export function OrderCreateModal() {
           />
         ))}
       </div>
+
+      <Checkbox checked={postpay} onChange={() => setPostpay(!postpay)}>
+        Постоплата — оплата принимается при закрытии заказа
+      </Checkbox>
 
       <TextArea label="Комментарий к заказу" value={comment} onChange={setComment} />
       {mayDiscount && (

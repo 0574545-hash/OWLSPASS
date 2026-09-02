@@ -6,7 +6,6 @@ import {
   CardKicker,
   CardRow,
   CardTotal,
-  Checkbox,
   MoneyField,
   SelectField,
   TextArea,
@@ -39,17 +38,14 @@ export function ShiftOpenModal() {
   const [opening, setOpening] = useState(shift.opening)
   const [comment, setComment] = useState(shift.openComment)
 
-  // За кассу отвечает работающий сотрудник: отключённых в списке нет,
-  // а у выходного и приглашённого рядом стоит пометка.
-  const adminUsers = users.filter((u) => u.role !== 'Кассир' && u.status !== 'disabled')
-  const adminLabel = (u: (typeof users)[number]) =>
-    u.presence === 'in-shift'
-      ? shortForm(u.fullName)
-      : `${shortForm(u.fullName)} · ${u.presence === 'invited' ? 'приглашён' : 'не в смене'}`
-  const admins = adminUsers.map(adminLabel)
-  const adminUser = adminUsers.find((u) => adminLabel(u) === admin)
-  const adminOffDuty = adminUser !== undefined && adminUser.presence !== 'in-shift'
-  const [offDutyOk, setOffDutyOk] = useState(false)
+  // За кассу отвечает любой действующий сотрудник: рабочее время мы не
+  // ведём. В списке нет только отключённых и неактивированных — им и
+  // войти-то нельзя.
+  const adminUsers = users.filter(
+    (u) => u.role !== 'Кассир' && u.status !== 'disabled' && u.presence !== 'invited',
+  )
+  const admins = adminUsers.map((u) => shortForm(u.fullName))
+  const adminUser = adminUsers.find((u) => shortForm(u.fullName) === admin)
 
   // What the previous shift left in the drawer; the cashier confirms it.
   const carried = previous?.closingCash ?? 0
@@ -86,9 +82,7 @@ export function ShiftOpenModal() {
       hint={
         admin === ''
           ? 'Выберите администратора смены — он отвечает за кассу'
-          : adminOffDuty
-            ? 'Этот сотрудник сегодня не в смене — подтвердите выбор'
-            : 'Остаток на начало дня — это деньги, уже лежащие в кассе, отдельной операцией он не проводится'
+          : 'Остаток на начало дня — это деньги, уже лежащие в кассе, отдельной операцией он не проводится'
       }
       actions={
         <>
@@ -98,19 +92,12 @@ export function ShiftOpenModal() {
           <button
             className="btn btn-primary"
             type="button"
-            disabled={admin === '' || (adminOffDuty && !offDutyOk)}
-            title={
-              admin === ''
-                ? 'Выберите администратора смены'
-                : adminOffDuty && !offDutyOk
-                  ? 'Сотрудник не в смене — подтвердите выбор'
-                  : 'Открыть смену'
-            }
+            disabled={admin === ''}
+            title={admin === '' ? 'Выберите администратора смены' : 'Открыть смену'}
             onClick={() => {
               actions.openShift({
                 opening,
                 admin: adminUser ? shortForm(adminUser.fullName) : admin,
-                adminId: adminUser?.id,
                 cashier,
                 comment,
                 openedAt,
@@ -180,22 +167,11 @@ export function ShiftOpenModal() {
           label="Администратор"
           value={admin}
           options={['', ...admins]}
-          onChange={(v) => {
-            setAdmin(v)
-            setOffDutyOk(false)
-          }}
+          onChange={setAdmin}
         />
         <TextField label="Кассир (по PIN)" value={cashier} />
       </div>
       <TextField label="Открытие смены" value={clock(openedAt)} />
-      {adminOffDuty && (
-        <Checkbox checked={offDutyOk} onChange={() => setOffDutyOk(!offDutyOk)}>
-          {adminUser?.presence === 'invited'
-            ? 'Сотрудник ещё не принял приглашение — беру ответственность'
-            : 'Сотрудник сегодня не в смене — беру ответственность'}
-        </Checkbox>
-      )}
-
       <MoneyField label="Остаток на начало дня" value={opening} onChange={setOpening} />
       <TextArea label="Комментарий" value={comment} onChange={setComment} />
     </Modal>

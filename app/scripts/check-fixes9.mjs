@@ -1,7 +1,7 @@
 /** Продолжение: возвраты, бесплатный визит, лимиты, справочники, отчёт. */
 import { chromium } from 'playwright'
 import { resolve } from 'node:path'
-import { addTariff } from './lib-tariff.mjs'
+import { addTariff, setPostpay } from './lib-tariff.mjs'
 const FILE = 'file://' + resolve('Аква пати — CRM (пустая касса).html')
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' })
 const p = await b.newPage({ viewport: { width: 1440, height: 900 } })
@@ -81,6 +81,8 @@ await p.locator('.cat-row', { hasText: 'Час игры' }).getByRole('button', 
 await F('Разовая скидка').locator('input').fill('1000')
 await p.waitForTimeout(300)
 ok('3. Разовая скидка не больше суммы', (await F('Разовая скидка').locator('input').inputValue()) === '1 000')
+// Нулевой заказ оформляем постоплатой: платить по нему нечего.
+await setPostpay(p)
 await p.locator('.modal-foot').getByRole('button', { name: 'Создать заказ' }).click()
 await p.waitForTimeout(800)
 await p.locator('.tbl tbody tr').first().click()

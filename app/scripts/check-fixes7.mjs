@@ -2,7 +2,7 @@
  *  штучная продажа сразу в оплату. */
 import { chromium } from 'playwright'
 import { resolve } from 'node:path'
-import { addTariff } from './lib-tariff.mjs'
+import { addTariff, setPostpay } from './lib-tariff.mjs'
 const FILE = 'file://' + resolve('Аква пати — CRM (пустая касса).html')
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' })
 const p = await b.newPage({ viewport: { width: 1440, height: 900 } })
@@ -102,6 +102,7 @@ const commentBox = p.locator('.modal-main .field-col', { hasText: 'Коммен�
 await commentBox.click()
 await commentBox.type('Именинник, торт в 15:30')
 await p.waitForTimeout(200)
+await setPostpay(p)
 await p.locator('.modal-foot').getByRole('button', { name: 'Создать заказ' }).click()
 await p.waitForTimeout(800)
 
