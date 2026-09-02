@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState, type ChangeEvent, type ReactNode } from 'react'
 import { ArrowDown, Check, ChevronsUpDown, Search } from 'lucide-react'
 import {
+  HOLD_MS,
   MAX_AMOUNT,
+  MAX_TEXT,
   MIN_SEARCH,
+  clipText,
   digitsOnly,
   formatPhone,
   isDateComplete,
@@ -63,9 +66,10 @@ export function TextField({
         type="text"
         value={value}
         placeholder={placeholder}
+        maxLength={MAX_TEXT}
         disabled={disabled || !onChange}
         onChange={(e: ChangeEvent<HTMLInputElement>) =>
-          onChange?.(latin ? e.target.value : onlyCyrillic(e.target.value))
+          onChange?.(clipText(latin ? e.target.value : onlyCyrillic(e.target.value)))
         }
       />
     </Field>
@@ -150,8 +154,9 @@ export function TextArea({
       <textarea
         className="input"
         value={value}
+        maxLength={MAX_TEXT}
         disabled={disabled || !onChange}
-        onChange={(e) => onChange?.(onlyCyrillic(e.target.value))}
+        onChange={(e) => onChange?.(clipText(onlyCyrillic(e.target.value)))}
       />
     </Field>
   )
@@ -195,8 +200,9 @@ export function FieldWithPlus({
             className={error ? 'input invalid' : 'input'}
             type="text"
             value={value}
+            maxLength={MAX_TEXT}
             disabled={!onChange}
-            onChange={(e) => onChange?.(onlyCyrillic(e.target.value))}
+            onChange={(e) => onChange?.(clipText(onlyCyrillic(e.target.value)))}
           />
         )}
         <button
@@ -277,8 +283,9 @@ export function ClientPicker({
             setQuery('')
             setOpen(true)
           }}
+          maxLength={MAX_TEXT}
           onChange={(e) => {
-            setQuery(onlyCyrillic(e.target.value))
+            setQuery(clipText(onlyCyrillic(e.target.value)))
             setOpen(true)
           }}
           onKeyDown={(e) => {
@@ -538,9 +545,10 @@ export function SearchBar({
         type="text"
         value={value}
         placeholder={placeholder}
+        maxLength={MAX_TEXT}
         onFocus={() => setOpen(true)}
         onChange={(e) => {
-          onChange(onlyCyrillic(e.target.value))
+          onChange(clipText(onlyCyrillic(e.target.value)))
           setOpen(true)
         }}
         onKeyDown={(e) => {
@@ -747,6 +755,74 @@ export function CatalogRow({
         </button>
       </div>
     </div>
+  )
+}
+
+/**
+ * Кнопка, которая срабатывает только если её подержать. Нажали и сразу
+ * отпустили — ничего не произошло; полоска показывает, сколько осталось.
+ * Так удаление не срабатывает от случайного клика.
+ */
+export function HoldButton({
+  children,
+  holdLabel = 'Не отпускайте…',
+  ms = HOLD_MS,
+  onHold,
+  className = 'btn btn-ghost btn-sm',
+  title,
+}: {
+  children: ReactNode
+  holdLabel?: string
+  ms?: number
+  onHold: () => void
+  className?: string
+  title?: string
+}) {
+  const [holding, setHolding] = useState(false)
+  const timer = useRef<number | undefined>(undefined)
+
+  const cancel = () => {
+    setHolding(false)
+    if (timer.current !== undefined) {
+      window.clearTimeout(timer.current)
+      timer.current = undefined
+    }
+  }
+
+  const start = () => {
+    if (timer.current !== undefined) return
+    setHolding(true)
+    timer.current = window.setTimeout(() => {
+      timer.current = undefined
+      setHolding(false)
+      onHold()
+    }, ms)
+  }
+
+  useEffect(() => cancel, [])
+
+  return (
+    <button
+      className={`${className} hold-btn${holding ? ' holding' : ''}`}
+      type="button"
+      title={title ?? `Удерживайте ${Math.round(ms / 1000)} с`}
+      style={{ ['--hold-ms' as string]: `${ms}ms` }}
+      onPointerDown={start}
+      onPointerUp={cancel}
+      onPointerLeave={cancel}
+      onPointerCancel={cancel}
+      onKeyDown={(e) => {
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault()
+          start()
+        }
+      }}
+      onKeyUp={cancel}
+      onBlur={cancel}
+    >
+      <span className="hold-fill" aria-hidden="true" />
+      <span className="hold-label">{holding ? holdLabel : children}</span>
+    </button>
   )
 }
 

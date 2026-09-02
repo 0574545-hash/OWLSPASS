@@ -1,9 +1,18 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Plus, ShieldCheck, ShieldPlus, UserPlus } from 'lucide-react'
+import { Plus, ShieldCheck, ShieldPlus, Trash2, UserPlus } from 'lucide-react'
 import { Page } from '../components/AppShell'
-import { Checkbox, ListFoot, PageHead, PhoneField, Pill, SubTabs, TextField } from '../components/ui'
-import { clock, onlyCyrillic, plural } from '../lib/format'
+import {
+  Checkbox,
+  HoldButton,
+  ListFoot,
+  PageHead,
+  PhoneField,
+  Pill,
+  SubTabs,
+  TextField,
+} from '../components/ui'
+import { clipText, clock, onlyCyrillic, plural } from '../lib/format'
 import { actions, cashJournal, useCan, useStore, type DataMode } from '../state/store'
 import { ALL_PERMISSION_IDS, PERMISSION_SECTIONS, permissionsOfSection } from '../domain/permissions'
 import type { AccessRights, PaymentSettings, Requisites } from '../domain/types'
@@ -343,7 +352,7 @@ function PaymentsTab() {
 
   const addTo = (key: ListKey, label: string) => {
     const raw = window.prompt(label)
-    const value = onlyCyrillic(raw ?? '').trim()
+    const value = clipText(onlyCyrillic(raw ?? '')).trim()
     if (!value) return
     setDraft((d) => ({ ...d, [key]: [...d[key], value] }))
   }
@@ -390,7 +399,7 @@ function PaymentsTab() {
                   className="btn btn-ghost btn-sm"
                   type="button"
                   onClick={() => {
-                    const next = onlyCyrillic(window.prompt('Изменить', value) ?? '').trim()
+                    const next = clipText(onlyCyrillic(window.prompt('Изменить', value) ?? '')).trim()
                     if (!next) return
                     setDraft((d) => ({
                       ...d,
@@ -400,6 +409,16 @@ function PaymentsTab() {
                 >
                   Изменить
                 </button>
+                {/* Удаление — только удержанием: случайный клик ничего не сносит. */}
+                <HoldButton
+                  title="Удерживайте 2 секунды, чтобы удалить"
+                  onHold={() =>
+                    setDraft((d) => ({ ...d, [list.key]: d[list.key].filter((_, j) => j !== i) }))
+                  }
+                >
+                  <Trash2 />
+                  Удалить
+                </HoldButton>
               </div>
             ))}
             <button

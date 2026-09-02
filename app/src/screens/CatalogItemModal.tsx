@@ -2,7 +2,16 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { EyeOff, Trash2 } from 'lucide-react'
 import { Modal } from '../components/Modal'
-import { Card, CardRow, CardTotal, MoneyField, Segmented, SelectField, TextField } from '../components/ui'
+import {
+  Card,
+  CardRow,
+  CardTotal,
+  HoldButton,
+  MoneyField,
+  Segmented,
+  SelectField,
+  TextField,
+} from '../components/ui'
 import { money } from '../lib/format'
 import { CATALOG_UNITS } from '../domain/seed'
 import { actions, useCan, useStore } from '../state/store'
@@ -65,14 +74,14 @@ export function CatalogItemModal() {
               {draft.status === 'hidden' ? 'Уже скрыта' : 'Скрыть'}
             </button>
           ) : (
-            <button
-              className="btn btn-ghost btn-sm"
-              type="button"
-              onClick={() => navigate(`/directories/item/${existing.id}/delete`)}
+            // Удаление позиции — тоже удержанием: случайно нажать нельзя.
+            <HoldButton
+              title="Удерживайте 2 секунды, чтобы удалить"
+              onHold={() => navigate(`/directories/item/${existing.id}/delete`)}
             >
               <Trash2 />
               Удалить
-            </button>
+            </HoldButton>
           )
         ) : (
           <span className="modal-hint">Позиция появится в каталоге сразу после сохранения</span>

@@ -245,3 +245,14 @@ export function today(): string {
   const p2 = (n: number) => String(n).padStart(2, '0')
   return `${p2(d.getDate())}.${p2(d.getMonth() + 1)}.${d.getFullYear()}`
 }
+
+/** Потолок для любого текстового поля: 200 символов. Столько влезает в
+ *  название позиции, комментарий и адрес, а всё сверх — уже не данные. */
+export const MAX_TEXT = 200
+
+export function clipText(value: string): string {
+  return value.length > MAX_TEXT ? value.slice(0, MAX_TEXT) : value
+}
+
+/** Сколько держать кнопку удаления, чтобы оно случайно не сработало. */
+export const HOLD_MS = 2000
