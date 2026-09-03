@@ -169,7 +169,7 @@ export function OrdersPage() {
                   <td>
                     <div style={{ fontWeight: 600 }}>{r.client}</div>
                     {r.children && (
-                      <div className="muted" style={{ fontSize: 12 }}>
+                      <div className="muted" style={{ fontSize: 'calc(12px * var(--type-scale))' }}>
                         {r.children}
                       </div>
                     )}
@@ -185,7 +185,7 @@ export function OrdersPage() {
                   <td style={{ fontWeight: 700 }}>
                     {money(r.sum)}
                     {r.refunded > 0 && (
-                      <div className="neg" style={{ fontSize: 11, fontWeight: 600 }}>
+                      <div className="neg" style={{ fontSize: 'calc(11px * var(--type-scale))', fontWeight: 600 }}>
                         возврат {money(r.refunded)}
                       </div>
                     )}

@@ -49,7 +49,7 @@ export function LoginScreen() {
     <div className="login-screen">
       <div className="login-card">
         <div>
-          <div style={{ font: '800 26px var(--font-display)', letterSpacing: '-.02em', textAlign: 'center' }}>
+          <div style={{ font: '800 calc(26px * var(--type-scale)) var(--font-display)', letterSpacing: '-.02em', textAlign: 'center' }}>
             Введите PIN
           </div>
         </div>

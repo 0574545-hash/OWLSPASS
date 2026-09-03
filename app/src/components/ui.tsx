@@ -905,7 +905,7 @@ export function ListFoot({
 }) {
   return (
     <div className="list-foot">
-      <span style={{ fontSize: 12, color: 'var(--fg-3)' }}>{note}</span>
+      <span style={{ fontSize: 'calc(12px * var(--type-scale))', color: 'var(--fg-3)' }}>{note}</span>
       <div style={{ display: 'flex', gap: 8 }}>
         {children}
         {onMore && (
@@ -923,7 +923,7 @@ export function PageHead({ title, subtitle, actions }: { title: string; subtitle
   if (!actions) {
     return (
       <div style={{ marginBottom: 20 }}>
-        <div className="h1" style={{ fontSize: 28 }}>
+        <div className="h1" style={{ fontSize: 'calc(28px * var(--type-scale))' }}>
           {title}
         </div>
         <p className="subtitle" style={{ margin: 0 }}>
@@ -943,7 +943,7 @@ export function PageHead({ title, subtitle, actions }: { title: string; subtitle
       }}
     >
       <div>
-        <div className="h1" style={{ fontSize: 28 }}>
+        <div className="h1" style={{ fontSize: 'calc(28px * var(--type-scale))' }}>
           {title}
         </div>
         <p className="subtitle" style={{ margin: 0 }}>

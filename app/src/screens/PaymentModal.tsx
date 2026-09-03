@@ -113,8 +113,8 @@ export function PaymentModal() {
 
           {cash && (
             <div className="card" style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 13, color: 'var(--fg-3)' }}>Сдача</span>
-              <span style={{ font: '800 22px var(--font-display)', color: 'var(--owls-orange)' }}>
+              <span style={{ fontSize: 'calc(13px * var(--type-scale))', color: 'var(--fg-3)' }}>Сдача</span>
+              <span style={{ font: '800 calc(22px * var(--type-scale)) var(--font-display)', color: 'var(--owls-orange)' }}>
                 {money(change)}
               </span>
             </div>

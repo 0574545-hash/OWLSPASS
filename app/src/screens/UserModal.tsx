@@ -115,7 +115,7 @@ export function UserModal() {
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <span style={{ fontSize: 12, color: 'var(--fg-3)' }}>Статус</span>
+        <span style={{ fontSize: 'calc(12px * var(--type-scale))', color: 'var(--fg-3)' }}>Статус</span>
         <Segmented
           value={draft.status}
           onChange={(v) => patch({ status: v })}
@@ -127,7 +127,7 @@ export function UserModal() {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <span style={{ fontSize: 12, color: 'var(--fg-3)' }}>
+        <span style={{ fontSize: 'calc(12px * var(--type-scale))', color: 'var(--fg-3)' }}>
           Доступ по должности «{draft.role}»
         </span>
         {PERMISSION_SECTIONS.map((section) => {

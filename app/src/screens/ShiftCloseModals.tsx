@@ -172,13 +172,13 @@ export function ShiftReportModal() {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <span style={{ fontSize: 12, color: 'var(--fg-3)' }}>Файл отчёта</span>
+        <span style={{ fontSize: 'calc(12px * var(--type-scale))', color: 'var(--fg-3)' }}>Файл отчёта</span>
         <div className="file-row">
           <FileText style={{ width: 16, height: 16, color: 'var(--owls-orange)' }} />
           <span className="file-name" style={{ flex: 1 }}>
             {fileName}
           </span>
-          <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>1 стр.</span>
+          <span style={{ fontSize: 'calc(11px * var(--type-scale))', color: 'var(--fg-3)' }}>1 стр.</span>
           <button className="btn btn-ghost btn-sm" type="button" onClick={() => window.print()}>
             <Download />
             Скачать

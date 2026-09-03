@@ -283,7 +283,7 @@ function ShiftsTab() {
                   <td className={r.discrepancy < 0 ? 'neg' : ''}>
                     {r.status === 'open' ? DASH : r.discrepancy === 0 ? '0' : money(r.discrepancy)}
                     {!!r.openingDiscrepancy && (
-                      <div className="neg" style={{ fontSize: 11 }}>
+                      <div className="neg" style={{ fontSize: 'calc(11px * var(--type-scale))' }}>
                         на старте {signedMoney(r.openingDiscrepancy)}
                       </div>
                     )}

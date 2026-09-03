@@ -114,8 +114,8 @@ export function RefundModal() {
           </Card>
 
           <div className="card" style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: 13, color: 'var(--fg-3)' }}>Наличных в кассе</span>
-            <span style={{ fontSize: 13 }}>{money(cash.cashOnHand)}</span>
+            <span style={{ fontSize: 'calc(13px * var(--type-scale))', color: 'var(--fg-3)' }}>Наличных в кассе</span>
+            <span style={{ fontSize: 'calc(13px * var(--type-scale))' }}>{money(cash.cashOnHand)}</span>
           </div>
 
           <div className="card-note">

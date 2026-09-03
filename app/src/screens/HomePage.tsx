@@ -20,7 +20,7 @@ export function HomePage() {
   return (
     <Page>
       <div style={{ marginBottom: 20 }}>
-        <div className="h1" style={{ fontSize: 28 }}>
+        <div className="h1" style={{ fontSize: 'calc(28px * var(--type-scale))' }}>
           Смена {dayAndMonth(shift.date)}
         </div>
         <p className="subtitle" style={{ margin: 0 }}>

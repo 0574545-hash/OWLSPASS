@@ -185,8 +185,8 @@ export function ClientModal() {
               <CardTotal label="Сумма заказов" value={money(draft.ordersTotal)} />
             </Card>
             <div className="card" style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 13, color: 'var(--fg-3)' }}>Задолженность</span>
-              <span style={{ fontSize: 13 }} className={balance < 0 ? 'neg' : ''}>
+              <span style={{ fontSize: 'calc(13px * var(--type-scale))', color: 'var(--fg-3)' }}>Задолженность</span>
+              <span style={{ fontSize: 'calc(13px * var(--type-scale))' }} className={balance < 0 ? 'neg' : ''}>
                 {balance < 0 ? money(-balance) : DASH}
               </span>
             </div>
@@ -234,7 +234,7 @@ export function ClientModal() {
       <TextArea label="Комментарий" value={draft.comment} onChange={(v) => patch({ comment: v })} />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <span style={{ fontSize: 12, color: 'var(--fg-3)' }}>Файл</span>
+        <span style={{ fontSize: 'calc(12px * var(--type-scale))', color: 'var(--fg-3)' }}>Файл</span>
         <div className="file-row">
           <FileText style={{ width: 16, height: 16, color: 'var(--owls-orange)' }} />
           <span className="file-name">{draft.file?.name ?? 'Документ не загружен'}</span>

@@ -278,7 +278,7 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
           </Card>
 
           <div className="card" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: 13, color: 'var(--fg-3)' }}>Статус</span>
+            <span style={{ fontSize: 'calc(13px * var(--type-scale))', color: 'var(--fg-3)' }}>Статус</span>
             <Pill tone={tone}>{statusLabel(order, totals)}</Pill>
           </div>
         </>
@@ -317,7 +317,7 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
 
       {readOnly ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <span style={{ fontSize: 12, color: 'var(--fg-3)' }}>Позиции заказа</span>
+          <span style={{ fontSize: 'calc(12px * var(--type-scale))', color: 'var(--fg-3)' }}>Позиции заказа</span>
           <table className="tbl">
             <thead>
               <tr>
@@ -376,7 +376,7 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
 
       {readOnly && order.payments.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <span style={{ fontSize: 12, color: 'var(--fg-3)' }}>Оплаты</span>
+          <span style={{ fontSize: 'calc(12px * var(--type-scale))', color: 'var(--fg-3)' }}>Оплаты</span>
           {order.payments.map((pay) => (
             <div className="ref-row" key={pay.id}>
               <span>
@@ -424,7 +424,7 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
           Оформить возврат
         </button>
         {totals.paid - totals.refunded <= 0 && (
-          <span style={{ fontSize: 12, color: 'var(--fg-3)' }}>
+          <span style={{ fontSize: 'calc(12px * var(--type-scale))', color: 'var(--fg-3)' }}>
             {totals.paid === 0 ? 'по заказу не было оплат' : 'всё оплаченное уже возвращено'}
           </span>
         )}

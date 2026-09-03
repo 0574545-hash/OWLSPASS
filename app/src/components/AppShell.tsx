@@ -141,15 +141,15 @@ export function AppShell({ children }: { children: ReactNode }) {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                font: '700 12px var(--font-text)',
+                font: '700 calc(12px * var(--type-scale)) var(--font-text)',
                 color: 'var(--fg-2)',
               }}
             >
               {initials(name)}
             </div>
             <div style={{ lineHeight: 1.2, textAlign: 'left' }}>
-              <div style={{ fontWeight: 600, fontSize: 13 }}>{topbarName(name)}</div>
-              <div style={{ fontSize: 11, color: 'var(--fg-3)' }}>{role}</div>
+              <div style={{ fontWeight: 600, fontSize: 'calc(13px * var(--type-scale))' }}>{topbarName(name)}</div>
+              <div style={{ fontSize: 'calc(11px * var(--type-scale))', color: 'var(--fg-3)' }}>{role}</div>
             </div>
           </button>
         </div>
