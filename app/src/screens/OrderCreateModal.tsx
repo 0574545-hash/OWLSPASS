@@ -232,13 +232,20 @@ function isUnlimitedItem(c: CatalogItem): boolean {
   return c.unit === 'мин' && !c.durationMin
 }
 
+/** Временная позиция — та, что измеряется минутами. У позиции в «шт.»
+ *  времени нет, даже если в справочнике у неё осталась длительность:
+ *  продали штуку — визит от этого не начался. */
+function isTimedItem(c: CatalogItem): boolean {
+  return c.unit === 'мин'
+}
+
 /** The chosen line with the longest duration sets the end of the visit.
  *  Безлимитный тариф длиннее любого другого — он и выигрывает. */
 export function pickTariff(catalog: CatalogItem[], qty: Record<string, number>): CatalogItem | undefined {
   const chosen = Object.entries(qty)
     .filter(([id, n]) => n > 0 && id !== 'tariff-overtime')
     .map(([id]) => catalog.find((c) => c.id === id))
-    .filter((c): c is CatalogItem => !!c && (!!c.durationMin || isUnlimitedItem(c)))
+    .filter((c): c is CatalogItem => !!c && isTimedItem(c))
   // Нет ни одной временной позиции — тарифа у заказа нет.
   if (chosen.length === 0) return undefined
   const unlimited = chosen.find(isUnlimitedItem)

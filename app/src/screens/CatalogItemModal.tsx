@@ -119,7 +119,11 @@ export function CatalogItemModal() {
               value={draft.extraPerMin ? `${money(draft.extraPerMin)} за мин` : 'не начисляется'}
             />
             <CardTotal
-              label={draft.durationMin ? `Цена за ${draft.durationMin} мин` : `Цена за ${draft.unit}`}
+              label={
+                byMinutes && draft.durationMin
+                  ? `Цена за ${draft.durationMin} мин`
+                  : `Цена за ${draft.unit}`
+              }
               value={draft.category === 'Скидка' ? `${draft.price} %` : money(draft.price)}
             />
           </Card>
