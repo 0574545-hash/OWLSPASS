@@ -271,6 +271,23 @@
 .modal-backdrop { animation: backdrop-in 120ms var(--ease-out) both; }
 .modal { animation: modal-in 180ms cubic-bezier(.2,.8,.25,1) both; }
 
+/* Закрытие — затухание на месте: окно гаснет и чуть уменьшается, не сходя
+   с центра. Держим втрое дольше открытия, чтобы уход было видно. */
+@keyframes modal-out { to { opacity: 0; transform: scale(.98); } }
+@keyframes backdrop-out { to { opacity: 0; } }
+.modal-ghost-backdrop {
+  position: fixed; inset: 0; background: rgba(11, 30, 53, .45);
+  display: flex; align-items: center; justify-content: center; padding: 40px; z-index: 99;
+  pointer-events: none;
+  animation: backdrop-out 420ms var(--ease-out) both;
+}
+.modal-ghost-win {
+  width: 1040px; height: 720px; max-height: calc(100vh - 80px);
+  background: #fff; border: 1px solid var(--border-1); border-radius: 14px;
+  display: flex; flex-direction: column; overflow: hidden; box-shadow: var(--shadow-3);
+  animation: modal-out 360ms var(--ease-out) both;
+}
+
 /* Кнопка проседает под пальцем. */
 .btn:active:not(:disabled) { transform: scale(.98); }
 .icon-btn:active { transform: scale(.94); }
@@ -299,7 +316,8 @@
 .toast.leaving { animation: toast-in 140ms var(--ease-out) reverse both; }
 
 @media (prefers-reduced-motion: reduce) {
-  .page-anim, .modal, .modal-backdrop, .toast, .sb-item.active::before, .sum-live.sum-changed {
+  .page-anim, .modal, .modal-backdrop, .toast, .sb-item.active::before, .sum-live.sum-changed,
+  .modal-ghost-backdrop, .modal-ghost-win {
     animation: none;
   }
   .subtab-ink { transition: none; }
