@@ -393,7 +393,11 @@ await p.goto(FILE + '#/')
 await p.waitForTimeout(700)
 const homeClosed = await flat('.page .subtitle')
 const topbar = await flat('.topbar')
-const consistent = !homeClosed.includes('открыта в') || topbar.includes('открыта')
+// Смена закрывается по факту времени: если в шапке она закрыта, на
+// дашборде должно стоять фактическое время закрытия.
+const consistent = topbar.includes('закрыта')
+  ? /закрыта в \d\d:\d\d/.test(homeClosed)
+  : !homeClosed.includes('закрыта')
 say(
   75,
   consistent ? 'ОК' : 'НЕ ИСПРАВЛЕНО',

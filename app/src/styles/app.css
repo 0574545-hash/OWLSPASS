@@ -213,3 +213,8 @@
 .hold-btn.holding > .hold-fill { width: 100%; transition: width var(--hold-ms, 2000ms) linear; }
 .hold-btn.holding { color: var(--owls-danger-text); }
 .hold-btn > .hold-label { position: relative; z-index: 1; }
+
+/* Просроченный заказ: время вышло, а он ещё открыт. Красным идёт вся
+   строка, а не только статус — её видно с другого конца стойки. */
+.tbl tbody tr.row-overdue td { background: var(--owls-danger-bg); }
+.tbl tbody tr.row-overdue:hover td { background: #F6C9C9; }

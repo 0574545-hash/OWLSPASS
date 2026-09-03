@@ -24,8 +24,9 @@ export function HomePage() {
           Смена {dayAndMonth(shift.date)}
         </div>
         <p className="subtitle" style={{ margin: 0 }}>
-          {weekday(shift.date)} · открыта в {clock(shift.openedAt)} · администратор {shift.admin},
-          кассир {shift.cashier}
+          {weekday(shift.date)} · открыта в {clock(shift.openedAt)}
+          {shift.closedAt !== undefined && `, закрыта в ${clock(shift.closedAt)}`} · администратор{' '}
+          {shift.admin}, кассир {shift.cashier}
         </p>
       </div>
 

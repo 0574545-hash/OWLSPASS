@@ -145,7 +145,13 @@ export function OrdersPage() {
             </thead>
             <tbody>
               {shown.map((r) => (
-                <tr key={r.id} className="row-click" onClick={() => navigate(`/orders/${r.no}`)}>
+                <tr
+                  key={r.id}
+                  // Время вышло, а заказ ещё открыт — красим строку целиком:
+                  // её видно с другого конца стойки.
+                  className={`row-click${r.tone === 'danger' ? ' row-overdue' : ''}`}
+                  onClick={() => navigate(`/orders/${r.no}`)}
+                >
                   <td className="mono">№ {r.no}</td>
                   <td className="mono">{clock(r.createdAt)}</td>
                   <td className="mono">{r.endAt === undefined ? DASH : clock(r.endAt)}</td>

@@ -52,7 +52,10 @@ export function SettingsPage({ tab: forcedTab }: { tab?: TabId } = {}) {
     users: `Центр «Аква пати» · ${users.length} ${plural(users.length, 'пользователь', 'пользователя', 'пользователей')} · ${roles.length} ${plural(roles.length, 'должность', 'должности', 'должностей')}`,
     roles: `Должности · ${roles.length} ${plural(roles.length, 'роль', 'роли', 'ролей')} · ${users.length} ${plural(users.length, 'пользователь', 'пользователя', 'пользователей')}`,
     requisites: 'Реквизиты · последнее изменение 12.08.2026',
-    payments: `Касса и оплата · смена открыта в ${clock(shift.openedAt)}, кассир ${shift.cashier}`,
+    payments:
+      shift.closedAt === undefined
+        ? `Касса и оплата · смена открыта в ${clock(shift.openedAt)}, кассир ${shift.cashier}`
+        : `Касса и оплата · смена закрыта в ${clock(shift.closedAt)}, кассир ${shift.cashier}`,
     notifications: `Уведомления · ${notifications.filter((n) => n.enabled).length} ${plural(notifications.filter((n) => n.enabled).length, 'сценарий', 'сценария', 'сценариев')} включено`,
   }
 
