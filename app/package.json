@@ -10,7 +10,8 @@
     "typecheck": "tsc -b --noEmit",
     "check-seed": "tsx scripts/check-seed.ts",
     "verify": "npm run check-seed && npm run build",
-    "standalone": "npm run build && node scripts/bundle-standalone.mjs 'Аква пати — CRM.html' demo && node scripts/bundle-standalone.mjs 'Аква пати — CRM (пустая касса).html' clean"
+    "standalone": "npm run build && node scripts/bundle-standalone.mjs 'Аква пати — CRM.html' demo && node scripts/bundle-standalone.mjs 'Аква пати — CRM (пустая касса).html' clean && npm run site",
+    "site": "node scripts/bundle-standalone.mjs ../docs/index.html demo && node scripts/bundle-standalone.mjs ../docs/clean.html clean"
   },
   "dependencies": {
     "lucide-react": "^0.462.0",
