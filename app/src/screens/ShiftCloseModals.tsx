@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Download, FileText, Printer } from 'lucide-react'
 import { Modal } from '../components/Modal'
+import { toast } from '../lib/toast'
 import {
   Card,
   CardKicker,
@@ -49,7 +50,10 @@ export function ShiftCloseModal() {
             disabled={closed}
             title={closed ? 'Смена уже закрыта — откройте новую' : 'Закрыть смену'}
             onClick={() => {
-              if (actions.closeShift({ counted, reason, comment })) navigate('/cash/report')
+              if (actions.closeShift({ counted, reason, comment })) {
+                toast('Смена закрыта — отчёт готов')
+                navigate('/cash/report')
+              }
             }}
           >
             Закрыть смену

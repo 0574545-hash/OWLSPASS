@@ -56,7 +56,10 @@
   --fg-accent:  var(--owls-orange);
 
   /* Background tokens */
-  --bg-app:     var(--owls-paper);   /* whole-app canvas */
+  --owls-paper-deep: #F2EFE7;        /* холст под карточками — на полтона глубже */
+  --owls-paper-soft: #FAF8F4;        /* чётные строки таблиц */
+  --bg-app:     var(--owls-paper-deep); /* whole-app canvas */
+  --bg-warm:    var(--owls-paper);   /* тёплые панели: шапка, подвал окна */
   --bg-surface: var(--owls-white);   /* cards, panels */
   --bg-sunken:  var(--owls-stone);   /* inputs disabled, dividers */
   --bg-accent-soft: var(--owls-orange-50);

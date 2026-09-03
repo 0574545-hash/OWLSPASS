@@ -23,6 +23,9 @@ await p.waitForTimeout(800)
 /* ---------- 23: вся строка просроченного заказа красная ---------- */
 await p.goto(FILE + '#/orders')
 await p.waitForTimeout(700)
+// Уводим указатель со списка: под курсором строка подсвечена наведением.
+await p.mouse.move(4, 4)
+await p.waitForTimeout(300)
 const late = p.locator('.tbl tbody tr.row-overdue').first()
 ok('23. Просроченные заказы найдены', (await p.locator('.tbl tbody tr.row-overdue').count()) > 0,
   `строк: ${await p.locator('.tbl tbody tr.row-overdue').count()}`)

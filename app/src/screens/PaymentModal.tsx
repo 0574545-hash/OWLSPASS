@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Banknote, CreditCard, QrCode } from 'lucide-react'
 import { Modal } from '../components/Modal'
-import { Card, CardRow, CardTotal, MoneyField, Segmented, TextArea } from '../components/ui'
+import { Card, CardRow, CardTotal, LiveMoney, MoneyField, Segmented, TextArea } from '../components/ui'
 import { DASH, clock, money } from '../lib/format'
+import { toast } from '../lib/toast'
 import { now, orderTotals } from '../domain/rules'
 import { actions, clientOf, shiftClosed, tariffTermsOf, totalsOf, useStore } from '../state/store'
 import type { PaymentMethod } from '../domain/types'
@@ -74,6 +75,7 @@ export function PaymentModal() {
             }
             onClick={() => {
               actions.payOrder(order.id, { amount: due, method, comment })
+              toast(`Оплата ${money(due)} принята · заказ № ${order.no}`)
               navigate('/orders')
             }}
           >
@@ -106,7 +108,7 @@ export function PaymentModal() {
                 value={money(dueTotals.paid)}
               />
             )}
-            <CardTotal label="К оплате" value={money(due)} />
+            <CardTotal label="К оплате" value={<LiveMoney value={due} />} />
           </Card>
 
           {cash && (

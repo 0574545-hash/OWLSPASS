@@ -11,6 +11,8 @@ import {
   Settings,
   Users,
 } from 'lucide-react'
+import { OwlsMark } from './OwlsMark'
+import { Toasts } from './Toasts'
 import { clock, initials, topbarName } from '../lib/format'
 import { actions, currentUser, openOrders, shiftClosed, useCan, useStore } from '../state/store'
 
@@ -56,35 +58,12 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="app viewport">
       <nav className="sb">
         <div className="sb-head" style={{ paddingBottom: 16, gap: 10 }}>
-          <div
-            style={{
-              width: 34,
-              height: 34,
-              borderRadius: 10,
-              background: 'var(--owls-navy)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#fff',
-              font: '800 15px var(--font-display)',
-            }}
-          >
-            А
-          </div>
-          <div style={{ lineHeight: 1.1 }}>
-            <div style={{ font: '800 15px var(--font-display)', letterSpacing: '-.01em' }}>
-              Аква пати
+          <OwlsMark size={30} />
+          <div style={{ lineHeight: 1.15 }}>
+            <div className="brand-word">
+              OWLS <span className="brand-pass">Pass</span>
             </div>
-            <div
-              style={{
-                fontSize: 10,
-                color: 'var(--fg-4)',
-                letterSpacing: '.12em',
-                textTransform: 'uppercase',
-              }}
-            >
-              CRM
-            </div>
+            <div className="brand-sub">Аква пати</div>
           </div>
         </div>
 
@@ -182,6 +161,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           {children}
         </div>
       </div>
+      <Toasts />
     </div>
   )
 }
@@ -190,7 +170,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 export function Page({ children }: { children: ReactNode }) {
   return (
     <div
-      className="page"
+      className="page page-anim"
       style={{
         padding: '24px 32px 32px',
         display: 'flex',

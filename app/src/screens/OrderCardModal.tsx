@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Printer, RotateCcw, Undo2 } from 'lucide-react'
 import { Modal } from '../components/Modal'
+import { toast } from '../lib/toast'
 import {
   Card,
   CardKicker,
   CardRow,
   CardTotal,
+  LiveMoney,
   CatalogRow,
   Checkbox,
   Field,
@@ -206,6 +208,7 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
             }
             onClick={() => {
               actions.closeOrder(order.id, freeVisit ? freeReason : undefined)
+              toast(`Заказ № ${order.no} закрыт`)
               close()
             }}
           >
@@ -252,7 +255,7 @@ export function OrderCardModal({ readOnly = false }: { readOnly?: boolean } = {}
             <CardRow label="Оплачено" value={totals.paid > 0 ? money(totals.paid) : DASH} />
             <CardTotal
               label="Остаток"
-              value={money(totals.remainder)}
+              value={<LiveMoney value={totals.remainder} />}
               tone={totals.remainder > 0 ? 'neg' : undefined}
             />
           </Card>

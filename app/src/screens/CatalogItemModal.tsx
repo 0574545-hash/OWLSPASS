@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { EyeOff, Trash2 } from 'lucide-react'
 import { Modal } from '../components/Modal'
+import { toast } from '../lib/toast'
 import {
   Card,
   CardRow,
@@ -99,6 +100,7 @@ export function CatalogItemModal() {
             title={mayEdit ? 'Сохранить' : 'Нет права «Правка позиций»'}
             onClick={() => {
               actions.saveCatalogItem(draft)
+              toast(existing ? `«${draft.name}» сохранена` : `«${draft.name}» добавлена в справочник`)
               back()
             }}
           >

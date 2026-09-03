@@ -6,6 +6,7 @@ import {
   CardKicker,
   CardRow,
   CardTotal,
+  LiveMoney,
   CatalogRow,
   Checkbox,
   ClientPicker,
@@ -16,6 +17,7 @@ import {
 } from '../components/ui'
 import { DASH, money } from '../lib/format'
 import { NOW, SHIFT_DATE } from '../domain/rules'
+import { toast } from '../lib/toast'
 import { actions, clientBalance, nextOrderNo, tariffDuration, useCan, useStore } from '../state/store'
 import type { CatalogItem, OrderItem } from '../domain/types'
 import { ageOf } from './OrdersPage'
@@ -75,6 +77,7 @@ export function OrderCreateModal() {
       tariffLabel: labelFor(tariffItem),
       postpay,
     })
+    if (!payNow) toast(`Заказ № ${order.no} создан`)
     // Штучная продажа уходит прямо в оплату, остальные — в список.
     navigate(payNow ? `/orders/${order.no}/pay` : '/orders')
   }
@@ -120,7 +123,7 @@ export function OrderCreateModal() {
               label="Разовая скидка"
               value={manualDiscount > 0 ? `−${money(manualDiscount)}` : DASH}
             />
-            <CardTotal label="К оплате" value={money(payable)} />
+            <CardTotal label="К оплате" value={<LiveMoney value={payable} />} />
           </Card>
 
           <Card>

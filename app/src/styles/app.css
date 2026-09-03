@@ -23,7 +23,7 @@
 
 /* ===== Compact table mode (used by every list screen) ===== */
 [data-compact] .tbl { font-size: 12.5px; }
-[data-compact] .tbl th { padding: 9px 12px; font-size: 11px; position: sticky; top: 0; z-index: 1; background: #fff; }
+[data-compact] .tbl th { padding: 9px 12px; font-size: 11px; position: sticky; top: 0; z-index: 1; background: var(--bg-warm); }
 [data-compact] .tbl td { padding: 7px 12px; line-height: 1.35; white-space: normal; overflow: visible; text-overflow: clip; max-width: none; word-break: normal; }
 [data-compact] .tbl td.mono { white-space: nowrap; }
 [data-compact] .btn-sm { padding: 5px 9px; font-size: 11px; }
@@ -120,6 +120,7 @@
 .modal-foot {
   height: 68px; flex: none; display: flex; align-items: center; justify-content: space-between;
   gap: 16px; padding: 0 24px; border-top: 1px solid var(--border-1);
+  background: var(--bg-warm);
 }
 .modal-hint { font-size: 12px; color: var(--fg-3); }
 .modal-actions { display: flex; gap: 8px; }
@@ -214,7 +215,99 @@
 .hold-btn.holding { color: var(--owls-danger-text); }
 .hold-btn > .hold-label { position: relative; z-index: 1; }
 
+/* Тёплая зебра: чётные строки чуть темнее белого, данные читаются
+   так же, но таблица перестаёт быть стерильно белой. */
+.tbl tbody tr:nth-child(even) td { background: var(--owls-paper-soft); }
+.tbl tbody tr td { transition: background 120ms var(--ease-out); }
+
 /* Просроченный заказ: время вышло, а он ещё открыт. Красным идёт вся
    строка, а не только статус — её видно с другого конца стойки. */
 .tbl tbody tr.row-overdue td { background: var(--owls-danger-bg); }
 .tbl tbody tr.row-overdue:hover td { background: #F6C9C9; }
+
+/* Зебра не должна перебивать ни наведение, ни просроченный заказ. */
+.tbl tbody tr.row-overdue td,
+.tbl tbody tr.row-overdue:nth-child(even) td { background: var(--owls-danger-bg); }
+.tbl tbody tr.row-overdue:hover td,
+.tbl tbody tr.row-overdue:hover:nth-child(even) td { background: #F6C9C9; }
+.tbl tbody tr:hover td,
+.tbl tbody tr:hover:nth-child(even) td { background: var(--owls-stone); }
+
+/* ============================================================
+   Движение. Всё сопровождает действие и ничего не задерживает;
+   у кого включён режим «уменьшить движение» — не двигается ничего.
+   ============================================================ */
+
+/* Страница раздела: появляется с растворением и подъёмом. */
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+.page-anim { animation: page-in 160ms var(--ease-out) both; }
+
+/* Подвкладки: оранжевая полоска едет к выбранной. */
+.subtabs { position: relative; }
+.subtab-ink {
+  position: absolute; bottom: -1px; height: 2px; background: var(--owls-orange);
+  transition: left 200ms var(--ease-out), width 200ms var(--ease-out);
+  pointer-events: none;
+}
+.subtabs .subtab { transition: color 140ms var(--ease-out); }
+/* При живом указателе собственная черта вкладки не нужна. */
+.subtabs.has-ink .subtab.active::after { display: none; }
+
+/* Метка активного пункта меню вырастает от центра. */
+@keyframes rail-in { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+.sb-item.active::before { animation: rail-in 180ms var(--ease-out) both; }
+.sb-item { transition: background 140ms var(--ease-out), color 140ms var(--ease-out); }
+.sb-item .lucide { transition: color 140ms var(--ease-out); }
+
+/* Окно: подложка гаснет, окно всплывает. */
+@keyframes backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(12px) scale(.98); }
+  to   { opacity: 1; transform: none; }
+}
+.modal-backdrop { animation: backdrop-in 120ms var(--ease-out) both; }
+.modal { animation: modal-in 180ms cubic-bezier(.2,.8,.25,1) both; }
+
+/* Кнопка проседает под пальцем. */
+.btn:active:not(:disabled) { transform: scale(.98); }
+.icon-btn:active { transform: scale(.94); }
+
+/* Сумма, которая изменилась, коротко подсвечивается. */
+@keyframes sum-bump { 0% { color: var(--owls-orange); } 100% { color: inherit; } }
+.sum-live.sum-changed { animation: sum-bump 600ms var(--ease-out); }
+
+/* Уведомление о том, что действие прошло. */
+.toasts {
+  position: fixed; right: 24px; bottom: 24px; z-index: 400;
+  display: flex; flex-direction: column; gap: 8px; align-items: flex-end;
+  /* Уведомление ничего не перекрывает: клик проходит сквозь него. */
+  pointer-events: none;
+}
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(10px) scale(.98); }
+  to   { opacity: 1; transform: none; }
+}
+.toast {
+  background: var(--owls-navy); color: #fff; border-radius: 12px;
+  padding: 12px 16px; font: 600 13px var(--font-text);
+  box-shadow: var(--shadow-3); max-width: 360px;
+  animation: toast-in 180ms var(--ease-out) both;
+}
+.toast.leaving { animation: toast-in 140ms var(--ease-out) reverse both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .page-anim, .modal, .modal-backdrop, .toast, .sb-item.active::before, .sum-live.sum-changed {
+    animation: none;
+  }
+  .subtab-ink { transition: none; }
+  .btn:active:not(:disabled), .icon-btn:active { transform: none; }
+}
+
+/* Знак OWLS и подпись продукта в левом верхнем углу. «Pass» — оранжевым:
+   акцент бренда, единственный в этом углу. */
+.brand-word { font: 800 15px var(--font-text); letter-spacing: .04em; color: var(--owls-navy); }
+.brand-pass { color: var(--owls-orange); }
+.brand-sub { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-4); }

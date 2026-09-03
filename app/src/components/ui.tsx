@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState, type ChangeEvent, type ReactNode } from 'react'
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type ReactNode,
+} from 'react'
 import { ArrowDown, Check, ChevronsUpDown, Search } from 'lucide-react'
 import {
   HOLD_MS,
@@ -606,8 +613,20 @@ export function SubTabs({
   className?: string
   style?: React.CSSProperties
 }) {
+  // Оранжевая полоска не рисуется под каждой вкладкой, а переезжает к
+  // выбранной: взгляд следит за ней и не теряет, где он оказался.
+  const box = useRef<HTMLDivElement>(null)
+  const [ink, setInk] = useState<{ left: number; width: number } | undefined>(undefined)
+  useLayoutEffect(() => {
+    const wrap = box.current
+    const tab = wrap?.querySelector<HTMLElement>('.subtab.active')
+    if (!wrap || !tab) return setInk(undefined)
+    setInk({ left: tab.offsetLeft + 16, width: Math.max(0, tab.offsetWidth - 32) })
+  }, [active, tabs])
+
   return (
-    <div className={`subtabs ${className}`} style={style}>
+    <div ref={box} className={`subtabs${ink ? ' has-ink' : ''} ${className}`} style={style}>
+      {ink && <span className="subtab-ink" style={{ left: ink.left, width: ink.width }} />}
       {tabs.map((tab) => {
         const isActive = tab.id === active
         return (
@@ -632,6 +651,42 @@ export function SubTabs({
         )
       })}
     </div>
+  )
+}
+
+/** Сумма, которая догоняет новое значение: при изменении состава заказа
+ *  цифра не подменяется рывком, а докручивается за четверть секунды. */
+export function LiveMoney({ value, className = '' }: { value: number; className?: string }) {
+  const [shown, setShown] = useState(value)
+  const from = useRef(value)
+  const [changed, setChanged] = useState(false)
+
+  useEffect(() => {
+    const start = from.current
+    if (start === value) return
+    setChanged(true)
+    const t0 = performance.now()
+    const DURATION = 250
+    let raf = 0
+    const step = (t: number) => {
+      const k = Math.min(1, (t - t0) / DURATION)
+      // Плавное торможение к концу — цифра «доезжает», а не тормозит резко.
+      const eased = 1 - (1 - k) * (1 - k)
+      setShown(Math.round(start + (value - start) * eased))
+      if (k < 1) raf = requestAnimationFrame(step)
+      else from.current = value
+    }
+    raf = requestAnimationFrame(step)
+    const off = window.setTimeout(() => setChanged(false), 600)
+    return () => {
+      cancelAnimationFrame(raf)
+      window.clearTimeout(off)
+      from.current = value
+    }
+  }, [value])
+
+  return (
+    <span className={`sum-live${changed ? ' sum-changed' : ''} ${className}`}>{money(shown)}</span>
   )
 }
 

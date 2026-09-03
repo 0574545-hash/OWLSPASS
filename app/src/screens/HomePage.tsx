@@ -1,6 +1,6 @@
 import { Page } from '../components/AppShell'
-import { Stat } from '../components/ui'
-import { clock, counted, dayAndMonth, money, plural, weekday } from '../lib/format'
+import { LiveMoney, Stat } from '../components/ui'
+import { clock, counted, dayAndMonth, plural, weekday } from '../lib/format'
 import { cashSummary, openOrders, useCan, useStore } from '../state/store'
 
 /** Screen 03 — «Главная»: state of the shift and the day's figures. */
@@ -41,7 +41,7 @@ export function HomePage() {
         {mayRevenue && (
           <Stat
             label="Выручка за смену"
-            value={money(summary.revenue)}
+            value={<LiveMoney value={summary.revenue} />}
             note={counted(summary.payments, 'оплата', 'оплаты', 'оплат')}
           />
         )}

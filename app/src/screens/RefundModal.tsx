@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Modal } from '../components/Modal'
+import { toast } from '../lib/toast'
 import { Card, CardRow, CardTotal, Checkbox, SelectField, SubTabs } from '../components/ui'
 import { DASH, money } from '../lib/format'
 import { actions, cashSummary, clientOf, currentUser, shiftClosed, totalsOf, useStore } from '../state/store'
@@ -92,6 +93,7 @@ export function RefundModal() {
             }
             onClick={() => {
               actions.refundOrder(order.id, { lines, amount: capped, reason, method })
+              toast(`Возврат ${money(capped)} проведён · заказ № ${order.no}`)
               back()
             }}
           >

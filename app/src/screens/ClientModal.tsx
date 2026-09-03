@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { FileText } from 'lucide-react'
 import { Modal } from '../components/Modal'
+import { toast } from '../lib/toast'
 import {
   Card,
   CardRow,
@@ -101,6 +102,7 @@ export function ClientModal() {
   const save = () => {
     const kept = children.filter(childValid)
     actions.saveClient({ ...draft, children: kept })
+    toast(existing ? 'Карточка клиента сохранена' : `Клиент ${draft.fullName} добавлен`)
     close()
   }
 

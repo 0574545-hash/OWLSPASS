@@ -26,7 +26,7 @@ body { background: var(--bg-app); color: var(--fg-1); font-family: var(--font-te
 .sb-badge { margin-left: auto; background: var(--owls-orange); color: #fff; font-size: 10px; font-weight: 700; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; display:flex; align-items:center; justify-content:center; }
 
 /* ===== Top bar ===== */
-.topbar { display: flex; align-items: center; gap: 10px; padding: 14px 24px; background: #fff; border-bottom: 1px solid var(--border-1); }
+.topbar { display: flex; align-items: center; gap: 10px; padding: 14px 24px; background: var(--bg-warm); border-bottom: 1px solid var(--border-1); }
 .pill-btn { display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: 10px; background: var(--owls-paper); border: 1px solid var(--border-1); font: 600 13px var(--font-text); color: var(--fg-1); cursor: pointer; white-space: nowrap; }
 .pill-btn:hover { background: var(--owls-stone); }
 .pill-btn .lucide { width: 15px; height: 15px; stroke-width: 1.7; color: var(--fg-3); }
@@ -90,7 +90,7 @@ body { background: var(--bg-app); color: var(--fg-1); font-family: var(--font-te
 /* ===== Table ===== */
 .surface { background: #fff; border: 1px solid var(--border-1); border-radius: 14px; overflow: hidden; }
 .tbl { width: 100%; border-collapse: collapse; font: 500 13px var(--font-text); }
-.tbl th { text-align: left; padding: 14px 18px; color: var(--fg-3); font-weight: 600; font-size: 12px; border-bottom: 1px solid var(--border-1); background: #fff; white-space: nowrap; }
+.tbl th { text-align: left; padding: 14px 18px; color: var(--fg-3); font-weight: 600; font-size: 12px; border-bottom: 1px solid var(--border-1); background: var(--bg-warm); white-space: nowrap; }
 .tbl th .col-h { display: inline-flex; align-items: center; gap: 6px; }
 .tbl th .col-h .lucide { width: 12px; height: 12px; color: var(--fg-4); stroke-width: 2; }
 .tbl td { padding: 14px 18px; border-bottom: 1px solid var(--border-1); color: var(--fg-1); vertical-align: middle; }

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowDownToLine, ArrowUpFromLine, Lock } from 'lucide-react'
 import { Page } from '../components/AppShell'
-import { ListFoot, PageHead, Pill, SortableTh, Stat, SubTabs } from '../components/ui'
+import { ListFoot, LiveMoney, PageHead, Pill, SortableTh, Stat, SubTabs } from '../components/ui'
 import { DASH, clock, counted, money, plural, shortName, signedMoney } from '../lib/format'
 import { cashJournal, cashSummary, currentShiftRecord, shiftClosed, useCan, useStore } from '../state/store'
 
@@ -67,7 +67,7 @@ function OpsTab() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, margin: '0 0 20px' }}>
         <Stat
           label="Наличные в кассе"
-          value={money(summary.cashOnHand)}
+          value={<LiveMoney value={summary.cashOnHand} />}
           note={summary.collected > 0 ? `после изъятия ${money(summary.collected)}` : 'изъятий не было'}
         />
         <Stat label="Безнал за смену" value={money(summary.cashless)} note="карта и СБП" />

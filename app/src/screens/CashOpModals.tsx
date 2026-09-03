@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Modal } from '../components/Modal'
 import { Card, CardKicker, CardRow, CardTotal, MoneyField, SelectField, TextArea } from '../components/ui'
 import { DASH, MAX_AMOUNT, clock, money } from '../lib/format'
+import { toast } from '../lib/toast'
 import { actions, cashJournal, cashSummary, shiftClosed, useStore } from '../state/store'
 
 /** Screen 13 — «Внесение»: cash into the drawer.
@@ -48,6 +49,7 @@ export function DepositModal() {
             }
             onClick={() => {
               actions.deposit({ amount, ground, from, to, comment })
+              toast(`Внесено ${money(amount)} · ${ground}`)
               close()
             }}
           >
@@ -141,6 +143,7 @@ export function CollectionModal() {
             }
             onClick={() => {
               actions.collect({ amount, ground, from, to, comment })
+              toast(`Изъято ${money(amount)} · ${ground}`)
               close()
             }}
           >
